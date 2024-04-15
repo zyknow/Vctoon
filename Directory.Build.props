@@ -1,0 +1,22 @@
+<Project>
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+
+        <!--        version configs-->
+        <AvaloniaVersion>11.1.0-beta1</AvaloniaVersion>
+        <AbpVersion>8.1.0</AbpVersion>
+
+        <!-- This line is currently commented out. If uncommented, it would suppress the CS1591 warning. 
+             CS1591 is a warning that is issued when a publicly visible type or member is not documented. 
+             The $(NoWarn) is a property that contains a semicolon-separated list of warning codes to suppress.
+             The CS1591 warning code is appended to this list. -->
+        <!-- <NoWarn>$(NoWarn);CS1591;</NoWarn> -->
+
+        <!-- This line sets the warning level for the compiler to 0. 
+             The warning level determines the severity of warnings that the compiler displays. 
+             A warning level of 0 means that no warnings are displayed. -->
+        <WarningLevel>0</WarningLevel>
+    </PropertyGroup>
+</Project>

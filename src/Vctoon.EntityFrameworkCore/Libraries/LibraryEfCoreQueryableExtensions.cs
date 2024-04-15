@@ -1,0 +1,19 @@
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+
+namespace Vctoon.Libraries;
+
+public static class LibraryEfCoreQueryableExtensions
+{
+    public static IQueryable<Library> IncludeDetails(this IQueryable<Library> queryable, bool include = true)
+    {
+        if (!include)
+        {
+            return queryable;
+        }
+
+        return queryable
+            // .Include(x => x.xxx) // TODO: AbpHelper generated
+            ;
+    }
+}

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+
+        <RootNamespace>Vctoon</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Vctoon.EntityFrameworkCore\Vctoon.EntityFrameworkCore.csproj"/>
+        <ProjectReference Include="..\Vctoon.Application.Tests\Vctoon.Application.Tests.csproj"/>
+        <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" Version="$(AbpVersion)"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0"/>
+    </ItemGroup>
+
+</Project>

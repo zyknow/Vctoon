@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+
+        <RootNamespace>Vctoon</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Vctoon.Domain\Vctoon.Domain.csproj"/>
+        <ProjectReference Include="..\Vctoon.TestBase\Vctoon.TestBase.csproj"/>
+    </ItemGroup>
+
+</Project>
