@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.FluentUI.AspNetCore.Components;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 using Vctoon.EntityFrameworkCore;
 using Vctoon.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite;
@@ -26,8 +23,8 @@ using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Autofac;
-using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
+using Volo.Abp.OpenIddict;
 using Volo.Abp.Security.Claims;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.UI.Navigation.Urls;
@@ -47,10 +44,13 @@ namespace Vctoon;
     typeof(AbpAspNetCoreSerilogModule),
     typeof(AbpSwashbuckleModule)
 )]
-public class VctoonHttpApiHostModule : AbpModule
+public class VctoonBlazorModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
+        var hostingEnvironment = context.Services.GetHostingEnvironment();
+        var configuration = context.Services.GetConfiguration();
+        
         PreConfigure<OpenIddictBuilder>(builder =>
         {
             builder.AddValidation(options =>
@@ -60,6 +60,19 @@ public class VctoonHttpApiHostModule : AbpModule
                 options.UseAspNetCore();
             });
         });
+        
+        if (!hostingEnvironment.IsDevelopment())
+        {
+            PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
+            {
+                options.AddDevelopmentEncryptionAndSigningCertificate = false;
+            });
+
+            PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
+            {
+                serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", "b5fc7d59-ce7c-4a15-b33b-005f6f373d4f");
+            });
+        }
     }
 
     public override void ConfigureServices(ServiceConfigurationContext context)
@@ -79,6 +92,8 @@ public class VctoonHttpApiHostModule : AbpModule
         services.AddRazorComponents()
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
+        
+        services.AddFluentUIComponents();
     }
 
     private void ConfigureAuthentication(ServiceConfigurationContext context)
@@ -205,17 +220,13 @@ public class VctoonHttpApiHostModule : AbpModule
             app.RunTailwind("watch", "./");
         }
 
+        app.UseHttpsRedirection();
         app.UseCorrelationId();
         app.UseStaticFiles();
         app.UseRouting();
         app.UseCors();
         app.UseAuthentication();
         app.UseAbpOpenIddictValidation();
-
-        if (MultiTenancyConsts.IsEnabled)
-        {
-            app.UseMultiTenancy();
-        }
 
         app.UseUnitOfWork();
         app.UseDynamicClaims();

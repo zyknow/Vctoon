@@ -1,6 +1,6 @@
 namespace Vctoon.Libraries;
 
-public class Tag : Entity<Guid>
+public class Tag : AggregateRoot<Guid>
 {
     protected Tag()
     {

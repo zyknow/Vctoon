@@ -1,6 +1,6 @@
 ﻿namespace Vctoon.Libraries;
 
-public class LibraryPath : Entity<Guid>
+public class LibraryPath : AggregateRoot<Guid>
 {
     /// <summary>
     /// dirPath or archivePath
@@ -11,10 +11,10 @@ public class LibraryPath : Entity<Guid>
     /// 
     /// </summary>
     public bool IsEmpty { get; set; }
-
-    public bool IsArchive { get; set; }
-
-    public string? ArchiveInnerPath { get; set; }
+    //
+    // public bool IsArchive { get; set; }
+    //
+    // public string? ArchiveInnerPath { get; set; }
 
     /// <summary>
     /// use directory LastWriteTimeUtc

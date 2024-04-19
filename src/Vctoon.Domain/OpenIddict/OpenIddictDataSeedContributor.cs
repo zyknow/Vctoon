@@ -80,7 +80,6 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
 
         var configurationSection = _configuration.GetSection("OpenIddict:Applications");
 
-
         // Swagger Client
         var swaggerClientId = configurationSection["Vctoon_Swagger:ClientId"];
         if (!swaggerClientId.IsNullOrWhiteSpace())
@@ -97,6 +96,27 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
                 scopes: commonScopes,
                 redirectUri: $"{swaggerRootUrl}/swagger/oauth2-redirect.html",
                 clientUri: swaggerRootUrl
+            );
+        }
+
+        // blazor Client
+        var blazorClientId = configurationSection["Vctoon_Blazor:ClientId"];
+        if (!blazorClientId.IsNullOrWhiteSpace())
+        {
+            var blazorRootUrl = configurationSection["Vctoon_Blazor:RootUrl"]?.TrimEnd('/');
+
+            await CreateApplicationAsync(
+                name: blazorClientId!,
+                type: OpenIddictConstants.ClientTypes.Confidential,
+                consentType: OpenIddictConstants.ConsentTypes.Implicit,
+                displayName: "Blazor Application",
+                secret: configurationSection["Vctoon_Blazor:ClientSecret"] ?? "1q2w3e*",
+                grantTypes: new List<string>
+                    {OpenIddictConstants.GrantTypes.AuthorizationCode, OpenIddictConstants.GrantTypes.Implicit},
+                scopes: commonScopes,
+                redirectUri: $"{blazorRootUrl}/signin-oidc",
+                clientUri: blazorRootUrl,
+                postLogoutRedirectUri: $"{blazorRootUrl}/signout-callback-oidc"
             );
         }
     }

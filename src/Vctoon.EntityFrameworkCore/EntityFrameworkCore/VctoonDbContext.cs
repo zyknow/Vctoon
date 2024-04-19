@@ -75,9 +75,6 @@ public class VctoonDbContext :
 
             b.HasMany(x => x.Children).WithOne(x => x.Parent).HasForeignKey(x => x.ParentId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            b.HasMany<ComicChapter>().WithOne(x => x.LibraryPath).HasForeignKey(x => x.LibraryPathId)
-                .OnDelete(DeleteBehavior.Cascade);
             /* Configure more properties here */
         });
 

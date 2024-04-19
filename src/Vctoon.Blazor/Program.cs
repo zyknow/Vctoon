@@ -1,9 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Serilog;
+﻿using Serilog;
 using Serilog.Events;
 
 namespace Vctoon;
@@ -32,7 +27,7 @@ public class Program
             builder.Host.AddAppSettingsSecretsJson()
                 .UseAutofac()
                 .UseSerilog();
-            await builder.AddApplicationAsync<VctoonHttpApiHostModule>();
+            await builder.AddApplicationAsync<VctoonBlazorModule>();
             var app = builder.Build();
             await app.InitializeApplicationAsync();
             await app.RunAsync();

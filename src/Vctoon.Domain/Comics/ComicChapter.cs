@@ -15,8 +15,7 @@ public class ComicChapter : Entity<Guid>
         Guid comicId,
         Comic comic,
         uint pageCount,
-        uint size,
-        Guid libraryPathId
+        uint size
     ) : base(id)
     {
         CoverPath = coverPath;
@@ -25,7 +24,6 @@ public class ComicChapter : Entity<Guid>
         Comic = comic;
         PageCount = pageCount;
         Size = size;
-        LibraryPathId = libraryPathId;
     }
 
     public string CoverPath { get; set; }
@@ -40,7 +38,6 @@ public class ComicChapter : Entity<Guid>
     public uint PageCount { get; set; }
 
     public uint Size { get; set; }
-
-    public Guid LibraryPathId { get; set; }
-    public LibraryPath LibraryPath { get; set; }
+    
+    public List<ComicImageFile> Images { get; set; } = new();
 }
