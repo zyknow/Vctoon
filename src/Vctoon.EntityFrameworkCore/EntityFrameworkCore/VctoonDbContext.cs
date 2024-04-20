@@ -14,6 +14,7 @@ using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
 using Vctoon.Libraries;
 using Vctoon.Comics;
+using Volo.Abp.EntityFrameworkCore.Modeling;
 
 namespace Vctoon.EntityFrameworkCore;
 
@@ -29,33 +30,6 @@ public class VctoonDbContext :
         : base(options)
     {
     }
-
-    protected override void OnModelCreating(ModelBuilder builder)
-    {
-        base.OnModelCreating(builder);
-
-        /* Include modules to your migration db context */
-
-        builder.ConfigurePermissionManagement();
-        builder.ConfigureSettingManagement();
-        builder.ConfigureBackgroundJobs();
-        builder.ConfigureAuditLogging();
-        builder.ConfigureIdentity();
-        builder.ConfigureOpenIddict();
-        builder.ConfigureFeatureManagement();
-        builder.ConfigureTenantManagement();
-
-        /* Configure your own tables/entities inside here */
-
-        //builder.Entity<YourEntity>(b =>
-        //{
-        //    b.ToTable(VctoonConsts.DbTablePrefix + "YourEntities", VctoonConsts.DbSchema);
-        //    b.ConfigureByConvention(); //auto configure for the base class props
-        //    //...
-        //});
-
-    }
-    /* Add DbSet properties for your Aggregate Roots / Entities here. */
 
     #region Entities from the modules
 
@@ -83,10 +57,54 @@ public class VctoonDbContext :
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
 
+    // Vctoon
     public DbSet<Library> Libraries { get; set; }
-    public DbSet<ComicChapter> ComicChapters { get; set; }
     public DbSet<Comic> Comics { get; set; }
+    public DbSet<ComicChapter> ComicChapters { get; set; }
     public DbSet<Tag> Tags { get; set; }
+    public DbSet<TagGroup> TagGroups { get; set; }
+    public DbSet<ImageFile> ImageFiles { get; set; }
+    public DbSet<ArchiveInfo> ArchiveInfos { get; set; }
+    public DbSet<ArchiveInfoPath> ArchiveInfoPaths { get; set; }
+    public DbSet<LibraryPath> LibraryPaths { get; set; }
 
     #endregion
+
+
+    public class EfCoreShadowTableName
+    {
+        public const string TagGroupTags = $"{VctoonConsts.DbTablePrefix}TagGroupTags";
+        public const string ComicChapterTags = $"{VctoonConsts.DbTablePrefix}ComicChapterTags";
+        public const string ImageFileTags = $"{VctoonConsts.DbTablePrefix}ImageFileTags";
+        public const string ComicTags = $"{VctoonConsts.DbTablePrefix}ComicTags";
+    }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+
+        /* Include modules to your migration db context */
+
+        builder.ConfigurePermissionManagement();
+        builder.ConfigureSettingManagement();
+        builder.ConfigureBackgroundJobs();
+        builder.ConfigureAuditLogging();
+        builder.ConfigureIdentity();
+        builder.ConfigureOpenIddict();
+        builder.ConfigureFeatureManagement();
+        builder.ConfigureTenantManagement();
+
+        builder.ConfigureComics();
+        builder.ConfigureLibraries();
+
+        /* Configure your own tables/entities inside here */
+
+        //builder.Entity<YourEntity>(b =>
+        //{
+        //    b.ToTable(VctoonConsts.DbTablePrefix + "YourEntities", VctoonConsts.DbSchema);
+        //    b.ConfigureByConvention(); //auto configure for the base class props
+        //    //...
+        //});
+    }
+    /* Add DbSet properties for your Aggregate Roots / Entities here. */
 }

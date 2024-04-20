@@ -14,7 +14,7 @@ public class Index_Tests : VctoonWebTestBase
         // Arrange
 
         // Act
-        var response = await GetResponseAsStringAsync("/Comic");
+        var response = await GetResponseAsStringAsync("/ComicChapter");
 
         // Assert
         response.ShouldNotBeNull();

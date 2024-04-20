@@ -1,3 +1,5 @@
+using Vctoon.Comics;
+using Vctoon.Libraries;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Uow;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
@@ -42,6 +44,15 @@ public class VctoonEntityFrameworkCoreModule : AbpModule
             options.AddDefaultRepositories(includeAllEntities: true);
 
             
+            options.AddRepository<Library, LibraryRepository>();
+            options.AddRepository<Comic, ComicRepository>();
+            options.AddRepository<ComicChapter, ComicChapterRepository>();
+            options.AddRepository<Tag, TagRepository>();
+            options.AddRepository<TagGroup, TagGroupRepository>();
+            options.AddRepository<ImageFile, ImageFileRepository>();
+            options.AddRepository<ArchiveInfo, ArchiveInfoRepository>();
+            options.AddRepository<ArchiveInfoPath, ArchiveInfoPathRepository>();
+            options.AddRepository<LibraryPath, LibraryPathRepository>();
         });
 
         Configure<AbpDbContextOptions>(options =>

@@ -1,6 +1,6 @@
-﻿namespace Vctoon.Libraries;
+namespace Vctoon.Libraries;
 
-public class LibraryPath : AggregateRoot<Guid>
+public class LibraryPath : Entity<Guid>
 {
     /// <summary>
     /// dirPath or archivePath
@@ -19,9 +19,33 @@ public class LibraryPath : AggregateRoot<Guid>
 
     public DateTime? LastResolveTime { get; set; }
 
-    public Library Library { get; set; }
+    public Guid LibraryId { get; set; }
 
-    public LibraryPath? Parent { get; set; }
+    public Guid? ParentId { get; set; }
 
     public virtual List<LibraryPath> Children { get; } = new();
+
+    protected LibraryPath()
+    {
+    }
+
+    public LibraryPath(
+        Guid id,
+        string path,
+        bool isEmpty,
+        DateTime? lastModifyTime,
+        DateTime? lastResolveTime,
+        Guid libraryId,
+        Guid? parentId,
+        List<LibraryPath> children
+    ) : base(id)
+    {
+        Path = path;
+        IsEmpty = isEmpty;
+        LastModifyTime = lastModifyTime;
+        LastResolveTime = lastResolveTime;
+        LibraryId = libraryId;
+        ParentId = parentId;
+        Children = children;
+    }
 }
