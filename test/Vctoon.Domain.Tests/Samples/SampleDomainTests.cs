@@ -11,13 +11,12 @@ namespace Vctoon.Samples;
  * (like IdentityUserManager here).
  * Only test your own domain services.
  */
-public abstract class SampleDomainTests<TStartupModule> : VctoonDomainTestBase<TStartupModule>
-    where TStartupModule : IAbpModule
+public  class SampleDomainTests : VctoonDomainTestBase
 {
     private readonly IIdentityUserRepository _identityUserRepository;
     private readonly IdentityUserManager _identityUserManager;
 
-    protected SampleDomainTests()
+    public SampleDomainTests()
     {
         _identityUserRepository = GetRequiredService<IIdentityUserRepository>();
         _identityUserManager = GetRequiredService<IdentityUserManager>();

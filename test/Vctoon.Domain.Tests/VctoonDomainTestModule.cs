@@ -1,10 +1,10 @@
-﻿using Volo.Abp.Modularity;
+﻿using Vctoon.EntityFrameworkCore;
+using Volo.Abp.Modularity;
 
 namespace Vctoon;
 
 [DependsOn(
-    typeof(VctoonDomainModule),
-    typeof(VctoonTestBaseModule)
+    typeof(VctoonEntityFrameworkCoreTestModule)
 )]
 public class VctoonDomainTestModule : AbpModule
 {

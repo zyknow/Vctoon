@@ -9,8 +9,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Vctoon.EntityFrameworkCore\Vctoon.EntityFrameworkCore.csproj"/>
-        <ProjectReference Include="..\Vctoon.Application.Tests\Vctoon.Application.Tests.csproj"/>
         <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" Version="$(AbpVersion)"/>
+        <ProjectReference Include="..\Vctoon.TestBase\Vctoon.TestBase.csproj" />
     </ItemGroup>
 
     <ItemGroup>

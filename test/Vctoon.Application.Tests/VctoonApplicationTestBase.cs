@@ -2,8 +2,7 @@
 
 namespace Vctoon;
 
-public abstract class VctoonApplicationTestBase<TStartupModule> : VctoonTestBase<TStartupModule>
-    where TStartupModule : IAbpModule
+public abstract class VctoonApplicationTestBase : VctoonTestBase<VctoonApplicationTestModule>
 {
 
 }

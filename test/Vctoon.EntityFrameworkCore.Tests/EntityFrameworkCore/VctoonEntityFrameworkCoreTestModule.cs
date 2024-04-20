@@ -14,8 +14,8 @@ using Volo.Abp.Uow;
 namespace Vctoon.EntityFrameworkCore;
 
 [DependsOn(
-    typeof(VctoonApplicationTestModule),
     typeof(VctoonEntityFrameworkCoreModule),
+    typeof(VctoonTestBaseModule),
     typeof(AbpEntityFrameworkCoreSqliteModule)
     )]
 public class VctoonEntityFrameworkCoreTestModule : AbpModule

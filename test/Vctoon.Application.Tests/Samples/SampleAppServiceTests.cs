@@ -11,11 +11,11 @@ namespace Vctoon.Samples;
  * (like IIdentityUserAppService here).
  * Only test your own application services.
  */
-public abstract class SampleAppServiceTests : VctoonApplicationTestBase<VctoonApplicationTestModule>
+public  class SampleAppServiceTests : VctoonApplicationTestBase
 {
     private readonly IIdentityUserAppService _userAppService;
 
-    protected SampleAppServiceTests()
+    public SampleAppServiceTests()
     {
         _userAppService = GetRequiredService<IIdentityUserAppService>();
     }
