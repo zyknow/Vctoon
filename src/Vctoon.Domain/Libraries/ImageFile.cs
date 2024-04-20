@@ -1,8 +1,6 @@
-﻿using Vctoon.Comics;
+﻿namespace Vctoon.Libraries;
 
-namespace Vctoon.Libraries;
-
-public class ComicImageFile : AggregateRoot<Guid>
+public class ImageFile : AggregateRoot<Guid>
 {
     public string Name { get; set; }
     public string Path { get; set; }
@@ -10,10 +8,9 @@ public class ComicImageFile : AggregateRoot<Guid>
     public uint Size { get; set; }
     public uint Width { get; set; }
     public uint Height { get; set; }
-    
-    public Guid? ArchiveInfoPathId { get; set; }
+
+    public LibraryPath? LibraryPath { get; set; }
     public ArchiveInfoPath? ArchiveInfoPath { get; set; }
-    
-    public Guid? ComicChapterId { get; set; }
-    public ComicChapter? ComicChapter { get; set; }
+
+    public List<Tag> Tags { get; set; } = new ();
 }

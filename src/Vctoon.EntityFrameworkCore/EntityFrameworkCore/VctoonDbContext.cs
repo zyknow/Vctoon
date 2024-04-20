@@ -13,7 +13,6 @@ using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
 using Vctoon.Libraries;
-using Volo.Abp.EntityFrameworkCore.Modeling;
 using Vctoon.Comics;
 
 namespace Vctoon.EntityFrameworkCore;
@@ -55,108 +54,6 @@ public class VctoonDbContext :
         //    //...
         //});
 
-
-        builder.Entity<Library>(b =>
-        {
-            b.ToTable(VctoonConsts.DbTablePrefix + "Libraries", VctoonConsts.DbSchema);
-            b.ConfigureByConvention();
-
-            b.HasMany<Comic>().WithOne(x => x.Library).HasForeignKey(x => x.LibraryId).OnDelete(DeleteBehavior.Cascade);
-            b.HasMany(x => x.Paths).WithOne(x => x.Library).HasForeignKey(x => x.LibraryId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            /* Configure more properties here */
-        });
-
-        builder.Entity<LibraryPath>(b =>
-        {
-            b.ToTable(VctoonConsts.DbTablePrefix + "LibraryPaths", VctoonConsts.DbSchema);
-            b.ConfigureByConvention();
-
-            b.HasMany(x => x.Children).WithOne(x => x.Parent).HasForeignKey(x => x.ParentId)
-                .OnDelete(DeleteBehavior.Cascade);
-            /* Configure more properties here */
-        });
-
-        builder.Entity<Comic>(b =>
-        {
-            b.ToTable(VctoonConsts.DbTablePrefix + "Comics", VctoonConsts.DbSchema);
-            b.ConfigureByConvention();
-
-            b.HasMany(x => x.Chapters).WithOne(x => x.Comic).HasForeignKey(x => x.ComicId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // b.HasMany<ComicFavorite>().WithOne(x => x.Comic).HasForeignKey(x => x.ComicId)
-            //     .OnDelete(DeleteBehavior.Cascade);
-
-            /* Configure more properties here */
-        });
-
-
-        builder.Entity<ComicChapter>(b =>
-        {
-            b.ToTable(VctoonConsts.DbTablePrefix + "ComicChapters", VctoonConsts.DbSchema);
-            b.ConfigureByConvention();
-
-
-            // b.HasMany<ComicChapterFavorite>().WithOne(x => x.ComicChapter).HasForeignKey(x => x.ComicChapterId)
-            //     .OnDelete(DeleteBehavior.Cascade);
-
-            /* Configure more properties here */
-        });
-
-
-        builder.Entity<Favorite>(b =>
-        {
-            b.ToTable(VctoonConsts.DbTablePrefix + "Favorites", VctoonConsts.DbSchema);
-            b.ConfigureByConvention();
-
-            b.HasMany(x => x.ComicFavorites).WithOne(x => x.Favorite).HasForeignKey(x => x.FavoriteId)
-                .OnDelete(DeleteBehavior.Cascade);
-            b.HasMany(x => x.ComicChapterFavorites).WithOne(x => x.Favorite).HasForeignKey(x => x.FavoriteId)
-                .OnDelete(DeleteBehavior.Cascade);
-            b.HasMany(x => x.ComicFileFavorites).WithOne(x => x.Favorite).HasForeignKey(x => x.FavoriteId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            /* Configure more properties here */
-        });
-
-
-        builder.Entity<Tag>(b =>
-        {
-            b.ToTable(VctoonConsts.DbTablePrefix + "Tags", VctoonConsts.DbSchema);
-            b.ConfigureByConvention();
-
-
-            /* Configure more properties here */
-        });
-
-
-        builder.Entity<ComicFileFavorite>(b =>
-        {
-            b.ToTable(VctoonConsts.DbTablePrefix + "ComicFileFavorites", VctoonConsts.DbSchema);
-            b.ConfigureByConvention();
-
-            /* Configure more properties here */
-        });
-
-        builder.Entity<ComicChapterFavorite>(b =>
-        {
-            b.ToTable(VctoonConsts.DbTablePrefix + "ComicChapterFavorites", VctoonConsts.DbSchema);
-            b.ConfigureByConvention();
-
-            b.HasOne(x => x.ComicChapter).WithMany().HasForeignKey(x => x.ComicChapterId);
-            /* Configure more properties here */
-        });
-
-        builder.Entity<ComicFavorite>(b =>
-        {
-            b.ToTable(VctoonConsts.DbTablePrefix + "ComicFavorites", VctoonConsts.DbSchema);
-            b.ConfigureByConvention();
-
-            b.HasOne(x => x.Comic).WithMany().HasForeignKey(x => x.ComicId);
-            /* Configure more properties here */
-        });
     }
     /* Add DbSet properties for your Aggregate Roots / Entities here. */
 
@@ -189,7 +86,6 @@ public class VctoonDbContext :
     public DbSet<Library> Libraries { get; set; }
     public DbSet<ComicChapter> ComicChapters { get; set; }
     public DbSet<Comic> Comics { get; set; }
-    public DbSet<Favorite> Favorites { get; set; }
     public DbSet<Tag> Tags { get; set; }
 
     #endregion

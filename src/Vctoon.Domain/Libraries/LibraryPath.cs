@@ -11,10 +11,6 @@ public class LibraryPath : AggregateRoot<Guid>
     /// 
     /// </summary>
     public bool IsEmpty { get; set; }
-    //
-    // public bool IsArchive { get; set; }
-    //
-    // public string? ArchiveInnerPath { get; set; }
 
     /// <summary>
     /// use directory LastWriteTimeUtc
@@ -23,11 +19,7 @@ public class LibraryPath : AggregateRoot<Guid>
 
     public DateTime? LastResolveTime { get; set; }
 
-    public Guid LibraryId { get; set; }
-
     public Library Library { get; set; }
-
-    public Guid? ParentId { get; set; }
 
     public LibraryPath? Parent { get; set; }
 

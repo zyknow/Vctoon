@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Vctoon.Models.Test;
+﻿namespace Vctoon.Models.Test;
 
 public class TestModel
 {

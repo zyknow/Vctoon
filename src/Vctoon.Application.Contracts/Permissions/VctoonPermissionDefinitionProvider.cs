@@ -12,32 +12,6 @@ public class VctoonPermissionDefinitionProvider : PermissionDefinitionProvider
         //Define your own permissions here. Example:
         //myGroup.AddPermission(VctoonPermissions.MyPermission1, L("Permission:MyPermission1"));
 
-        var libraryPermission = myGroup.AddPermission(VctoonPermissions.Library.Default, L("Permission:Library"));
-        libraryPermission.AddChild(VctoonPermissions.Library.Create, L("Permission:Create"));
-        libraryPermission.AddChild(VctoonPermissions.Library.Update, L("Permission:Update"));
-        libraryPermission.AddChild(VctoonPermissions.Library.Delete, L("Permission:Delete"));
-
-        var comicChapterPermission =
-            myGroup.AddPermission(VctoonPermissions.ComicChapter.Default, L("Permission:ComicChapter"));
-        comicChapterPermission.AddChild(VctoonPermissions.ComicChapter.Create, L("Permission:Create"));
-        comicChapterPermission.AddChild(VctoonPermissions.ComicChapter.Update, L("Permission:Update"));
-        comicChapterPermission.AddChild(VctoonPermissions.ComicChapter.Delete, L("Permission:Delete"));
-
-        var comicPermission = myGroup.AddPermission(VctoonPermissions.Comic.Default, L("Permission:Comic"));
-        comicPermission.AddChild(VctoonPermissions.Comic.Create, L("Permission:Create"));
-        comicPermission.AddChild(VctoonPermissions.Comic.Update, L("Permission:Update"));
-        comicPermission.AddChild(VctoonPermissions.Comic.Delete, L("Permission:Delete"));
-
-        var libraryCollectionPermission =
-            myGroup.AddPermission(VctoonPermissions.Favorite.Default, L("Permission:Favorite"));
-        libraryCollectionPermission.AddChild(VctoonPermissions.Favorite.Create, L("Permission:Create"));
-        libraryCollectionPermission.AddChild(VctoonPermissions.Favorite.Update, L("Permission:Update"));
-        libraryCollectionPermission.AddChild(VctoonPermissions.Favorite.Delete, L("Permission:Delete"));
-
-        var tagPermission = myGroup.AddPermission(VctoonPermissions.Tag.Default, L("Permission:Tag"));
-        tagPermission.AddChild(VctoonPermissions.Tag.Create, L("Permission:Create"));
-        tagPermission.AddChild(VctoonPermissions.Tag.Update, L("Permission:Update"));
-        tagPermission.AddChild(VctoonPermissions.Tag.Delete, L("Permission:Delete"));
     }
 
     private static LocalizableString L(string name)

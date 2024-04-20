@@ -1,6 +1,4 @@
-﻿using Volo.Abp.Modularity;
-
-namespace Vctoon;
+﻿namespace Vctoon;
 
 public abstract class VctoonApplicationTestBase : VctoonTestBase<VctoonApplicationTestModule>
 {

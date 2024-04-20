@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Vctoon.Data;
+﻿namespace Vctoon.Data;
 
 public interface IVctoonDbSchemaMigrator
 {

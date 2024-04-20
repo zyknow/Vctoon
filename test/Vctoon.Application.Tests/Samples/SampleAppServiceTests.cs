@@ -1,7 +1,5 @@
 ﻿using Shouldly;
-using System.Threading.Tasks;
 using Volo.Abp.Identity;
-using Volo.Abp.Modularity;
 using Xunit;
 
 namespace Vctoon.Samples;
