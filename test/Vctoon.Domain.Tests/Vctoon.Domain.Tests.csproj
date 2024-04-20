@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Vctoon.EntityFrameworkCore.Tests\Vctoon.EntityFrameworkCore.Tests.csproj" />
+        <ProjectReference Include="..\Vctoon.EntityFrameworkCore.Tests\Vctoon.EntityFrameworkCore.Tests.csproj"/>
     </ItemGroup>
 
 </Project>

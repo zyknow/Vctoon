@@ -1,6 +1,3 @@
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
-
 namespace Vctoon.Libraries;
 
 public static class LibraryPathEfCoreQueryableExtensions

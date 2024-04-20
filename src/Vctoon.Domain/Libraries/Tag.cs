@@ -2,8 +2,6 @@ namespace Vctoon.Libraries;
 
 public class Tag : AggregateRoot<Guid>
 {
-    public string Name { get; set; }
-
     protected Tag()
     {
     }
@@ -15,4 +13,6 @@ public class Tag : AggregateRoot<Guid>
     {
         Name = name;
     }
+
+    public string Name { get; set; }
 }

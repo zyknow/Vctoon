@@ -1,8 +1,8 @@
-using Vctoon.Libraries;
-using Vctoon.Libraries.Dtos;
+using AutoMapper;
 using Vctoon.Comics;
 using Vctoon.Comics.Dtos;
-using AutoMapper;
+using Vctoon.Libraries;
+using Vctoon.Libraries.Dtos;
 
 namespace Vctoon;
 
@@ -14,7 +14,7 @@ public class VctoonApplicationAutoMapperProfile : Profile
          * Alternatively, you can split your mapping configurations
          * into multiple profile classes for a better organization. */
 
-        
+
         CreateMap<Library, LibraryDto>();
         CreateMap<LibraryCreateUpdateDto, Library>(MemberList.Source);
         CreateMap<Comic, ComicDto>();
@@ -27,6 +27,5 @@ public class VctoonApplicationAutoMapperProfile : Profile
         CreateMap<TagGroupCreateUpdateDto, TagGroup>(MemberList.Source);
         CreateMap<ImageFile, ImageFileDto>();
         CreateMap<ImageFileCreateUpdateDto, ImageFile>(MemberList.Source);
-
     }
 }

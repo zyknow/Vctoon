@@ -14,7 +14,9 @@ public static class LibraryDbContextModelBuilderExtensions
     {
         Check.NotNull(builder, nameof(builder));
         if (builder.IsTenantOnlyDatabase())
+        {
             return;
+        }
 
 
         builder.Entity<Library>(b =>

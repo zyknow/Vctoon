@@ -1,20 +1,20 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
 using Microsoft.FluentUI.AspNetCore.Components;
-using Vctoon.EntityFrameworkCore;
-using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite;
-using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite.Bundling;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Validation.AspNetCore;
 using Tailwind;
 using Vctoon.Blazor.Client;
 using Vctoon.Components;
+using Vctoon.EntityFrameworkCore;
 using Volo.Abp;
 using Volo.Abp.Account;
 using Volo.Abp.Account.Web;
 using Volo.Abp.AspNetCore.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
+using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite;
+using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite.Bundling;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Autofac;
@@ -45,7 +45,7 @@ public class VctoonBlazorModule : AbpModule
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
-        
+
         PreConfigure<OpenIddictBuilder>(builder =>
         {
             builder.AddValidation(options =>
@@ -55,7 +55,7 @@ public class VctoonBlazorModule : AbpModule
                 options.UseAspNetCore();
             });
         });
-        
+
         if (!hostingEnvironment.IsDevelopment())
         {
             PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
@@ -65,7 +65,8 @@ public class VctoonBlazorModule : AbpModule
 
             PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
             {
-                serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", "b5fc7d59-ce7c-4a15-b33b-005f6f373d4f");
+                serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx",
+                    "b5fc7d59-ce7c-4a15-b33b-005f6f373d4f");
             });
         }
     }
@@ -87,7 +88,7 @@ public class VctoonBlazorModule : AbpModule
         services.AddRazorComponents()
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
-        
+
         services.AddFluentUIComponents();
     }
 
@@ -248,8 +249,8 @@ public class VctoonBlazorModule : AbpModule
         webApp.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
-            .AddAdditionalAssemblies(typeof(Vctoon.Blazor.Client._Imports).Assembly)
-            .AddAdditionalAssemblies(typeof(Vctoon.RazorLibrary._Imports).Assembly);
+            .AddAdditionalAssemblies(typeof(Blazor.Client._Imports).Assembly)
+            .AddAdditionalAssemblies(typeof(RazorLibrary._Imports).Assembly);
 
         app.UseAbpSerilogEnrichers();
         app.UseConfiguredEndpoints();

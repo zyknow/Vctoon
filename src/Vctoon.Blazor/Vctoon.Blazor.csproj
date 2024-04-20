@@ -12,7 +12,7 @@
     <ItemGroup>
         <PackageReference Include="Serilog.AspNetCore" Version="8.0.0"/>
         <PackageReference Include="Serilog.Sinks.Async" Version="1.5.0"/>
-        <PackageReference Include="Tailwind.Extensions.AspNetCore" Version="1.1.0-beta1" />
+        <PackageReference Include="Tailwind.Extensions.AspNetCore" Version="1.1.0-beta1"/>
         <PackageReference Include="Volo.Abp.AspNetCore.MultiTenancy" Version="$(AbpVersion)"/>
         <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)"/>
         <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="$(AbpVersion)"/>
@@ -28,9 +28,9 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Vctoon.Application\Vctoon.Application.csproj"/>
-        <ProjectReference Include="..\Vctoon.Blazor.Client\Vctoon.Blazor.Client.csproj" />
+        <ProjectReference Include="..\Vctoon.Blazor.Client\Vctoon.Blazor.Client.csproj"/>
         <ProjectReference Include="..\Vctoon.EntityFrameworkCore\Vctoon.EntityFrameworkCore.csproj"/>
-        <ProjectReference Include="..\Vctoon.HttpApi.Client\Vctoon.HttpApi.Client.csproj" />
+        <ProjectReference Include="..\Vctoon.HttpApi.Client\Vctoon.HttpApi.Client.csproj"/>
         <ProjectReference Include="..\Vctoon.HttpApi\Vctoon.HttpApi.csproj"/>
     </ItemGroup>
 
@@ -42,9 +42,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <AdditionalFiles Include="Components\App.razor" />
-        <AdditionalFiles Include="Components\Pages\Error.razor" />
-        <AdditionalFiles Include="Components\_Imports.razor" />
+        <AdditionalFiles Include="Components\App.razor"/>
+        <AdditionalFiles Include="Components\Pages\Error.razor"/>
+        <AdditionalFiles Include="Components\_Imports.razor"/>
     </ItemGroup>
 
 </Project>

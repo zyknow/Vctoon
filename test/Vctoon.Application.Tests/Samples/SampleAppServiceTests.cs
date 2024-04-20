@@ -9,7 +9,7 @@ namespace Vctoon.Samples;
  * (like IIdentityUserAppService here).
  * Only test your own application services.
  */
-public  class SampleAppServiceTests : VctoonApplicationTestBase
+public class SampleAppServiceTests : VctoonApplicationTestBase
 {
     private readonly IIdentityUserAppService _userAppService;
 

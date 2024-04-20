@@ -4,7 +4,7 @@ namespace Vctoon;
 
 public static class VctoonDtoExtensions
 {
-    private static readonly OneTimeRunner OneTimeRunner = new OneTimeRunner();
+    private static readonly OneTimeRunner OneTimeRunner = new();
 
     public static void Configure()
     {

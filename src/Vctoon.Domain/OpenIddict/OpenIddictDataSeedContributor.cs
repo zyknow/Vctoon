@@ -83,13 +83,13 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
             var swaggerRootUrl = configurationSection["Vctoon_Swagger:RootUrl"]?.TrimEnd('/');
 
             await CreateApplicationAsync(
-                name: swaggerClientId!,
-                type: OpenIddictConstants.ClientTypes.Public,
-                consentType: OpenIddictConstants.ConsentTypes.Implicit,
-                displayName: "Swagger Application",
-                secret: null,
-                grantTypes: new List<string> {OpenIddictConstants.GrantTypes.AuthorizationCode,},
-                scopes: commonScopes,
+                swaggerClientId!,
+                OpenIddictConstants.ClientTypes.Public,
+                OpenIddictConstants.ConsentTypes.Implicit,
+                "Swagger Application",
+                null,
+                new List<string> {OpenIddictConstants.GrantTypes.AuthorizationCode},
+                commonScopes,
                 redirectUri: $"{swaggerRootUrl}/swagger/oauth2-redirect.html",
                 clientUri: swaggerRootUrl
             );
@@ -102,14 +102,14 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
             var blazorRootUrl = configurationSection["Vctoon_Blazor:RootUrl"]?.TrimEnd('/');
 
             await CreateApplicationAsync(
-                name: blazorClientId!,
-                type: OpenIddictConstants.ClientTypes.Confidential,
-                consentType: OpenIddictConstants.ConsentTypes.Implicit,
-                displayName: "Blazor Application",
-                secret: configurationSection["Vctoon_Blazor:ClientSecret"] ?? "1q2w3e*",
-                grantTypes: new List<string>
+                blazorClientId!,
+                OpenIddictConstants.ClientTypes.Confidential,
+                OpenIddictConstants.ConsentTypes.Implicit,
+                "Blazor Application",
+                configurationSection["Vctoon_Blazor:ClientSecret"] ?? "1q2w3e*",
+                new List<string>
                     {OpenIddictConstants.GrantTypes.AuthorizationCode, OpenIddictConstants.GrantTypes.Implicit},
-                scopes: commonScopes,
+                commonScopes,
                 redirectUri: $"{blazorRootUrl}/signin-oidc",
                 clientUri: blazorRootUrl,
                 postLogoutRedirectUri: $"{blazorRootUrl}/signout-callback-oidc"
@@ -151,7 +151,7 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
             ClientSecret = secret,
             ConsentType = consentType,
             DisplayName = displayName,
-            ClientUri = clientUri,
+            ClientUri = clientUri
         };
 
         Check.NotNullOrEmpty(grantTypes, nameof(grantTypes));

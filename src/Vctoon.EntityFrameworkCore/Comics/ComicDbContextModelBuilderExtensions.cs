@@ -12,7 +12,9 @@ public static class ComicDbContextModelBuilderExtensions
     {
         Check.NotNull(builder, nameof(builder));
         if (builder.IsTenantOnlyDatabase())
+        {
             return;
+        }
 
         builder.Entity<Comic>(b =>
         {

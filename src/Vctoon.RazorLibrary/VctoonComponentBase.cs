@@ -16,36 +16,54 @@ namespace Vctoon.RazorLibrary;
 
 public abstract class VctoonComponentBase : ComponentBase, IDisposable
 {
-    protected IStringLocalizerFactory StringLocalizerFactory => LazyGetRequiredService(ref _stringLocalizerFactory)!;
-    private IStringLocalizerFactory? _stringLocalizerFactory;
-
-    protected IDialogService DialogService => LazyGetRequiredService(ref _dialogService)!;
+    private IAuthorizationService? _authorizationService;
+    private IClock? _clock;
+    private ICurrentTenant? _currentTenant;
+    private ICurrentUser? _currentUser;
     private IDialogService? _dialogService;
-    
-    protected IMessageService MessageService => LazyGetRequiredService(ref _messageService)!;
+
+    private Type? _localizationResource = typeof(DefaultResource);
+
+    private IStringLocalizer? _localizer;
+    private ILoggerFactory? _loggerFactory;
     private IMessageService? _messageService;
 
-    protected IToastService ToastService => LazyGetRequiredService(ref _toastService)!;
-    private IToastService? _toastService;
-    
-    protected IServiceProvider ScopedServices
-    {
-        get
-        {
-            if (this.ScopeFactory == null)
-                throw new InvalidOperationException("Services cannot be accessed before the component is initialized.");
-            ObjectDisposedException.ThrowIf(this.IsDisposed, (object) this);
-            this._scope.GetValueOrDefault();
-            if (!this._scope.HasValue)
-                this._scope = new AsyncServiceScope?(this.ScopeFactory.CreateAsyncScope());
-            return this._scope.Value.ServiceProvider;
-        }
-    }
+    private IObjectMapper? _objectMapper;
 
 #nullable disable
     private AsyncServiceScope? _scope;
 
 #nullable enable
+    private IStringLocalizerFactory? _stringLocalizerFactory;
+    private IToastService? _toastService;
+    protected IStringLocalizerFactory StringLocalizerFactory => LazyGetRequiredService(ref _stringLocalizerFactory)!;
+
+    protected IDialogService DialogService => LazyGetRequiredService(ref _dialogService)!;
+
+    protected IMessageService MessageService => LazyGetRequiredService(ref _messageService)!;
+
+    protected IToastService ToastService => LazyGetRequiredService(ref _toastService)!;
+
+    protected IServiceProvider ScopedServices
+    {
+        get
+        {
+            if (ScopeFactory == null)
+            {
+                throw new InvalidOperationException("Services cannot be accessed before the component is initialized.");
+            }
+
+            ObjectDisposedException.ThrowIf(IsDisposed, (object) this);
+            _scope.GetValueOrDefault();
+            if (!_scope.HasValue)
+            {
+                _scope = new AsyncServiceScope?(ScopeFactory.CreateAsyncScope());
+            }
+
+            return _scope.Value.ServiceProvider;
+        }
+    }
+
     [Inject] private IServiceScopeFactory ScopeFactory { get; set; }
 
     /// <summary>
@@ -66,8 +84,6 @@ public abstract class VctoonComponentBase : ComponentBase, IDisposable
         }
     }
 
-    private IStringLocalizer? _localizer;
-
     protected Type? LocalizationResource
     {
         get => _localizationResource;
@@ -78,24 +94,18 @@ public abstract class VctoonComponentBase : ComponentBase, IDisposable
         }
     }
 
-    private Type? _localizationResource = typeof(DefaultResource);
-
     protected ILogger Logger => _lazyLogger.Value;
 
     private Lazy<ILogger> _lazyLogger =>
-        new Lazy<ILogger>(() => LoggerFactory?.CreateLogger(GetType().FullName!) ?? NullLogger.Instance, true);
+        new(() => LoggerFactory?.CreateLogger(GetType().FullName!) ?? NullLogger.Instance, true);
 
     protected ILoggerFactory LoggerFactory => LazyGetRequiredService(ref _loggerFactory)!;
-    private ILoggerFactory? _loggerFactory;
 
     protected IAuthorizationService AuthorizationService => LazyGetRequiredService(ref _authorizationService)!;
-    private IAuthorizationService? _authorizationService;
 
     protected ICurrentUser CurrentUser => LazyGetRequiredService(ref _currentUser)!;
-    private ICurrentUser? _currentUser;
 
     protected ICurrentTenant CurrentTenant => LazyGetRequiredService(ref _currentTenant)!;
-    private ICurrentTenant? _currentTenant;
 
     // protected IUiMessageService Message => LazyGetNonScopedRequiredService(ref _message)!;
     // private IUiMessageService? _message;
@@ -110,7 +120,6 @@ public abstract class VctoonComponentBase : ComponentBase, IDisposable
     // private IAlertManager? _alertManager;
 
     protected IClock Clock => LazyGetNonScopedRequiredService(ref _clock)!;
-    private IClock? _clock;
 
     // protected AlertList Alerts => AlertManager.Alerts;
 
@@ -135,80 +144,9 @@ public abstract class VctoonComponentBase : ComponentBase, IDisposable
         }
     }
 
-    private IObjectMapper? _objectMapper;
-
     protected Type? ObjectMapperContext { get; set; }
 
-    protected TService LazyGetRequiredService<TService>(ref TService reference) =>
-        LazyGetRequiredService(typeof(TService), ref reference);
-
-    protected TRef LazyGetRequiredService<TRef>(Type serviceType, ref TRef reference)
-    {
-        if (reference == null)
-        {
-            reference = (TRef) ScopedServices.GetRequiredService(serviceType);
-        }
-
-        return reference;
-    }
-
-    protected TService? LazyGetService<TService>(ref TService? reference) =>
-        LazyGetService(typeof(TService), ref reference);
-
-    protected TRef? LazyGetService<TRef>(Type serviceType, ref TRef? reference)
-    {
-        if (reference == null)
-        {
-            reference = (TRef?) ScopedServices.GetService(serviceType);
-        }
-
-        return reference;
-    }
-
-    protected TService LazyGetNonScopedRequiredService<TService>(ref TService reference) =>
-        LazyGetNonScopedRequiredService(typeof(TService), ref reference);
-
-    protected TRef LazyGetNonScopedRequiredService<TRef>(Type serviceType, ref TRef reference)
-    {
-        if (reference == null)
-        {
-            reference = (TRef) NonScopedServices.GetRequiredService(serviceType);
-        }
-
-        return reference;
-    }
-
-    protected TService? LazyGetNonScopedService<TService>(ref TService? reference) =>
-        LazyGetNonScopedService(typeof(TService), ref reference);
-
-    protected TRef? LazyGetNonScopedService<TRef>(Type serviceType, ref TRef? reference)
-    {
-        if (reference == null)
-        {
-            reference = (TRef?) NonScopedServices.GetService(serviceType);
-        }
-
-        return reference;
-    }
-
     [Inject] protected IServiceProvider NonScopedServices { get; set; } = default!;
-
-    protected virtual IStringLocalizer CreateLocalizer()
-    {
-        if (LocalizationResource != null)
-        {
-            return StringLocalizerFactory.Create(LocalizationResource);
-        }
-
-        var localizer = StringLocalizerFactory.CreateDefaultOrNull();
-        if (localizer == null)
-        {
-            throw new AbpException(
-                $"Set {nameof(LocalizationResource)} or define the default localization resource type (by configuring the {nameof(AbpLocalizationOptions)}.{nameof(AbpLocalizationOptions.DefaultResourceType)}) to be able to use the {nameof(L)} object!");
-        }
-
-        return localizer;
-    }
 
     // protected virtual async Task HandleErrorAsync(Exception exception)
     // {
@@ -226,14 +164,97 @@ public abstract class VctoonComponentBase : ComponentBase, IDisposable
     // }
     void IDisposable.Dispose()
     {
-        if (this.IsDisposed)
+        if (IsDisposed)
+        {
             return;
-        ref AsyncServiceScope? local = ref this._scope;
+        }
+
+        ref var local = ref _scope;
         if (local.HasValue)
+        {
             local.GetValueOrDefault().Dispose();
-        this._scope = new AsyncServiceScope?();
-        this.Dispose(true);
-        this.IsDisposed = true;
+        }
+
+        _scope = new AsyncServiceScope?();
+        Dispose(true);
+        IsDisposed = true;
+    }
+
+    protected TService LazyGetRequiredService<TService>(ref TService reference)
+    {
+        return LazyGetRequiredService(typeof(TService), ref reference);
+    }
+
+    protected TRef LazyGetRequiredService<TRef>(Type serviceType, ref TRef reference)
+    {
+        if (reference == null)
+        {
+            reference = (TRef) ScopedServices.GetRequiredService(serviceType);
+        }
+
+        return reference;
+    }
+
+    protected TService? LazyGetService<TService>(ref TService? reference)
+    {
+        return LazyGetService(typeof(TService), ref reference);
+    }
+
+    protected TRef? LazyGetService<TRef>(Type serviceType, ref TRef? reference)
+    {
+        if (reference == null)
+        {
+            reference = (TRef?) ScopedServices.GetService(serviceType);
+        }
+
+        return reference;
+    }
+
+    protected TService LazyGetNonScopedRequiredService<TService>(ref TService reference)
+    {
+        return LazyGetNonScopedRequiredService(typeof(TService), ref reference);
+    }
+
+    protected TRef LazyGetNonScopedRequiredService<TRef>(Type serviceType, ref TRef reference)
+    {
+        if (reference == null)
+        {
+            reference = (TRef) NonScopedServices.GetRequiredService(serviceType);
+        }
+
+        return reference;
+    }
+
+    protected TService? LazyGetNonScopedService<TService>(ref TService? reference)
+    {
+        return LazyGetNonScopedService(typeof(TService), ref reference);
+    }
+
+    protected TRef? LazyGetNonScopedService<TRef>(Type serviceType, ref TRef? reference)
+    {
+        if (reference == null)
+        {
+            reference = (TRef?) NonScopedServices.GetService(serviceType);
+        }
+
+        return reference;
+    }
+
+    protected virtual IStringLocalizer CreateLocalizer()
+    {
+        if (LocalizationResource != null)
+        {
+            return StringLocalizerFactory.Create(LocalizationResource);
+        }
+
+        var localizer = StringLocalizerFactory.CreateDefaultOrNull();
+        if (localizer == null)
+        {
+            throw new AbpException(
+                $"Set {nameof(LocalizationResource)} or define the default localization resource type (by configuring the {nameof(AbpLocalizationOptions)}.{nameof(AbpLocalizationOptions.DefaultResourceType)}) to be able to use the {nameof(L)} object!");
+        }
+
+        return localizer;
     }
 
     /// <inheritdoc />

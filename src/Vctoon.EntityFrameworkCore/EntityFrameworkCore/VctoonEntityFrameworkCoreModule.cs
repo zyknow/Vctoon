@@ -1,7 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
 using Vctoon.Comics;
 using Vctoon.Libraries;
-using Microsoft.Extensions.DependencyInjection;
-using Volo.Abp.Uow;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
@@ -13,6 +12,7 @@ using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
+using Volo.Abp.Uow;
 
 namespace Vctoon.EntityFrameworkCore;
 
@@ -41,9 +41,9 @@ public class VctoonEntityFrameworkCoreModule : AbpModule
         {
             /* Remove "includeAllEntities: true" to create
              * default repositories only for aggregate roots */
-            options.AddDefaultRepositories(includeAllEntities: true);
+            options.AddDefaultRepositories(true);
 
-            
+
             options.AddRepository<Library, LibraryRepository>();
             options.AddRepository<Comic, ComicRepository>();
             options.AddRepository<ComicChapter, ComicChapterRepository>();

@@ -28,13 +28,13 @@ public class SampleRepositoryTests : VctoonEntityFrameworkCoreTestBase
          */
         await WithUnitOfWorkAsync(async () =>
         {
-                //Act
-                var adminUser = await (await _appUserRepository.GetQueryableAsync())
+            //Act
+            var adminUser = await (await _appUserRepository.GetQueryableAsync())
                 .Where(u => u.UserName == "admin")
                 .FirstOrDefaultAsync();
 
-                //Assert
-                adminUser.ShouldNotBeNull();
+            //Assert
+            adminUser.ShouldNotBeNull();
         });
     }
 }

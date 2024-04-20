@@ -1,5 +1,3 @@
-using System;
-using System.ComponentModel;
 using Volo.Abp.Application.Dtos;
 
 namespace Vctoon.Libraries.Dtos;
@@ -8,5 +6,4 @@ namespace Vctoon.Libraries.Dtos;
 public class LibraryGetListInput : PagedAndSortedResultRequestDto
 {
     public string Name { get; set; }
-
 }

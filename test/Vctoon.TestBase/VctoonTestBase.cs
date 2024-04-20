@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp;
 using Volo.Abp.Modularity;
-using Volo.Abp.Uow;
 using Volo.Abp.Testing;
+using Volo.Abp.Uow;
 
 namespace Vctoon;
 
@@ -41,7 +41,8 @@ public abstract class VctoonTestBase<TStartupModule> : AbpIntegratedTest<TStartu
         return WithUnitOfWorkAsync(new AbpUnitOfWorkOptions(), func);
     }
 
-    protected virtual async Task<TResult> WithUnitOfWorkAsync<TResult>(AbpUnitOfWorkOptions options, Func<Task<TResult>> func)
+    protected virtual async Task<TResult> WithUnitOfWorkAsync<TResult>(AbpUnitOfWorkOptions options,
+        Func<Task<TResult>> func)
     {
         using (var scope = ServiceProvider.CreateScope())
         {

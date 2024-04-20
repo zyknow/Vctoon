@@ -1,6 +1,3 @@
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
-
 namespace Vctoon.Comics;
 
 public static class ComicEfCoreQueryableExtensions

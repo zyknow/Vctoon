@@ -1,7 +1,3 @@
-using Shouldly;
-using System.Threading.Tasks;
-using Xunit;
-
 namespace Vctoon.Comics;
 
 public class ComicAppServiceTests : VctoonApplicationTestBase
@@ -25,4 +21,3 @@ public class ComicAppServiceTests : VctoonApplicationTestBase
     }
     */
 }
-

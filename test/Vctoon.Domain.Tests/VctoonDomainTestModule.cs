@@ -8,5 +8,4 @@ namespace Vctoon;
 )]
 public class VctoonDomainTestModule : AbpModule
 {
-
 }

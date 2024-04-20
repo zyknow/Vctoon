@@ -4,5 +4,4 @@ namespace Vctoon.RazorLibrary;
 
 public class VctoonRazorLibraryModule : AbpModule
 {
-    
 }

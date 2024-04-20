@@ -17,7 +17,7 @@ namespace Vctoon.EntityFrameworkCore;
     typeof(VctoonEntityFrameworkCoreModule),
     typeof(VctoonTestBaseModule),
     typeof(AbpEntityFrameworkCoreSqliteModule)
-    )]
+)]
 public class VctoonEntityFrameworkCoreTestModule : AbpModule
 {
     private SqliteConnection? _sqliteConnection;
@@ -45,10 +45,7 @@ public class VctoonEntityFrameworkCoreTestModule : AbpModule
 
         services.Configure<AbpDbContextOptions>(options =>
         {
-            options.Configure(context =>
-            {
-                context.DbContextOptions.UseSqlite(_sqliteConnection);
-            });
+            options.Configure(context => { context.DbContextOptions.UseSqlite(_sqliteConnection); });
         });
     }
 

@@ -28,7 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="appsettings.json" />
+        <None Remove="appsettings.json"/>
     </ItemGroup>
 
 </Project>

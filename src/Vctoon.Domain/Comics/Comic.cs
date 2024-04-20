@@ -8,16 +8,6 @@ public class Comic : AggregateRoot<Guid>
     {
     }
 
-    public string Title { get; set; }
-
-    public string CoverPath { get; set; }
-
-    public Guid LibraryId { get; set; }
-
-    public List<Tag> Tags { get; set; } = new();
-
-    public List<ComicChapter> Chapters { get; set; } = new();
-
     public Comic(
         Guid id,
         string title,
@@ -33,4 +23,14 @@ public class Comic : AggregateRoot<Guid>
         Tags = tags;
         Chapters = chapters;
     }
+
+    public string Title { get; set; }
+
+    public string CoverPath { get; set; }
+
+    public Guid LibraryId { get; set; }
+
+    public List<Tag> Tags { get; set; } = new();
+
+    public List<ComicChapter> Chapters { get; set; } = new();
 }

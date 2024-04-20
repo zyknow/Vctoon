@@ -1,28 +1,25 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Vctoon.Permissions;
 using Vctoon.Libraries.Dtos;
+using Vctoon.Permissions;
 using Volo.Abp.Application.Services;
 
 namespace Vctoon.Libraries;
 
-
-public class ImageFileAppService : CrudAppService<ImageFile, ImageFileDto, Guid, ImageFileGetListInput, ImageFileCreateUpdateDto, ImageFileCreateUpdateDto>,
+public class ImageFileAppService : CrudAppService<ImageFile, ImageFileDto, Guid, ImageFileGetListInput,
+        ImageFileCreateUpdateDto, ImageFileCreateUpdateDto>,
     IImageFileAppService
 {
-    protected override string GetPolicyName { get; set; } = VctoonPermissions.ImageFile.Default;
-    protected override string GetListPolicyName { get; set; } = VctoonPermissions.ImageFile.Default;
-    protected override string CreatePolicyName { get; set; } = VctoonPermissions.ImageFile.Create;
-    protected override string UpdatePolicyName { get; set; } = VctoonPermissions.ImageFile.Update;
-    protected override string DeletePolicyName { get; set; } = VctoonPermissions.ImageFile.Delete;
-
     private readonly IImageFileRepository _repository;
 
     public ImageFileAppService(IImageFileRepository repository) : base(repository)
     {
         _repository = repository;
     }
+
+    protected override string GetPolicyName { get; set; } = VctoonPermissions.ImageFile.Default;
+    protected override string GetListPolicyName { get; set; } = VctoonPermissions.ImageFile.Default;
+    protected override string CreatePolicyName { get; set; } = VctoonPermissions.ImageFile.Create;
+    protected override string UpdatePolicyName { get; set; } = VctoonPermissions.ImageFile.Update;
+    protected override string DeletePolicyName { get; set; } = VctoonPermissions.ImageFile.Delete;
 
     protected override async Task<IQueryable<ImageFile>> CreateFilteredQueryAsync(ImageFileGetListInput input)
     {

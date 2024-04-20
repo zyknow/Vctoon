@@ -1,5 +1,3 @@
-using System;
-using System.ComponentModel;
 using Volo.Abp.Application.Dtos;
 
 namespace Vctoon.Libraries.Dtos;
@@ -24,5 +22,4 @@ public class ImageFileGetListInput : PagedAndSortedResultRequestDto
     public Guid? ArchiveInfoPathId { get; set; }
 
     public Guid? ComicChapterId { get; set; }
-
 }

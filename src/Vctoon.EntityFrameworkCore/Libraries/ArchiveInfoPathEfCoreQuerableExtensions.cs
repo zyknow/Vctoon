@@ -1,11 +1,9 @@
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
-
 namespace Vctoon.Libraries;
 
 public static class ArchiveInfoPathEfCoreQueryableExtensions
 {
-    public static IQueryable<ArchiveInfoPath> IncludeDetails(this IQueryable<ArchiveInfoPath> queryable, bool include = true)
+    public static IQueryable<ArchiveInfoPath> IncludeDetails(this IQueryable<ArchiveInfoPath> queryable,
+        bool include = true)
     {
         if (!include)
         {

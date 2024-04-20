@@ -2,9 +2,6 @@ namespace Vctoon.Libraries;
 
 public class TagGroup : AggregateRoot<Guid>
 {
-    public string Name { get; set; }
-    public List<Tag> Tags { get; set; } = new();
-
     protected TagGroup()
     {
     }
@@ -18,4 +15,7 @@ public class TagGroup : AggregateRoot<Guid>
         Name = name;
         Tags = tags;
     }
+
+    public string Name { get; set; }
+    public List<Tag> Tags { get; set; } = new();
 }

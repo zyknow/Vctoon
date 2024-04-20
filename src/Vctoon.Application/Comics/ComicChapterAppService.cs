@@ -1,28 +1,25 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Vctoon.Permissions;
 using Vctoon.Comics.Dtos;
+using Vctoon.Permissions;
 using Volo.Abp.Application.Services;
 
 namespace Vctoon.Comics;
 
-
-public class ComicChapterAppService : CrudAppService<ComicChapter, ComicChapterDto, Guid, ComicChapterGetListInput, ComicChapterCreateUpdateDto, ComicChapterCreateUpdateDto>,
+public class ComicChapterAppService : CrudAppService<ComicChapter, ComicChapterDto, Guid, ComicChapterGetListInput,
+        ComicChapterCreateUpdateDto, ComicChapterCreateUpdateDto>,
     IComicChapterAppService
 {
-    protected override string GetPolicyName { get; set; } = VctoonPermissions.ComicChapter.Default;
-    protected override string GetListPolicyName { get; set; } = VctoonPermissions.ComicChapter.Default;
-    protected override string CreatePolicyName { get; set; } = VctoonPermissions.ComicChapter.Create;
-    protected override string UpdatePolicyName { get; set; } = VctoonPermissions.ComicChapter.Update;
-    protected override string DeletePolicyName { get; set; } = VctoonPermissions.ComicChapter.Delete;
-
     private readonly IComicChapterRepository _repository;
 
     public ComicChapterAppService(IComicChapterRepository repository) : base(repository)
     {
         _repository = repository;
     }
+
+    protected override string GetPolicyName { get; set; } = VctoonPermissions.ComicChapter.Default;
+    protected override string GetListPolicyName { get; set; } = VctoonPermissions.ComicChapter.Default;
+    protected override string CreatePolicyName { get; set; } = VctoonPermissions.ComicChapter.Create;
+    protected override string UpdatePolicyName { get; set; } = VctoonPermissions.ComicChapter.Update;
+    protected override string DeletePolicyName { get; set; } = VctoonPermissions.ComicChapter.Delete;
 
     protected override async Task<IQueryable<ComicChapter>> CreateFilteredQueryAsync(ComicChapterGetListInput input)
     {
