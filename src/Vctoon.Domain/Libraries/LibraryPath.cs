@@ -13,8 +13,7 @@ public class LibraryPath : Entity<Guid>
         DateTime? lastModifyTime,
         DateTime? lastResolveTime,
         Guid libraryId,
-        Guid? parentId,
-        List<LibraryPath> children
+        Guid? parentId = null
     ) : base(id)
     {
         Path = path;
@@ -23,7 +22,6 @@ public class LibraryPath : Entity<Guid>
         LastResolveTime = lastResolveTime;
         LibraryId = libraryId;
         ParentId = parentId;
-        Children = children;
     }
 
     /// <summary>

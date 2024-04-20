@@ -8,12 +8,10 @@ public class TagGroup : AggregateRoot<Guid>
 
     public TagGroup(
         Guid id,
-        string name,
-        List<Tag> tags
+        string name
     ) : base(id)
     {
         Name = name;
-        Tags = tags;
     }
 
     public string Name { get; set; }

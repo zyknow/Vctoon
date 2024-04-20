@@ -12,16 +12,12 @@ public class Comic : AggregateRoot<Guid>
         Guid id,
         string title,
         string coverPath,
-        Guid libraryId,
-        List<Tag> tags,
-        List<ComicChapter> chapters
+        Guid libraryId
     ) : base(id)
     {
         Title = title;
         CoverPath = coverPath;
         LibraryId = libraryId;
-        Tags = tags;
-        Chapters = chapters;
     }
 
     public string Title { get; set; }

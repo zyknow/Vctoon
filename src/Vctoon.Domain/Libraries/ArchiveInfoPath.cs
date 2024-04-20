@@ -2,16 +2,6 @@ namespace Vctoon.Libraries;
 
 public class ArchiveInfoPath : Entity<Guid>
 {
-    public string Path { get; set; }
-    public string Name { get; set; }
-    public bool IsEmpty { get; set; }
-
-    public Guid ArchiveInfoId { get; set; }
-
-    public Guid? ParentId { get; set; }
-
-    public List<ArchiveInfoPath> Children { get; set; } = new();
-
     protected ArchiveInfoPath()
     {
     }
@@ -22,8 +12,7 @@ public class ArchiveInfoPath : Entity<Guid>
         string name,
         bool isEmpty,
         Guid archiveInfoId,
-        Guid? parentId,
-        List<ArchiveInfoPath> children
+        Guid? parentId = null
     ) : base(id)
     {
         Path = path;
@@ -31,6 +20,15 @@ public class ArchiveInfoPath : Entity<Guid>
         IsEmpty = isEmpty;
         ArchiveInfoId = archiveInfoId;
         ParentId = parentId;
-        Children = children;
     }
+
+    public string Path { get; set; }
+    public string Name { get; set; }
+    public bool IsEmpty { get; set; }
+
+    public Guid ArchiveInfoId { get; set; }
+
+    public Guid? ParentId { get; set; }
+
+    public List<ArchiveInfoPath> Children { get; set; } = new();
 }

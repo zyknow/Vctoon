@@ -14,10 +14,9 @@ public class ImageFile : Entity<Guid>
         uint size,
         uint width,
         uint height,
-        Guid? libraryPathId,
-        Guid? archiveInfoPathId,
         Guid comicChapterId,
-        List<Tag> tags
+        Guid? libraryPathId = null,
+        Guid? archiveInfoPathId = null
     ) : base(id)
     {
         Name = name;
@@ -29,7 +28,6 @@ public class ImageFile : Entity<Guid>
         LibraryPathId = libraryPathId;
         ArchiveInfoPathId = archiveInfoPathId;
         ComicChapterId = comicChapterId;
-        Tags = tags;
     }
 
     public string Name { get; set; }

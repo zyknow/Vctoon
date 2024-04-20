@@ -12,8 +12,7 @@ public class ArchiveInfo : Entity<Guid>
         string name,
         string extension,
         DateTime? lastModifyTime,
-        DateTime? lastResolveTime,
-        List<ArchiveInfoPath> paths
+        DateTime? lastResolveTime
     ) : base(id)
     {
         Path = path;
@@ -21,7 +20,6 @@ public class ArchiveInfo : Entity<Guid>
         Extension = extension;
         LastModifyTime = lastModifyTime;
         LastResolveTime = lastResolveTime;
-        Paths = paths;
     }
 
     public string Path { get; set; }

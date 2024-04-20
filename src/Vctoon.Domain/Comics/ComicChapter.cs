@@ -14,9 +14,7 @@ public class ComicChapter : Entity<Guid>
         string coverPath,
         uint pageCount,
         uint size,
-        Guid comicId,
-        List<ImageFile> images,
-        List<Tag> tags
+        Guid comicId
     ) : base(id)
     {
         Title = title;
@@ -24,8 +22,6 @@ public class ComicChapter : Entity<Guid>
         PageCount = pageCount;
         Size = size;
         ComicId = comicId;
-        Images = images;
-        Tags = tags;
     }
 
     public string Title { get; set; }
