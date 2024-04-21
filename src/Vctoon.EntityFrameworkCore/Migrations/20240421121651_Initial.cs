@@ -17,7 +17,6 @@ namespace Vctoon.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Path = table.Column<string>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
                     Extension = table.Column<string>(type: "TEXT", nullable: false),
                     LastModifyTime = table.Column<DateTime>(type: "TEXT", nullable: true),
                     LastResolveTime = table.Column<DateTime>(type: "TEXT", nullable: true)
@@ -517,21 +516,14 @@ namespace Vctoon.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Path = table.Column<string>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    IsEmpty = table.Column<bool>(type: "INTEGER", nullable: false),
-                    ArchiveInfoId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ParentId = table.Column<Guid>(type: "TEXT", nullable: true)
+                    Path = table.Column<string>(type: "TEXT", nullable: true),
+                    LastModifyTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastResolveTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    ArchiveInfoId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK__ArchiveInfoPaths", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK__ArchiveInfoPaths__ArchiveInfoPaths_ParentId",
-                        column: x => x.ParentId,
-                        principalTable: "_ArchiveInfoPaths",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK__ArchiveInfoPaths__ArchiveInfos_ArchiveInfoId",
                         column: x => x.ArchiveInfoId,
@@ -568,11 +560,10 @@ namespace Vctoon.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Path = table.Column<string>(type: "TEXT", nullable: false),
-                    IsEmpty = table.Column<bool>(type: "INTEGER", nullable: false),
+                    IsRoot = table.Column<bool>(type: "INTEGER", nullable: false),
                     LastModifyTime = table.Column<DateTime>(type: "TEXT", nullable: true),
                     LastResolveTime = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    LibraryId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ParentId = table.Column<Guid>(type: "TEXT", nullable: true)
+                    LibraryId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -581,12 +572,6 @@ namespace Vctoon.Migrations
                         name: "FK__LibraryPaths__Libraries_LibraryId",
                         column: x => x.LibraryId,
                         principalTable: "_Libraries",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK__LibraryPaths__LibraryPaths_ParentId",
-                        column: x => x.ParentId,
-                        principalTable: "_LibraryPaths",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -886,8 +871,8 @@ namespace Vctoon.Migrations
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Title = table.Column<string>(type: "TEXT", nullable: false),
                     CoverPath = table.Column<string>(type: "TEXT", nullable: false),
-                    PageCount = table.Column<uint>(type: "INTEGER", nullable: false),
-                    Size = table.Column<uint>(type: "INTEGER", nullable: false),
+                    PageCount = table.Column<long>(type: "INTEGER", nullable: false),
+                    Size = table.Column<long>(type: "INTEGER", nullable: false),
                     ComicId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
@@ -1021,9 +1006,9 @@ namespace Vctoon.Migrations
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Path = table.Column<string>(type: "TEXT", nullable: false),
                     Extension = table.Column<string>(type: "TEXT", nullable: false),
-                    Size = table.Column<uint>(type: "INTEGER", nullable: false),
-                    Width = table.Column<uint>(type: "INTEGER", nullable: false),
-                    Height = table.Column<uint>(type: "INTEGER", nullable: false),
+                    Size = table.Column<long>(type: "INTEGER", nullable: false),
+                    Width = table.Column<long>(type: "INTEGER", nullable: false),
+                    Height = table.Column<long>(type: "INTEGER", nullable: false),
                     LibraryPathId = table.Column<Guid>(type: "TEXT", nullable: true),
                     ArchiveInfoPathId = table.Column<Guid>(type: "TEXT", nullable: true),
                     ComicChapterId = table.Column<Guid>(type: "TEXT", nullable: false)
@@ -1081,11 +1066,6 @@ namespace Vctoon.Migrations
                 column: "ArchiveInfoId");
 
             migrationBuilder.CreateIndex(
-                name: "IX__ArchiveInfoPaths_ParentId",
-                table: "_ArchiveInfoPaths",
-                column: "ParentId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX__ComicChapters_ComicId",
                 table: "_ComicChapters",
                 column: "ComicId");
@@ -1129,11 +1109,6 @@ namespace Vctoon.Migrations
                 name: "IX__LibraryPaths_LibraryId",
                 table: "_LibraryPaths",
                 column: "LibraryId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX__LibraryPaths_ParentId",
-                table: "_LibraryPaths",
-                column: "ParentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX__TagGroupTags_TagsId",

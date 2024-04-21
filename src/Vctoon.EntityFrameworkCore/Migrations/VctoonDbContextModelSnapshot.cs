@@ -127,10 +127,10 @@ namespace Vctoon.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<uint>("PageCount")
+                    b.Property<long>("PageCount")
                         .HasColumnType("INTEGER");
 
-                    b.Property<uint>("Size")
+                    b.Property<long>("Size")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Title")
@@ -159,10 +159,6 @@ namespace Vctoon.Migrations
                     b.Property<DateTime?>("LastResolveTime")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Path")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -180,25 +176,18 @@ namespace Vctoon.Migrations
                     b.Property<Guid>("ArchiveInfoId")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsEmpty")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
+                    b.Property<DateTime?>("LastModifyTime")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("ParentId")
+                    b.Property<DateTime?>("LastResolveTime")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Path")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ArchiveInfoId");
-
-                    b.HasIndex("ParentId");
 
                     b.ToTable("_ArchiveInfoPaths", (string)null);
                 });
@@ -218,7 +207,7 @@ namespace Vctoon.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<uint>("Height")
+                    b.Property<long>("Height")
                         .HasColumnType("INTEGER");
 
                     b.Property<Guid?>("LibraryPathId")
@@ -232,10 +221,10 @@ namespace Vctoon.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<uint>("Size")
+                    b.Property<long>("Size")
                         .HasColumnType("INTEGER");
 
-                    b.Property<uint>("Width")
+                    b.Property<long>("Width")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -280,7 +269,7 @@ namespace Vctoon.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsEmpty")
+                    b.Property<bool>("IsRoot")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("LastModifyTime")
@@ -292,9 +281,6 @@ namespace Vctoon.Migrations
                     b.Property<Guid>("LibraryId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("ParentId")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Path")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -302,8 +288,6 @@ namespace Vctoon.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("LibraryId");
-
-                    b.HasIndex("ParentId");
 
                     b.ToTable("_LibraryPaths", (string)null);
                 });
@@ -2186,11 +2170,6 @@ namespace Vctoon.Migrations
                         .HasForeignKey("ArchiveInfoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Vctoon.Libraries.ArchiveInfoPath", null)
-                        .WithMany("Children")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Vctoon.Libraries.ImageFile", b =>
@@ -2219,11 +2198,6 @@ namespace Vctoon.Migrations
                         .HasForeignKey("LibraryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Vctoon.Libraries.LibraryPath", null)
-                        .WithMany("Children")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLogAction", b =>
@@ -2383,19 +2357,9 @@ namespace Vctoon.Migrations
                     b.Navigation("Paths");
                 });
 
-            modelBuilder.Entity("Vctoon.Libraries.ArchiveInfoPath", b =>
-                {
-                    b.Navigation("Children");
-                });
-
             modelBuilder.Entity("Vctoon.Libraries.Library", b =>
                 {
                     b.Navigation("Paths");
-                });
-
-            modelBuilder.Entity("Vctoon.Libraries.LibraryPath", b =>
-                {
-                    b.Navigation("Children");
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLog", b =>
