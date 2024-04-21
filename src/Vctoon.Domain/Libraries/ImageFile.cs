@@ -11,9 +11,9 @@ public class ImageFile : Entity<Guid>
         string name,
         string path,
         string extension,
-        uint size,
-        uint width,
-        uint height,
+        long size,
+        long width,
+        long height,
         Guid comicChapterId,
         Guid? libraryPathId = null,
         Guid? archiveInfoPathId = null
@@ -33,9 +33,9 @@ public class ImageFile : Entity<Guid>
     public string Name { get; set; }
     public string Path { get; set; }
     public string Extension { get; set; }
-    public uint Size { get; set; }
-    public uint Width { get; set; }
-    public uint Height { get; set; }
+    public long Size { get; set; }
+    public long Width { get; set; }
+    public long Height { get; set; }
 
 
     public Guid? LibraryPathId { get; set; }

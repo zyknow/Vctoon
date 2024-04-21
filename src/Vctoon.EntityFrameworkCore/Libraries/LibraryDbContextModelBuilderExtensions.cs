@@ -24,7 +24,7 @@ public static class LibraryDbContextModelBuilderExtensions
             b.ToTable(VctoonConsts.DbTablePrefix + "Libraries", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
 
-            b.HasMany(x => x.Paths).WithOne().HasForeignKey(x => x.LibraryId).OnDelete(DeleteBehavior.Cascade);
+            // b.HasMany(x => x.Paths).WithOne().HasForeignKey(x => x.LibraryId).OnDelete(DeleteBehavior.Cascade);
 
             b.HasMany<Comic>().WithOne().HasForeignKey(x => x.LibraryId).OnDelete(DeleteBehavior.Cascade);
 
@@ -36,7 +36,7 @@ public static class LibraryDbContextModelBuilderExtensions
             b.ToTable(VctoonConsts.DbTablePrefix + "LibraryPaths", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
             b.HasMany<ImageFile>().WithOne().HasForeignKey(x => x.LibraryPathId).OnDelete(DeleteBehavior.Cascade);
-            b.HasMany(x => x.Children).WithOne().HasForeignKey(x => x.ParentId).OnDelete(DeleteBehavior.Cascade);
+            // b.HasMany(x => x.Children).WithOne().HasForeignKey(x => x.ParentId).OnDelete(DeleteBehavior.Cascade);
             /* Configure more properties here */
         });
 
@@ -91,7 +91,7 @@ public static class LibraryDbContextModelBuilderExtensions
             b.ToTable(VctoonConsts.DbTablePrefix + "ArchiveInfoPaths", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
 
-            b.HasMany(x => x.Children).WithOne().HasForeignKey(x => x.ParentId).OnDelete(DeleteBehavior.Cascade);
+            // b.HasMany(x => x.Children).WithOne().HasForeignKey(x => x.ParentId).OnDelete(DeleteBehavior.Cascade);
             b.HasMany<ImageFile>().WithOne().HasForeignKey(x => x.ArchiveInfoPathId).OnDelete(DeleteBehavior.Cascade);
 
             /* Configure more properties here */

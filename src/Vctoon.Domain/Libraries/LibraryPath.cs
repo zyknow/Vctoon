@@ -9,19 +9,16 @@ public class LibraryPath : Entity<Guid>
     public LibraryPath(
         Guid id,
         string path,
-        bool isEmpty,
-        DateTime? lastModifyTime,
-        DateTime? lastResolveTime,
+        bool isRoot,
         Guid libraryId,
-        Guid? parentId = null
+        DateTime? lastResolveTime = null,
+        DateTime? lastModifyTime = null
     ) : base(id)
     {
         Path = path;
-        IsEmpty = isEmpty;
-        LastModifyTime = lastModifyTime;
         LastResolveTime = lastResolveTime;
+        LastModifyTime = lastModifyTime;
         LibraryId = libraryId;
-        ParentId = parentId;
     }
 
     /// <summary>
@@ -29,10 +26,7 @@ public class LibraryPath : Entity<Guid>
     /// </summary>
     public string Path { get; set; }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public bool IsEmpty { get; set; }
+    public bool IsRoot { get; set; }
 
     /// <summary>
     /// use directory LastWriteTimeUtc
@@ -42,8 +36,4 @@ public class LibraryPath : Entity<Guid>
     public DateTime? LastResolveTime { get; set; }
 
     public Guid LibraryId { get; set; }
-
-    public Guid? ParentId { get; set; }
-
-    public virtual List<LibraryPath> Children { get; } = new();
 }

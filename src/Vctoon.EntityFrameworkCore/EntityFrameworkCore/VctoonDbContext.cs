@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Vctoon.Comics;
+using Vctoon.Libraries;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.Data;
@@ -12,9 +14,6 @@ using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
-using Vctoon.Libraries;
-using Vctoon.Comics;
-using Volo.Abp.EntityFrameworkCore.Modeling;
 
 namespace Vctoon.EntityFrameworkCore;
 
@@ -29,6 +28,43 @@ public class VctoonDbContext :
     public VctoonDbContext(DbContextOptions<VctoonDbContext> options)
         : base(options)
     {
+    }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+
+        /* Include modules to your migration db context */
+
+        builder.ConfigurePermissionManagement();
+        builder.ConfigureSettingManagement();
+        builder.ConfigureBackgroundJobs();
+        builder.ConfigureAuditLogging();
+        builder.ConfigureIdentity();
+        builder.ConfigureOpenIddict();
+        builder.ConfigureFeatureManagement();
+        builder.ConfigureTenantManagement();
+
+        builder.ConfigureComics();
+        builder.ConfigureLibraries();
+
+        /* Configure your own tables/entities inside here */
+
+        //builder.Entity<YourEntity>(b =>
+        //{
+        //    b.ToTable(VctoonConsts.DbTablePrefix + "YourEntities", VctoonConsts.DbSchema);
+        //    b.ConfigureByConvention(); //auto configure for the base class props
+        //    //...
+        //});
+    }
+
+
+    public class EfCoreShadowTableName
+    {
+        public const string TagGroupTags = $"{VctoonConsts.DbTablePrefix}TagGroupTags";
+        public const string ComicChapterTags = $"{VctoonConsts.DbTablePrefix}ComicChapterTags";
+        public const string ImageFileTags = $"{VctoonConsts.DbTablePrefix}ImageFileTags";
+        public const string ComicTags = $"{VctoonConsts.DbTablePrefix}ComicTags";
     }
 
     #region Entities from the modules
@@ -70,41 +106,5 @@ public class VctoonDbContext :
 
     #endregion
 
-
-    public class EfCoreShadowTableName
-    {
-        public const string TagGroupTags = $"{VctoonConsts.DbTablePrefix}TagGroupTags";
-        public const string ComicChapterTags = $"{VctoonConsts.DbTablePrefix}ComicChapterTags";
-        public const string ImageFileTags = $"{VctoonConsts.DbTablePrefix}ImageFileTags";
-        public const string ComicTags = $"{VctoonConsts.DbTablePrefix}ComicTags";
-    }
-
-    protected override void OnModelCreating(ModelBuilder builder)
-    {
-        base.OnModelCreating(builder);
-
-        /* Include modules to your migration db context */
-
-        builder.ConfigurePermissionManagement();
-        builder.ConfigureSettingManagement();
-        builder.ConfigureBackgroundJobs();
-        builder.ConfigureAuditLogging();
-        builder.ConfigureIdentity();
-        builder.ConfigureOpenIddict();
-        builder.ConfigureFeatureManagement();
-        builder.ConfigureTenantManagement();
-
-        builder.ConfigureComics();
-        builder.ConfigureLibraries();
-
-        /* Configure your own tables/entities inside here */
-
-        //builder.Entity<YourEntity>(b =>
-        //{
-        //    b.ToTable(VctoonConsts.DbTablePrefix + "YourEntities", VctoonConsts.DbSchema);
-        //    b.ConfigureByConvention(); //auto configure for the base class props
-        //    //...
-        //});
-    }
     /* Add DbSet properties for your Aggregate Roots / Entities here. */
 }

@@ -12,8 +12,8 @@ public class ComicChapter : Entity<Guid>
         Guid id,
         string title,
         string coverPath,
-        uint pageCount,
-        uint size,
+        long pageCount,
+        long size,
         Guid comicId
     ) : base(id)
     {
@@ -27,9 +27,9 @@ public class ComicChapter : Entity<Guid>
     public string Title { get; set; }
     public string CoverPath { get; set; }
 
-    public uint PageCount { get; set; }
+    public long PageCount { get; set; }
 
-    public uint Size { get; set; }
+    public long Size { get; set; }
 
     public Guid ComicId { get; set; }
 

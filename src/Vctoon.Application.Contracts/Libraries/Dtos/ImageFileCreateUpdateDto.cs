@@ -1,5 +1,3 @@
-using System;
-
 namespace Vctoon.Libraries.Dtos;
 
 [Serializable]
@@ -11,11 +9,11 @@ public class ImageFileCreateUpdateDto
 
     public string Extension { get; set; }
 
-    public uint Size { get; set; }
+    public long Size { get; set; }
 
-    public uint Width { get; set; }
+    public long Width { get; set; }
 
-    public uint Height { get; set; }
+    public long Height { get; set; }
 
     public Guid? LibraryPathId { get; set; }
 

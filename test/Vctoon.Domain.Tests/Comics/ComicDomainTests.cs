@@ -1,7 +1,3 @@
-using System.Threading.Tasks;
-using Shouldly;
-using Xunit;
-
 namespace Vctoon.Comics;
 
 public class ComicDomainTests : VctoonDomainTestBase

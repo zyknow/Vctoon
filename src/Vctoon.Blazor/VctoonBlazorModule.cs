@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
-using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Validation.AspNetCore;
 using Tailwind;
 using Vctoon.Blazor.Client;
+using Vctoon.BlobContainers;
 using Vctoon.Components;
 using Vctoon.EntityFrameworkCore;
 using Volo.Abp;
@@ -18,6 +18,8 @@ using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite.Bundling;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Autofac;
+using Volo.Abp.BlobStoring;
+using Volo.Abp.BlobStoring.FileSystem;
 using Volo.Abp.Modularity;
 using Volo.Abp.OpenIddict;
 using Volo.Abp.Security.Claims;
@@ -37,7 +39,8 @@ namespace Vctoon;
     typeof(AbpAspNetCoreMvcUiLeptonXLiteThemeModule),
     typeof(AbpAccountWebOpenIddictModule),
     typeof(AbpAspNetCoreSerilogModule),
-    typeof(AbpSwashbuckleModule)
+    typeof(AbpSwashbuckleModule),
+    typeof(AbpBlobStoringFileSystemModule)
 )]
 public class VctoonBlazorModule : AbpModule
 {
@@ -84,12 +87,19 @@ public class VctoonBlazorModule : AbpModule
         ConfigureVirtualFileSystem(context);
         ConfigureCors(context, configuration);
         ConfigureSwaggerServices(context, configuration);
+        ConfigureBlobStoring();
 
         services.AddRazorComponents()
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
+    }
 
-        services.AddFluentUIComponents();
+    private void ConfigureBlobStoring()
+    {
+        Configure<AbpBlobStoringOptions>(options =>
+        {
+            options.Containers.Configure<CoverContainer>(container => { });
+        });
     }
 
     private void ConfigureAuthentication(ServiceConfigurationContext context)

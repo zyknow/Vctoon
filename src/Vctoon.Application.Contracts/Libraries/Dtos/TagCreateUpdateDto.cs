@@ -1,5 +1,3 @@
-using System;
-
 namespace Vctoon.Libraries.Dtos;
 
 [Serializable]
