@@ -11,4 +11,5 @@ public interface ILibraryAppService :
         LibraryCreateUpdateDto,
         LibraryCreateUpdateDto>
 {
+    Task ScanAsync(Guid libraryId);
 }

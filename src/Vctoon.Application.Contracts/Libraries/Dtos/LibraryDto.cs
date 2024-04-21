@@ -6,4 +6,5 @@ namespace Vctoon.Libraries.Dtos;
 public class LibraryDto : EntityDto<Guid>
 {
     public string Name { get; set; }
+    public List<string> Paths { get; set; } = [];
 }
