@@ -16,6 +16,7 @@ public class LibraryPath : Entity<Guid>
     ) : base(id)
     {
         Path = path;
+        IsRoot = isRoot;
         LastResolveTime = lastResolveTime;
         LastModifyTime = lastModifyTime;
         LibraryId = libraryId;
