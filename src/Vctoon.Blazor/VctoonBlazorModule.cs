@@ -98,7 +98,13 @@ public class VctoonBlazorModule : AbpModule
     {
         Configure<AbpBlobStoringOptions>(options =>
         {
-            options.Containers.Configure<CoverContainer>(container => { });
+            options.Containers.Configure<CoverContainer>(container =>
+            {
+                container.UseFileSystem(fileSystem =>
+                {
+                    fileSystem.BasePath = @$".{Path.DirectorySeparatorChar}";
+                });
+            });
         });
     }
 
