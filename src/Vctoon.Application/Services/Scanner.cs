@@ -6,11 +6,11 @@ using Volo.Abp.DependencyInjection;
 
 namespace Vctoon.Services;
 
-public class DirectoryScanner(
+public class Scanner(
     ILibraryRepository libraryRepository,
     IArchiveInfoRepository archiveInfoRepository,
     IImageFileRepository imageFileRepository,
-    ILogger<DirectoryScanner> logger,
+    ILogger<Scanner> logger,
     ImageFileHandler imageFileHandler)
     : VctoonService, ITransientDependency
 
@@ -32,12 +32,12 @@ public class DirectoryScanner(
 
         await ScanningLibraryPathDirectoryStructureAsync(library);
 
-        await libraryRepository.UpdateAsync(library);
-
         foreach (var libraryPath in library.Paths)
         {
             await ScanningLibraryPathFilesAsync(libraryPath);
         }
+
+        await libraryRepository.UpdateAsync(library);
     }
 
     private async Task ScanningLibraryPathDirectoryStructureAsync(Library library)
@@ -60,7 +60,7 @@ public class DirectoryScanner(
 
             var dirs = Directory.GetDirectories(libraryPath.Path, "*", SearchOption.AllDirectories);
 
-            var deleteLibraryPaths = library.Paths.Where(x => !dirs.Contains(x.Path)).ToList();
+            var deleteLibraryPaths = library.Paths.Where(x => !x.IsRoot).Where(x => !dirs.Contains(x.Path)).ToList();
             library.Paths.RemoveAll(x => deleteLibraryPaths.Contains(x));
 
             var addLibraryPaths = dirs.Where(x => !library.Paths.Select(p => p.Path).Contains(x))
@@ -105,8 +105,8 @@ public class DirectoryScanner(
                 await imageFileHandler.HandlerByArchiveInfoAsync(archiveInfo, libraryPath.LibraryId);
             }
 
-            libraryPath.LastModifyTime = Directory.GetLastWriteTimeUtc(libraryPath.Path);
-            libraryPath.LastResolveTime = DateTime.UtcNow;
+            // libraryPath.LastModifyTime = Directory.GetLastWriteTimeUtc(libraryPath.Path);
+            // libraryPath.LastResolveTime = DateTime.UtcNow;
         }
     }
 
@@ -150,7 +150,8 @@ public class DirectoryScanner(
         // 查询出需要添加的目录
         var addArchivePaths = dirs.Where(x => !archiveInfo.Paths.Select(p => p.Path).Contains(x))
             .Select(dirPath =>
-                new ArchiveInfoPath(GuidGenerator.Create(), dirPath, Path.GetDirectoryName(dirPath), archiveInfo.Id))
+                new ArchiveInfoPath(GuidGenerator.Create(), dirPath,
+                    archiveInfo.Id))
             .ToList();
         archiveInfo.Paths.AddRange(addArchivePaths);
 

@@ -51,7 +51,10 @@ public class ImageFileHandler(
 
         var deleteImages = repImages.Where(x => !imageFilePaths.Contains(x.Path)).ToList();
 
-        await imageFileRepository.DeleteManyAsync(deleteImages.Select(x => x.Id));
+        if (!deleteImages.IsNullOrEmpty())
+        {
+            await imageFileRepository.DeleteManyAsync(deleteImages.Select(x => x.Id));
+        }
 
         var addImageFileInfos = imageFilePaths.Where(x => !repImages.Select(image => image.Path).Contains(x))
             .Select(x => new FileInfo(x)).ToList();
@@ -81,10 +84,19 @@ public class ImageFileHandler(
 
         var addImages = archiveEntries.Where(x => !repImages.Select(a => a.Path).Contains(x.Key)).ToList();
 
+
         List<ImageFile> addImageEntities = addImages.Select(addImage =>
-            new ImageFile(GuidGenerator.Create(), Path.GetFileName(addImage.Key), addImage.Key,
+        {
+            var isRootFile = !addImage.Key.Contains(Path.DirectorySeparatorChar);
+
+            var archiveInfoPathId = isRootFile
+                ? archiveInfo.Paths.First(x => x.Path == null).Id
+                : archiveInfo.Paths.First(x => x.Path == Path.GetDirectoryName(addImage.Key)).Id;
+
+            return new ImageFile(GuidGenerator.Create(), Path.GetFileName(addImage.Key), addImage.Key,
                 Path.GetExtension(addImage.Key),
-                addImage.Size, 0, 0, Guid.Empty, archiveInfoPathId: archiveInfo.Id)).ToList();
+                addImage.Size, 0, 0, Guid.Empty, archiveInfoPathId: archiveInfoPathId);
+        }).ToList();
 
         foreach (var imageFilese in addImageEntities.GroupBy(x => Path.GetDirectoryName(x.Path)))
         {
@@ -94,6 +106,10 @@ public class ImageFileHandler(
             if (comicChapterId == null)
             {
                 var title = Path.GetFileName(imageFilese.Key);
+                if (title.IsNullOrEmpty())
+                {
+                    title = Path.GetFileNameWithoutExtension(archiveInfo.Path);
+                }
 
                 var entry = archiveEntries.FirstOrDefault(x => x.Key == imageFilese.First().Path);
 

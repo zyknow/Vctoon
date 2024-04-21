@@ -3,6 +3,7 @@ using Vctoon.Comics;
 using Vctoon.Comics.Dtos;
 using Vctoon.Libraries;
 using Vctoon.Libraries.Dtos;
+using Volo.Abp.AutoMapper;
 
 namespace Vctoon;
 
@@ -15,8 +16,13 @@ public class VctoonApplicationAutoMapperProfile : Profile
          * into multiple profile classes for a better organization. */
 
 
-        CreateMap<Library, LibraryDto>();
-        CreateMap<LibraryCreateUpdateDto, Library>(MemberList.Source);
+        CreateMap<Library, LibraryDto>()
+            .ForMember(x => x.Paths, opt =>
+                opt.MapFrom(x => x.Paths.Select(x => x.Path)
+                ))
+            ;
+
+        CreateMap<LibraryCreateUpdateDto, Library>(MemberList.Source).Ignore(x => x.Paths);
         CreateMap<Comic, ComicDto>();
         CreateMap<ComicCreateUpdateDto, Comic>(MemberList.Source);
         CreateMap<ComicChapter, ComicChapterDto>();
