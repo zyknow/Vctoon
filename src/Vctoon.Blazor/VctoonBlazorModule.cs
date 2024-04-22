@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
+using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Validation.AspNetCore;
 using Tailwind;
@@ -92,6 +93,8 @@ public class VctoonBlazorModule : AbpModule
         services.AddRazorComponents()
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
+
+        services.AddFluentUIComponents();
     }
 
     private void ConfigureBlobStoring()
