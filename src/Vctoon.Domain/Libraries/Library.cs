@@ -6,14 +6,63 @@ public class Library : AggregateRoot<Guid>
     {
     }
 
-    public Library(
+    internal Library(
         Guid id,
         string name
     ) : base(id)
     {
+        SetName(name);
+    }
+
+    public string Name { get; protected set; }
+
+    public virtual List<LibraryPath> Paths { get; internal set; } = new();
+
+    public void SetName(string name)
+    {
+        if (name.IsNullOrWhiteSpace())
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
+
         Name = name;
     }
 
-    public string Name { get; set; }
-    public virtual List<LibraryPath> Paths { get; internal set; } = new();
+    public void AddPath(LibraryPath libraryPath)
+    {
+        if (Paths.Any(x => x.Path == libraryPath.Path))
+        {
+            return;
+        }
+
+        Paths.Add(libraryPath);
+    }
+
+    public void AddPaths(List<LibraryPath> libraryPaths)
+    {
+        var addPaths = libraryPaths.DistinctBy(x => x.Path).ToList();
+        foreach (var libraryPath in addPaths)
+        {
+            AddPath(libraryPath);
+        }
+    }
+
+    public void RemovePath(string path)
+    {
+        var libraryPath = Paths.FirstOrDefault(x => x.Path == path);
+        if (libraryPath == null)
+        {
+            return;
+        }
+
+        Paths.Remove(libraryPath);
+    }
+
+    public void RemovePaths(List<string> paths)
+    {
+        foreach (var path in paths)
+        {
+            RemovePath(path);
+        }
+    }
 }

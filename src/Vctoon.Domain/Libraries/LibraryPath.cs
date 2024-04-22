@@ -15,7 +15,7 @@ public class LibraryPath : Entity<Guid>
         DateTime? lastModifyTime = null
     ) : base(id)
     {
-        Path = path;
+        SetPath(path);
         IsRoot = isRoot;
         LastResolveTime = lastResolveTime;
         LastModifyTime = lastModifyTime;
@@ -25,7 +25,7 @@ public class LibraryPath : Entity<Guid>
     /// <summary>
     /// dirPath or archivePath
     /// </summary>
-    public string Path { get; set; }
+    public string Path { get; protected set; }
 
     public bool IsRoot { get; set; }
 
@@ -37,4 +37,14 @@ public class LibraryPath : Entity<Guid>
     public DateTime? LastResolveTime { get; set; }
 
     public Guid LibraryId { get; set; }
+
+    public void SetPath(string path)
+    {
+        if (path.IsNullOrWhiteSpace())
+        {
+            throw new ArgumentNullException(nameof(path));
+        }
+
+        Path = path;
+    }
 }

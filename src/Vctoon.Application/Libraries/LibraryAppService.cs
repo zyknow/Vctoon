@@ -7,22 +7,15 @@ using Volo.Abp.Domain.Repositories;
 
 namespace Vctoon.Libraries;
 
-public class LibraryAppService : CrudAppService<Library, LibraryDto, Guid, LibraryGetListInput, LibraryCreateUpdateDto,
-        LibraryCreateUpdateDto>,
-    ILibraryAppService
+public class LibraryAppService(
+    ILibraryRepository repository,
+    Scanner scanner,
+    ILibraryPathRepository libraryPathRepository,
+    LibraryManager libraryManager)
+    : CrudAppService<Library, LibraryDto, Guid, LibraryGetListInput, LibraryCreateUpdateDto,
+            LibraryCreateUpdateDto>(repository),
+        ILibraryAppService
 {
-    private readonly ILibraryPathRepository _libraryPathRepository;
-    private readonly ILibraryRepository _repository;
-    private readonly Scanner _scanner;
-
-    public LibraryAppService(ILibraryRepository repository, Scanner scanner,
-        ILibraryPathRepository libraryPathRepository) : base(repository)
-    {
-        _repository = repository;
-        _scanner = scanner;
-        _libraryPathRepository = libraryPathRepository;
-    }
-
     protected override string GetPolicyName { get; set; } = VctoonPermissions.Library.Default;
     protected override string GetListPolicyName { get; set; } = VctoonPermissions.Library.Default;
     protected override string CreatePolicyName { get; set; } = VctoonPermissions.Library.Create;
@@ -34,69 +27,34 @@ public class LibraryAppService : CrudAppService<Library, LibraryDto, Guid, Libra
     {
         await CheckCreatePolicyAsync();
 
-        // check has same name
-        var library = await _repository.FirstOrDefaultAsync(x => x.Name == input.Name);
-        if (library != null)
-        {
-            throw new UserFriendlyException("Library name already exists");
-        }
-
-        var entity = await MapToEntityAsync(input);
-
-        TryToSetTenantId(entity);
-
-        await Repository.InsertAsync(entity, true);
-
-        var libraryDto = await MapToGetOutputDtoAsync(entity);
-
-        var libraryPaths = input.Paths.Select(x => new LibraryPath(GuidGenerator.Create(), x, true, libraryDto.Id))
-            .ToList();
-        await _libraryPathRepository.InsertManyAsync(libraryPaths);
-
-        libraryDto.Paths = input.Paths;
-
-        return libraryDto;
+        var entity = await libraryManager.CreateLibraryAsync(input.Name, input.Paths);
+        return await MapToGetOutputDtoAsync(entity);
     }
 
     public override async Task<LibraryDto> UpdateAsync(Guid id, LibraryCreateUpdateDto input)
     {
         await CheckCreatePolicyAsync();
 
-        var library = await _repository.FirstOrDefaultAsync(x => x.Name == input.Name && x.Id != id);
+        var library =
+            await AsyncExecuter.FirstOrDefaultAsync((await Repository.WithDetailsAsync()).Where(x => x.Id == id));
         if (library != null)
         {
             throw new UserFriendlyException("Library name already exists");
         }
 
-        var entity = await MapToEntityAsync(input);
+        library.SetName(input.Name);
 
-        TryToSetTenantId(entity);
+        await libraryManager.UpdateLibraryAsync(library);
+        await libraryManager.UpdateLibraryPathsAsync(library, input.Paths);
 
-        await Repository.InsertAsync(entity, true);
-
-        var libraryDto = await MapToGetOutputDtoAsync(entity);
-
-        var libraryPaths = (await _libraryPathRepository.GetQueryableAsync())
-            .Where(x => x.IsRoot).ToList();
-
-        var removePaths = libraryPaths.Where(x => !input.Paths.Contains(x.Path)).ToList();
-
-        await _libraryPathRepository.DeleteManyAsync(removePaths);
-
-        var addPaths = input.Paths.Where(x => !libraryPaths.Select(x => x.Path).Contains(x))
-            .Select(x => new LibraryPath(GuidGenerator.Create(), x, true, id)).ToList();
-
-        await _libraryPathRepository.InsertManyAsync(addPaths);
-
-        libraryDto.Paths = input.Paths;
-        return libraryDto;
+        return await MapToGetOutputDtoAsync(library);
     }
 
 
     public async Task ScanAsync(Guid libraryId)
     {
         await CheckPolicyAsync(ScanPolicyName);
-        await _scanner.ScannerAsync(libraryId);
+        await scanner.ScannerAsync(libraryId);
     }
 
     protected override async Task<IQueryable<Library>> CreateFilteredQueryAsync(LibraryGetListInput input)

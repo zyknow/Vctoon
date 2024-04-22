@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace Vctoon.Libraries;
 
 public static class LibraryEfCoreQueryableExtensions
@@ -10,6 +12,7 @@ public static class LibraryEfCoreQueryableExtensions
         }
 
         return queryable
+                .Include(x => x.Paths)
             // .Include(x => x.xxx) // TODO: AbpHelper generated
             ;
     }
