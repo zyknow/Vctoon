@@ -7,7 +7,7 @@ namespace Vctoon.Libraries;
 
 public class LibraryAppService(
     ILibraryRepository repository,
-    Scanner scanner,
+    LibraryScanner libraryScanner,
     ILibraryPathRepository libraryPathRepository,
     LibraryManager libraryManager)
     : CrudAppService<Library, LibraryDto, Guid, LibraryGetListInput, LibraryCreateUpdateDto,
@@ -48,7 +48,7 @@ public class LibraryAppService(
     public async Task ScanAsync(Guid libraryId)
     {
         await CheckPolicyAsync(ScanPolicyName);
-        await scanner.ScannerAsync(libraryId);
+        await libraryScanner.ScannerAsync(libraryId);
     }
 
     protected override async Task<IQueryable<Library>> CreateFilteredQueryAsync(LibraryGetListInput input)

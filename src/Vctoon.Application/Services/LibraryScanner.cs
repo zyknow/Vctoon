@@ -6,12 +6,12 @@ using Volo.Abp.DependencyInjection;
 
 namespace Vctoon.Services;
 
-public class Scanner(
+public class LibraryScanner(
     ILibraryRepository libraryRepository,
     IArchiveInfoRepository archiveInfoRepository,
     IImageFileRepository imageFileRepository,
-    ILogger<Scanner> logger,
-    ImageFileHandler imageFileHandler)
+    ILogger<LibraryScanner> logger,
+    ImageFileScanner imageFileScanner)
     : VctoonService, ITransientDependency
 
 {
@@ -92,7 +92,7 @@ public class Scanner(
             var imageFilePaths =
                 filePaths.Where(x => ImageExtensions.Contains(Path.GetExtension(x).ToLower())).ToList();
 
-            await imageFileHandler.HandlerByLibraryPathAsync(libraryPath, imageFilePaths);
+            await imageFileScanner.ScanByLibraryPathAsync(libraryPath, imageFilePaths);
 
 
             var archiveFilePaths =
@@ -102,7 +102,7 @@ public class Scanner(
             {
                 var archiveInfo = await ScanningArchiveInfoDirectoryStructureAsync(archiveFilePath);
 
-                await imageFileHandler.HandlerByArchiveInfoAsync(archiveInfo, libraryPath.LibraryId);
+                await imageFileScanner.ScanByArchiveInfoAsync(archiveInfo, libraryPath.LibraryId);
             }
 
             // libraryPath.LastModifyTime = Directory.GetLastWriteTimeUtc(libraryPath.Path);

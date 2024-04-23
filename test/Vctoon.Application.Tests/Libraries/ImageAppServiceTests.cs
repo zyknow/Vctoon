@@ -1,10 +1,10 @@
 namespace Vctoon.Libraries;
 
-public class ImageFileAppServiceTests : VctoonApplicationTestBase
+public class ImageAppServiceTests : VctoonApplicationTestBase
 {
     private readonly IImageFileAppService _imageFileAppService;
 
-    public ImageFileAppServiceTests()
+    public ImageAppServiceTests()
     {
         _imageFileAppService = GetRequiredService<IImageFileAppService>();
     }
