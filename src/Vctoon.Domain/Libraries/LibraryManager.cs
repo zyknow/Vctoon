@@ -57,7 +57,7 @@ public class LibraryManager(ILibraryRepository libraryRepository) : DomainServic
                     .Where(x => x.Name == name)
             ))
         {
-            throw new BusinessException("LibraryNameIsExist");
+            throw new BusinessException(VctoonDomainErrorCodes.LibraryNameIsExists).WithData("Name", name);
         }
     }
 }

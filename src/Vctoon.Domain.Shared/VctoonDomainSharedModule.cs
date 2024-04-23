@@ -52,7 +52,7 @@ public class VctoonDomainSharedModule : AbpModule
 
         Configure<AbpExceptionLocalizationOptions>(options =>
         {
-            options.MapCodeNamespace("Vctoon", typeof(VctoonResource));
+            options.MapCodeNamespace($"Vctoon", typeof(VctoonResource));
         });
     }
 }
