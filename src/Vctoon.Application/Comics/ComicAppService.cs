@@ -1,5 +1,5 @@
 using Vctoon.Comics.Dtos;
-using Vctoon.Permissions;
+using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 
 namespace Vctoon.Comics;
@@ -16,6 +16,32 @@ public class ComicAppService(IComicRepository repository)
     protected override string CreatePolicyName { get; set; } = VctoonPermissions.Comic.Create;
     protected override string UpdatePolicyName { get; set; } = VctoonPermissions.Comic.Update;
     protected override string DeletePolicyName { get; set; } = VctoonPermissions.Comic.Delete;
+
+    public override async Task<PagedResultDto<ComicDto>> GetListAsync(ComicGetListInput input)
+    {
+        await CheckGetListPolicyAsync();
+
+        var query = await CreateFilteredQueryAsync(input);
+        var totalCount = await AsyncExecuter.CountAsync(query);
+
+        var entities = new List<Comic>();
+        var entityDtos = new List<ComicDto>();
+
+        if (totalCount > 0)
+        {
+            query = ApplySorting(query, input);
+            query = ApplyPaging(query, input);
+
+            entities = await AsyncExecuter.ToListAsync(query);
+            entityDtos = await MapToGetListOutputDtosAsync(entities);
+        }
+
+
+        return new PagedResultDto<ComicDto>(
+            totalCount,
+            entityDtos
+        );
+    }
 
     protected override async Task<IQueryable<Comic>> CreateFilteredQueryAsync(ComicGetListInput input)
     {

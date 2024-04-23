@@ -1,5 +1,4 @@
 using Vctoon.Comics.Dtos;
-using Vctoon.Permissions;
 using Volo.Abp.Application.Services;
 
 namespace Vctoon.Comics;
@@ -16,6 +15,7 @@ public class ComicChapterAppService(IComicChapterRepository repository)
     protected override string CreatePolicyName { get; set; } = VctoonPermissions.ComicChapter.Create;
     protected override string UpdatePolicyName { get; set; } = VctoonPermissions.ComicChapter.Update;
     protected override string DeletePolicyName { get; set; } = VctoonPermissions.ComicChapter.Delete;
+
 
     protected override async Task<IQueryable<ComicChapter>> CreateFilteredQueryAsync(ComicChapterGetListInput input)
     {
