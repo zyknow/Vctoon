@@ -53,6 +53,7 @@ public class VctoonEntityFrameworkCoreModule : AbpModule
             options.AddRepository<ArchiveInfo, ArchiveInfoRepository>();
             options.AddRepository<ArchiveInfoPath, ArchiveInfoPathRepository>();
             options.AddRepository<LibraryPath, LibraryPathRepository>();
+            options.AddRepository<ContentProgress, ContentProgressRepository>();
         });
 
         Configure<AbpDbContextOptions>(options =>

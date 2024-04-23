@@ -20,16 +20,11 @@ namespace Vctoon.EntityFrameworkCore;
 [ReplaceDbContext(typeof(IIdentityDbContext))]
 [ReplaceDbContext(typeof(ITenantManagementDbContext))]
 [ConnectionStringName("Default")]
-public class VctoonDbContext :
-    AbpDbContext<VctoonDbContext>,
+public class VctoonDbContext(DbContextOptions<VctoonDbContext> options) :
+    AbpDbContext<VctoonDbContext>(options),
     IIdentityDbContext,
     ITenantManagementDbContext
 {
-    public VctoonDbContext(DbContextOptions<VctoonDbContext> options)
-        : base(options)
-    {
-    }
-
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -103,6 +98,7 @@ public class VctoonDbContext :
     public DbSet<ArchiveInfo> ArchiveInfos { get; set; }
     public DbSet<ArchiveInfoPath> ArchiveInfoPaths { get; set; }
     public DbSet<LibraryPath> LibraryPaths { get; set; }
+    public DbSet<ContentProgress> ContentProgresses { get; set; }
 
     #endregion
 
