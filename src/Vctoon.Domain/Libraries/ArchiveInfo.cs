@@ -14,15 +14,27 @@ public class ArchiveInfo : Entity<Guid>
         DateTime? lastResolveTime = null
     ) : base(id)
     {
-        Path = path;
+        SetPath(path);
         Extension = extension;
         LastModifyTime = lastModifyTime;
         LastResolveTime = lastResolveTime;
     }
 
-    public string Path { get; set; }
-    public string Extension { get; set; }
+    public string Path { get; protected set; }
+    public string Extension { get; protected set; }
     public DateTime? LastModifyTime { get; set; }
     public DateTime? LastResolveTime { get; set; }
-    public List<ArchiveInfoPath> Paths { get; set; } = new();
+    public List<ArchiveInfoPath> Paths { get; } = new();
+
+    public void SetPath(string path)
+    {
+        Check.NotNullOrWhiteSpace(path, nameof(path));
+        Path = path;
+    }
+
+    public void SetExtension(string extension)
+    {
+        Check.NotNullOrWhiteSpace(extension, nameof(extension));
+        Extension = extension;
+    }
 }
