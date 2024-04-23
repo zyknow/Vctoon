@@ -6,15 +6,15 @@ using Volo.Abp.DependencyInjection;
 
 namespace Vctoon.Services;
 
-public class ImageFileHandler(
-    ILogger<ImageFileHandler> logger,
+public class ImageFileScanner(
+    ILogger<ImageFileScanner> logger,
     IImageFileRepository imageFileRepository,
     IComicChapterRepository comicChapterRepository,
     IComicRepository comicRepository,
     ImageCoverSaver imageCoverSaver
 ) : VctoonService, ITransientDependency
 {
-    public async Task HandlerByLibraryPathAsync(LibraryPath libraryPath, List<string> imageFilePaths)
+    public async Task ScanByLibraryPathAsync(LibraryPath libraryPath, List<string> imageFilePaths)
     {
         if (imageFilePaths.IsNullOrEmpty())
         {
@@ -69,7 +69,7 @@ public class ImageFileHandler(
         }
     }
 
-    public async Task HandlerByArchiveInfoAsync(ArchiveInfo archiveInfo, Guid libraryId)
+    public async Task ScanByArchiveInfoAsync(ArchiveInfo archiveInfo, Guid libraryId)
     {
         var query = (await imageFileRepository.GetQueryableAsync()).Where(x => x.ArchiveInfoPathId == archiveInfo.Id);
 

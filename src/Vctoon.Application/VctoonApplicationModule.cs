@@ -1,4 +1,6 @@
-﻿using Volo.Abp.Account;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+using Vctoon.ImageProviders;
+using Volo.Abp.Account;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
@@ -24,5 +26,6 @@ public class VctoonApplicationModule : AbpModule
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         Configure<AbpAutoMapperOptions>(options => { options.AddMaps<VctoonApplicationModule>(); });
+        context.Services.TryAddTransient<IImageProvider, ImageRealFileProvider>();
     }
 }
