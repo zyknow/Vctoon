@@ -4,16 +4,12 @@ using Volo.Abp.Application.Services;
 
 namespace Vctoon.Comics;
 
-public class ComicChapterAppService : CrudAppService<ComicChapter, ComicChapterDto, Guid, ComicChapterGetListInput,
-        ComicChapterCreateUpdateDto, ComicChapterCreateUpdateDto>,
-    IComicChapterAppService
+public class ComicChapterAppService(IComicChapterRepository repository)
+    : CrudAppService<ComicChapter, ComicChapterDto, Guid, ComicChapterGetListInput,
+            ComicChapterCreateUpdateDto, ComicChapterCreateUpdateDto>(repository),
+        IComicChapterAppService
 {
-    private readonly IComicChapterRepository _repository;
-
-    public ComicChapterAppService(IComicChapterRepository repository) : base(repository)
-    {
-        _repository = repository;
-    }
+    private readonly IComicChapterRepository _repository = repository;
 
     protected override string GetPolicyName { get; set; } = VctoonPermissions.ComicChapter.Default;
     protected override string GetListPolicyName { get; set; } = VctoonPermissions.ComicChapter.Default;
