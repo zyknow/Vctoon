@@ -179,18 +179,27 @@ public class VctoonBlazorModule : AbpModule
 
     private static void ConfigureSwaggerServices(ServiceConfigurationContext context, IConfiguration configuration)
     {
-        context.Services.AddAbpSwaggerGenWithOAuth(
-            configuration["AuthServer:Authority"]!,
-            new Dictionary<string, string>
-            {
-                {"Vctoon", "Vctoon API"}
-            },
+        context.Services.AddAbpSwaggerGen(
             options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo {Title = "Vctoon API", Version = "v1"});
                 options.DocInclusionPredicate((docName, description) => true);
                 options.CustomSchemaIds(type => type.FullName);
-            });
+            }
+        );
+        //
+        // context.Services.AddAbpSwaggerGenWithOAuth(
+        //     configuration["AuthServer:Authority"]!,
+        //     new Dictionary<string, string>
+        //     {
+        //         {"Vctoon", "Vctoon API"}
+        //     },
+        //     options =>
+        //     {
+        //         options.SwaggerDoc("v1", new OpenApiInfo {Title = "Vctoon API", Version = "v1"});
+        //         options.DocInclusionPredicate((docName, description) => true);
+        //         options.CustomSchemaIds(type => type.FullName);
+        //     });
     }
 
     private void ConfigureCors(ServiceConfigurationContext context, IConfiguration configuration)
@@ -250,16 +259,8 @@ public class VctoonBlazorModule : AbpModule
         app.UseAntiforgery();
 
         app.UseSwagger();
-        app.UseAbpSwaggerUI(c =>
-        {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "Vctoon API");
 
-            var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
-            c.OAuthClientId(configuration["AuthServer:SwaggerClientId"]);
-            c.OAuthScopes("Vctoon");
-        });
-
-        app.UseAbpSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "BookStore API"); });
+        app.UseAbpSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "Vctoon API"); });
 
         app.UseAuditing();
 
