@@ -26,7 +26,6 @@ public class ComicAppService : CrudAppService<Comic, ComicDto, Guid, ComicGetLis
         // TODO: AbpHelper generated
         return (await base.CreateFilteredQueryAsync(input))
             .WhereIf(!input.Title.IsNullOrWhiteSpace(), x => x.Title.Contains(input.Title))
-            .WhereIf(!input.CoverPath.IsNullOrWhiteSpace(), x => x.CoverPath.Contains(input.CoverPath))
             .WhereIf(input.LibraryId != null, x => x.LibraryId == input.LibraryId)
             ;
     }

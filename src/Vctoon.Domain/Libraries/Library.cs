@@ -20,17 +20,13 @@ public class Library : AggregateRoot<Guid>
 
     public void SetName(string name)
     {
-        if (name.IsNullOrWhiteSpace())
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
+        Check.NotNullOrWhiteSpace(name, nameof(name));
         Name = name;
     }
 
     public void AddPath(LibraryPath libraryPath)
     {
-        if (Paths.Any(x => x.Path == libraryPath.Path))
+        if (Paths.Any(x => x.Path == libraryPath.Path || x.Id == libraryPath.Id))
         {
             return;
         }

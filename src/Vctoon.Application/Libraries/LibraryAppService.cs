@@ -1,9 +1,7 @@
 using Vctoon.Libraries.Dtos;
 using Vctoon.Permissions;
 using Vctoon.Services;
-using Volo.Abp;
 using Volo.Abp.Application.Services;
-using Volo.Abp.Domain.Repositories;
 
 namespace Vctoon.Libraries;
 
@@ -37,10 +35,6 @@ public class LibraryAppService(
 
         var library =
             await AsyncExecuter.FirstOrDefaultAsync((await Repository.WithDetailsAsync()).Where(x => x.Id == id));
-        if (library != null)
-        {
-            throw new UserFriendlyException("Library name already exists");
-        }
 
         library.SetName(input.Name);
 

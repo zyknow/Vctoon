@@ -11,4 +11,5 @@ public interface ITagGroupAppService :
         TagGroupCreateUpdateDto,
         TagGroupCreateUpdateDto>
 {
+    // Task<TagGroupDto> UpdateTagsAsync(Guid tagGroupId, IEnumerable<Guid> tagIds);
 }

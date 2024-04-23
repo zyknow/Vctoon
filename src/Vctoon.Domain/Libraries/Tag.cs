@@ -11,8 +11,14 @@ public class Tag : AggregateRoot<Guid>
         string name
     ) : base(id)
     {
-        Name = name;
+        SetName(name);
     }
 
-    public string Name { get; set; }
+    public string Name { get; protected set; }
+
+    public void SetName(string name)
+    {
+        Check.NotNullOrWhiteSpace(name, nameof(name));
+        Name = name;
+    }
 }

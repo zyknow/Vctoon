@@ -33,14 +33,25 @@ public class LibraryManager(ILibraryRepository libraryRepository) : DomainServic
         List<string> paths
     )
     {
+        await libraryRepository.EnsureCollectionLoadedAsync(library, x => x.Paths);
+
         var libraryPaths = library.Paths.Where(x => x.IsRoot).Select(x => x.Path).ToList();
 
         var removePaths = libraryPaths.Where(x => !paths.Contains(x)).ToList();
 
         library.RemovePaths(removePaths);
 
-        var addPaths = paths.Where(x => !libraryPaths.Select(x => x).Contains(x))
-            .Select(x => new LibraryPath(GuidGenerator.Create(), x, true, library.Id)).ToList();
+        var addPaths = paths
+            .Where(x =>
+                !libraryPaths
+                    .Select(x => x)
+                    .Contains(x))
+            .Select(x =>
+                new LibraryPath(GuidGenerator.Create(),
+                    x,
+                    true,
+                    library.Id))
+            .ToList();
 
         library.AddPaths(addPaths);
     }
@@ -57,7 +68,7 @@ public class LibraryManager(ILibraryRepository libraryRepository) : DomainServic
                     .Where(x => x.Name == name)
             ))
         {
-            throw new BusinessException(VctoonDomainErrorCodes.LibraryNameIsExists).WithData("Name", name);
+            throw new BusinessException(VctoonDomainErrorCodes.NameIsAlreadyExists).WithData("Name", name);
         }
     }
 }

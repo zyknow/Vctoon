@@ -4,6 +4,4 @@ namespace Vctoon.Libraries.Dtos;
 public class TagGroupCreateUpdateDto
 {
     public string Name { get; set; }
-
-    // public List<Tag> Tags { get; set; }
 }

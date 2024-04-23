@@ -5,5 +5,5 @@ namespace Vctoon.Libraries.Dtos;
 [Serializable]
 public class TagGroupGetListInput : PagedAndSortedResultRequestDto
 {
-    public string Name { get; set; }
+    public string? Name { get; set; }
 }

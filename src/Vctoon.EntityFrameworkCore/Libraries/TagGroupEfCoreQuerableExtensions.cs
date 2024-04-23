@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace Vctoon.Libraries;
 
 public static class TagGroupEfCoreQueryableExtensions
@@ -10,6 +12,7 @@ public static class TagGroupEfCoreQueryableExtensions
         }
 
         return queryable
+                .Include(x => x.Tags)
             // .Include(x => x.xxx) // TODO: AbpHelper generated
             ;
     }

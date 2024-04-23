@@ -5,9 +5,7 @@ namespace Vctoon.Comics.Dtos;
 [Serializable]
 public class ComicChapterGetListInput : PagedAndSortedResultRequestDto
 {
-    public string Title { get; set; }
-
-    public string CoverPath { get; set; }
+    public string? Title { get; set; }
 
     public uint? PageCount { get; set; }
 

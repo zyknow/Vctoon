@@ -26,7 +26,6 @@ public class ComicChapterAppService : CrudAppService<ComicChapter, ComicChapterD
         // TODO: AbpHelper generated
         return (await base.CreateFilteredQueryAsync(input))
             .WhereIf(!input.Title.IsNullOrWhiteSpace(), x => x.Title.Contains(input.Title))
-            .WhereIf(!input.CoverPath.IsNullOrWhiteSpace(), x => x.CoverPath.Contains(input.CoverPath))
             .WhereIf(input.PageCount != null, x => x.PageCount == input.PageCount)
             .WhereIf(input.Size != null, x => x.Size == input.Size)
             .WhereIf(input.ComicId != null, x => x.ComicId == input.ComicId)

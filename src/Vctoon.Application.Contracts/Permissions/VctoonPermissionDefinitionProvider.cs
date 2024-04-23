@@ -38,11 +38,6 @@ public class VctoonPermissionDefinitionProvider : PermissionDefinitionProvider
         tagGroupPermission.AddChild(VctoonPermissions.TagGroup.Create, L("Permission:Create"));
         tagGroupPermission.AddChild(VctoonPermissions.TagGroup.Update, L("Permission:Update"));
         tagGroupPermission.AddChild(VctoonPermissions.TagGroup.Delete, L("Permission:Delete"));
-
-        var imageFilePermission = myGroup.AddPermission(VctoonPermissions.ImageFile.Default, L("Permission:ImageFile"));
-        imageFilePermission.AddChild(VctoonPermissions.ImageFile.Create, L("Permission:Create"));
-        imageFilePermission.AddChild(VctoonPermissions.ImageFile.Update, L("Permission:Update"));
-        imageFilePermission.AddChild(VctoonPermissions.ImageFile.Delete, L("Permission:Delete"));
     }
 
     private static LocalizableString L(string name)
