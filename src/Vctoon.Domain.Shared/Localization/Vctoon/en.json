@@ -4,6 +4,7 @@
     "Menu:Home": "Home",
     "Welcome": "Welcome",
     "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information, visit abp.io.",
-    "Vctoon:LibraryNameIsExists": "The library name '{Name}' is already exists."
+    "Vctoon:DataNotFound": "Data not found.",
+    "Vctoon:NameIsAlreadyExists": "The name '{Name}' is already exists."
   }
 }
