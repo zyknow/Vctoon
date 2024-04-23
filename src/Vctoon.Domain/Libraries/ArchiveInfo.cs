@@ -15,7 +15,7 @@ public class ArchiveInfo : Entity<Guid>
     ) : base(id)
     {
         SetPath(path);
-        Extension = extension;
+        SetExtension(extension);
         LastModifyTime = lastModifyTime;
         LastResolveTime = lastResolveTime;
     }
