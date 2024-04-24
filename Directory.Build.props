@@ -5,7 +5,6 @@
         <LangVersion>latest</LangVersion>
 
         <!--        version configs-->
-        <AvaloniaVersion>11.1.0-beta1</AvaloniaVersion>
         <AbpVersion>8.1.1</AbpVersion>
 
         <!-- This line is currently commented out. If uncommented, it would suppress the CS1591 warning. 
