@@ -11,7 +11,7 @@ public class ComicDto : EntityDto<Guid>
 
     public Guid LibraryId { get; set; }
 
-    public double CompletionRate { get; set; }
+    public double Progress { get; set; }
 
     // public List<Tag> Tags { get; set; }
     //
