@@ -1,6 +1,4 @@
-﻿using Volo.Abp.Domain.Services;
-
-namespace Vctoon.Libraries;
+﻿namespace Vctoon.Libraries;
 
 public class TagManager(ITagRepository tagRepository) : DomainService
 {
