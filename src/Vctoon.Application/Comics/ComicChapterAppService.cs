@@ -15,8 +15,6 @@ public class ComicChapterAppService(
             ComicChapterCreateUpdateDto, ComicChapterCreateUpdateDto>(repository),
         IComicChapterAppService
 {
-    private readonly IComicChapterRepository _repository = repository;
-
     protected override string GetPolicyName { get; set; } = VctoonPermissions.ComicChapter.Default;
     protected override string GetListPolicyName { get; set; } = VctoonPermissions.ComicChapter.Default;
     protected override string CreatePolicyName { get; set; } = VctoonPermissions.ComicChapter.Create;
@@ -45,7 +43,7 @@ public class ComicChapterAppService(
             throw new UserFriendlyException("User is not authenticated");
         }
 
-        var comicChapter = await _repository.GetAsync(id);
+        var comicChapter = await Repository.GetAsync(id);
         comicChapterManager.UpdateOrAddProcessAsync(comicChapter, CurrentUser.Id.Value, progress);
     }
 

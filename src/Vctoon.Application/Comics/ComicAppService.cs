@@ -17,8 +17,6 @@ public class ComicAppService(
             ComicCreateUpdateDto>(repository),
         IComicAppService
 {
-    private readonly IComicRepository _repository = repository;
-
     protected override string GetPolicyName { get; set; } = VctoonPermissions.Comic.Default;
     protected override string GetListPolicyName { get; set; } = VctoonPermissions.Comic.Default;
     protected override string CreatePolicyName { get; set; } = VctoonPermissions.Comic.Create;
@@ -57,7 +55,7 @@ public class ComicAppService(
         if (!toCompleted)
         {
             var chapterIds = await AsyncExecuter.ToListAsync(
-                (await _repository.WithDetailsAsync(x => x.Chapters))
+                (await Repository.WithDetailsAsync(x => x.Chapters))
                 .SelectMany(x => x.Chapters
                     .Select(x => x.Id)));
 
@@ -72,7 +70,7 @@ public class ComicAppService(
         else
         {
             var chapters = await AsyncExecuter.ToListAsync(
-                (await _repository.WithDetailsAsync(x => x.Chapters))
+                (await Repository.WithDetailsAsync(x => x.Chapters))
                 .Where(x => x.Id == id)
                 .SelectMany(x => x.Chapters));
 
