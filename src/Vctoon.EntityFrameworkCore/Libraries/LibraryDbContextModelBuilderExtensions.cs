@@ -3,6 +3,7 @@ using Vctoon.Comics;
 using Vctoon.EntityFrameworkCore;
 using Volo.Abp;
 using Volo.Abp.EntityFrameworkCore.Modeling;
+using Volo.Abp.Identity;
 
 namespace Vctoon.Libraries;
 
@@ -93,6 +94,18 @@ public static class LibraryDbContextModelBuilderExtensions
 
             // b.HasMany(x => x.Children).WithOne().HasForeignKey(x => x.ParentId).OnDelete(DeleteBehavior.Cascade);
             b.HasMany<ImageFile>().WithOne().HasForeignKey(x => x.ArchiveInfoPathId).OnDelete(DeleteBehavior.Cascade);
+
+            /* Configure more properties here */
+        });
+
+        builder.Entity<ContentProgress>(b =>
+        {
+            b.ToTable(VctoonConsts.DbTablePrefix + "ContentProgresses", VctoonConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.HasOne<IdentityUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+            b.HasOne<ComicChapter>().WithMany().HasForeignKey(x => x.ComicChapterId).OnDelete(DeleteBehavior.Cascade);
+            b.HasOne<Comic>().WithMany().HasForeignKey(x => x.ComicId).OnDelete(DeleteBehavior.Cascade);
 
             /* Configure more properties here */
         });
