@@ -2,10 +2,10 @@
 
 ## Project Overview
 
-Vctoon is a comprehensive comic management software developed using the ABP framework version 8.1.x. It leverages the
-capabilities of Fluent Blazor from Microsoft (https://github.com/microsoft/fluentui-blazor) and UnoCSS for a sleek and
-responsive user interface. The backend is powered by SharpCompress and SixLabors.ImageSharp, facilitating efficient
-comic file management and image processing.
+Vctoon is a comprehensive comic management software developed using the ABP framework version 8.1.x. It is architected using
+Domain-Driven Design (DDD) principles, ensuring a well-structured and modular setup that enhances scalability and maintainability.
+The software integrates Fluent Blazor from Microsoft and UnoCSS to deliver a sleek and responsive user interface. The backend is
+powered by SharpCompress and SixLabors.ImageSharp, which aid in efficient comic file management and image processing.
 
 ### Key Features
 
