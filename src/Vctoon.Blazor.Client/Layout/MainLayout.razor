@@ -1,10 +1,13 @@
 ﻿@using Microsoft.FluentUI.AspNetCore.Components
 @using Vctoon.Blazor.Client.Components.Themes
+@using Vctoon.Blazor.Client.States
 @using Volo.Abp.Users
-@inherits LayoutComponentBase
+@inherits VctoonLayoutComponentBase
 @inject NavigationManager NavigationManager
 @inject IDialogService DialogService
 @inject ICurrentUser CurrentUser
+@inject AppStore AppStore
+
 
 <FluentDesignTheme @bind-Mode="@Mode"
                    @bind-OfficeColor="@OfficeColor"
@@ -12,7 +15,6 @@
                    OnLuminanceChanged="@OnLuminanceChanged"
                    StorageName="theme"/>
 <FluentLayout @rendermode="InteractiveServer">
-    
     <FluentHeader class="m-2 rounded-2">
         <span class="text-3xl">Vctoon</span>
         <FluentSpacer/>

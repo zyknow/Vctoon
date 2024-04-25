@@ -1,30 +1,16 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.FluentUI.AspNetCore.Components
-@using Vctoon.Blazor.Client.Components.Themes
-@inherits ComponentBase
+@using Vctoon.Blazor.Client.States
+@inherits VctoonComponentBase
 @attribute [Authorize]
-@inject IDialogService Di
-
+@inject AppStore AppStore
 <PageTitle>Home</PageTitle>
 
 <FluentCard Width="400px" Height="250px">
     <span class="text-7xl text-red-500">Hello World!</span>
-    <FluentButton Appearance="@Appearance.Accent" OnClick="@Test">Click Me111222</FluentButton>
 </FluentCard>
 
 @code{
-    
-    async Task Test()
-    {
-        DialogParameters parameters = new()
-        {
-            Title = $"Hello",
-// OnDialogResult = DialogService.CreateDialogCallback(this, HandlePanelAsync),
-            Alignment = HorizontalAlignment.Right,
-            Width = "300px"
-        };
-        await Di.ShowPanelAsync<ThemeSettingPanel>(parameters);
-    }
     
 }
