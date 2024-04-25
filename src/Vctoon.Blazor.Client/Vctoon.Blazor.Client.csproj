@@ -14,7 +14,7 @@
         <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.7.0"/>
         <PackageReference Include="Volo.Abp.Core" Version="$(AbpVersion)"/>
         <PackageReference Include="Volo.Abp.Localization" Version="$(AbpVersion)"/>
-        <PackageReference Include="Volo.Abp.ObjectMapping" Version="8.1.1"/>
+        <PackageReference Include="Volo.Abp.ObjectMapping" Version="$(AbpVersion)"/>
     </ItemGroup>
 
 
@@ -23,6 +23,10 @@
         <AdditionalFiles Include="Components\Themes\ThemeSettingPanel.razor"/>
         <AdditionalFiles Include="Layout\MainLayout.razor"/>
         <AdditionalFiles Include="Pages\Home.razor"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Blazor.Store\Blazor.Store.csproj"/>
     </ItemGroup>
 
 </Project>
