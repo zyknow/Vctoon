@@ -1,9 +1,11 @@
-﻿using Vctoon.RazorLibrary;
-using Volo.Abp.Modularity;
+﻿using Volo.Abp.Modularity;
 
 namespace Vctoon.Blazor.Client;
 
-[DependsOn(typeof(VctoonRazorLibraryModule))]
 public class VctoonBlazorClientModule : AbpModule
 {
+    public override void ConfigureServices(ServiceConfigurationContext context)
+    {
+        IServiceCollection services = context.Services;
+    }
 }

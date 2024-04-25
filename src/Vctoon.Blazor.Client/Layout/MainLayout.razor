@@ -1,0 +1,125 @@
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+@using Vctoon.Blazor.Client.Components.Themes
+@using Volo.Abp.Users
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject IDialogService DialogService
+@inject ICurrentUser CurrentUser
+
+<FluentDesignTheme @bind-Mode="@Mode"
+                   @bind-OfficeColor="@OfficeColor"
+                   OnLoaded="@OnLoaded"
+                   OnLuminanceChanged="@OnLuminanceChanged"
+                   StorageName="theme"/>
+<FluentLayout @rendermode="InteractiveServer">
+    
+    <FluentHeader class="m-2 rounded-2">
+        <span class="text-3xl">Vctoon</span>
+        <FluentSpacer/>
+        
+        <div class="flex flex-row space-x-3 items-center  select-none">
+            
+            <FluentButton
+                IconStart="@(new Icons.Regular.Size20.Alert())"
+                BackgroundColor="transparent"
+                Appearance="Appearance.Accent">
+            </FluentButton>
+            
+            <FluentButton
+                IconStart="@(new Icons.Regular.Size20.Settings())"
+                BackgroundColor="transparent"
+                Appearance="Appearance.Accent"
+                OnClick="@OpenThemeSettingPanel">
+            </FluentButton>
+            
+            <FluentTooltip Anchor="settingIcon">
+                Theme Settings
+            </FluentTooltip>
+            
+            <FluentProfileMenu Status="@PresenceStatus.Available"
+                               HeaderLabel="Vctoon"
+                               Initials="@CurrentUser.Name?.FirstOrDefault().ToString()"
+                               FullName="@CurrentUser.Name"
+                               EMail="@CurrentUser.Email"
+                               Style="min-width: 330px;"
+                               OnHeaderButtonClick="@(() => { // TODO: sign out
+                                                    })"/>
+        </div>
+        
+        @* <div> *@
+        @* *@
+        @*     <FluentPersona Id="persona1" Initials="@CurrentUser.Name" *@
+        @*                    Status="PresenceStatus.Available" *@
+        @*                    StatusSize="PresenceBadgeSize.Tiny" *@
+        @*                    ImageSize="40px"> *@
+        @*     </FluentPersona> *@
+        @* *@
+        @*     <FluentMenu Anchor="persona1" Trigger="MouseButton.Left" Anchored="false"> *@
+        @*         <FluentMenuItem Label="Item 166666666666666"/> *@
+        @*     </FluentMenu> *@
+        @* </div> *@
+        
+    </FluentHeader>
+    
+    
+    <FluentStack Orientation="Orientation.Horizontal">
+        
+        <FluentNavMenu Width="250">
+            <FluentNavLink Icon="@(new Icons.Regular.Size24.Home())">Item 1</FluentNavLink>
+            <FluentNavLink Icon="@(new Icons.Regular.Size24.Cloud())">Item 2</FluentNavLink>
+            <FluentNavGroup Title="Item 3">
+                <FluentNavLink Icon="@(new Icons.Regular.Size24.LeafOne())">Item 3.1</FluentNavLink>
+                <FluentNavLink Icon="@(new Icons.Regular.Size24.LeafTwo())">Item 3.2</FluentNavLink>
+            </FluentNavGroup>
+            <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAgenda())" Disabled="true">Item 4</FluentNavLink>
+        </FluentNavMenu>
+        
+        
+        <FluentBodyContent Class="w-full h-full">
+            
+            @Body
+        </FluentBodyContent>
+        <FluentToastProvider/>
+        <FluentDialogProvider/>
+        <FluentTooltipProvider/>
+        <FluentMessageBarProvider/>
+    </FluentStack>
+    
+</FluentLayout>
+
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+@code
+{
+    public DesignThemeModes Mode { get; set; }
+    
+    
+    public OfficeColor? OfficeColor { get; set; }
+    
+    void OnLoaded(LoadedEventArgs e)
+    {
+    }
+    
+    void OnLuminanceChanged(LuminanceChangedEventArgs e)
+    {
+    }
+    
+    async Task OpenThemeSettingPanel()
+    {
+        DialogParameters parameters = new()
+        {
+            Title = $"Hello",
+// OnDialogResult = DialogService.CreateDialogCallback(this, HandlePanelAsync),
+            Alignment = HorizontalAlignment.Right,
+            Modal = false,
+            ShowDismiss = false,
+            Width = "300px"
+        };
+        await DialogService.ShowPanelAsync<ThemeSettingPanel>(parameters);
+    }
+}
