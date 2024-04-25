@@ -27,9 +27,9 @@ tailor the application to your needs:
 In production environments, a robust signing certificate setup is crucial. By default, the `openiddict.pfx` certificate
 is managed by ABP CLI. If necessary, regenerate this certificate with:
 
-\`\`\`bash
+```bash
 dotnet dev-certs https -v -ep openiddict.pfx -p your-password-here
-\`\`\`
+```
 
 Refer to the official OpenIddict documentation for detailed guidance on certificate
 management: https://documentation.openiddict.com/configuration/encryption-and-signing-credentials.html
@@ -38,17 +38,17 @@ management: https://documentation.openiddict.com/configuration/encryption-and-si
 
 Install necessary client libraries if not already handled by the ABP CLI:
 
-\`\`\`bash
+```bash
 abp install-libs
-\`\`\`
+```
 
 #### Database Setup
 
 To set up and initialize the database, run:
 
-\`\`\`bash
+```bash
 Vctoon.DbMigrator
-\`\`\`
+```
 
 ### Project Structure
 
