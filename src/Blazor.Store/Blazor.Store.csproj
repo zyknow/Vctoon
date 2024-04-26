@@ -5,6 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="AsyncKeyedLock" Version="6.4.2"/>
         <PackageReference Include="Blazored.LocalStorage" Version="4.5.0"/>
         <PackageReference Include="Blazored.SessionStorage" Version="2.4.0"/>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2"/>

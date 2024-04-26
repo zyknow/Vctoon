@@ -1,5 +1,7 @@
-﻿using System.Reflection;
+﻿using System.ComponentModel;
+using System.Reflection;
 using System.Text.Json;
+using AsyncKeyedLock;
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -9,8 +11,13 @@ namespace Blazor.Store;
 
 public abstract class StateBase<TStore> : ObservableObject, IStore, IScopedDependency where TStore : StateBase<TStore>
 {
-    private readonly Type _storeType = typeof(TStore);
+    private readonly AsyncKeyedLocker<string> _initAsyncKeyedLocker = new(o =>
+    {
+        o.PoolSize = 20; // this is NOT a concurrency limit
+        o.PoolInitialFill = 1;
+    });
     
+    private readonly Type _storeType = typeof(TStore);
     
     private BlazorStoreType? _currentStoreType;
     
@@ -18,7 +25,7 @@ public abstract class StateBase<TStore> : ObservableObject, IStore, IScopedDepen
     
     protected bool Inited { get; set; }
     
-    internal string StoreKey { get; set; } = typeof(TStore).Name?.Replace("Store", "");
+    protected virtual string StoreKey { get; set; } = typeof(TStore).Name?.Replace("Store", "");
     public event Action ReRender;
     
     
@@ -29,51 +36,79 @@ public abstract class StateBase<TStore> : ObservableObject, IStore, IScopedDepen
             return;
         }
         
-        string[] ignorePropertyNames = _storeType.GetCustomAttribute<IgnorePropertyStoreAttribute>()?.Names ?? [];
-        
-        _saveProperties =
-            _storeType.GetProperties().Where(x => !ignorePropertyNames.Contains(x.Name)).ToList();
-        
-        List<string> savePropertyNames = _saveProperties.Select(x => x.Name).ToList();
-        
-        BlazorStoreType currentStoreType = GetCurrentStoreType();
-        
-        await LoadStateAsync(sessionStorageService, localStorageService);
-        ReRender?.Invoke();
-        
-        PropertyChanged += async (sender, args) =>
+        using (await _initAsyncKeyedLocker.LockAsync(StoreKey))
         {
-            ReRender?.Invoke();
-            
-            if (currentStoreType == BlazorStoreType.None)
+            if (Inited)
             {
                 return;
             }
             
-            if (args.PropertyName is not null && savePropertyNames.Contains(args.PropertyName))
+            string[] ignorePropertyNames = _storeType.GetCustomAttribute<IgnorePropertyStoreAttribute>()?.Names ?? [];
+            string[] ignoreDeepWatchPropertyNames =
+                _storeType.GetCustomAttribute<IgnorePropertyDeepWatchStoreAttribute>()?.Names ?? [];
+            
+            _saveProperties =
+                _storeType.GetProperties().Where(x => !ignorePropertyNames.Contains(x.Name)).ToList();
+            
+            List<PropertyInfo> deppWatchProperties = _storeType.GetProperties()
+                .Where(x => !ignoreDeepWatchPropertyNames.Contains(x.Name))
+                .Where(x => x.PropertyType.IsClass && x.PropertyType != typeof(string))
+                .Where(x => x.PropertyType.IsAssignableFrom(typeof(INotifyPropertyChanged)))
+                .ToList();
+            
+            List<string> savePropertyNames = _saveProperties.Select(x => x.Name).ToList();
+            
+            BlazorStoreType currentStoreType = GetCurrentStoreType();
+            
+            await LoadStateAsync(sessionStorageService, localStorageService);
+            ReRender?.Invoke();
+            
+            PropertyChanged += async (sender, args) =>
             {
-                PropertyInfo? property = _saveProperties.FirstOrDefault(x => x.Name == args.PropertyName);
-                object? value = property.GetValue(this);
+                ReRender?.Invoke();
                 
-                if (currentStoreType == BlazorStoreType.SessionStorage)
+                if (currentStoreType == BlazorStoreType.None)
                 {
-                    // if (value is null)
-                    //     await sessionStorageService.RemoveItemAsync($"{StoreKey}.{args.PropertyName}");
-                    // else
-                    await sessionStorageService.SetItemAsync($"{StoreKey}.{args.PropertyName}", value);
+                    return;
                 }
-                else if (currentStoreType == BlazorStoreType.LocalStorage)
+                
+                if (args.PropertyName is not null && savePropertyNames.Contains(args.PropertyName))
                 {
-                    // if (value is null)
-                    //     await localStorageService.RemoveItemAsync($"{StoreKey}.{args.PropertyName}");
-                    // else
-                    await localStorageService.SetItemAsync($"{StoreKey}.{args.PropertyName}", value);
+                    PropertyInfo? property = _saveProperties.FirstOrDefault(x => x.Name == args.PropertyName);
+                    object? value = property.GetValue(this);
+                    
+                    if (currentStoreType == BlazorStoreType.SessionStorage)
+                    {
+                        // if (value is null)
+                        //     await sessionStorageService.RemoveItemAsync($"{StoreKey}.{args.PropertyName}");
+                        // else
+                        await sessionStorageService.SetItemAsync($"{StoreKey}.{args.PropertyName}", value);
+                    }
+                    else if (currentStoreType == BlazorStoreType.LocalStorage)
+                    {
+                        // if (value is null)
+                        //     await localStorageService.RemoveItemAsync($"{StoreKey}.{args.PropertyName}");
+                        // else
+                        await localStorageService.SetItemAsync($"{StoreKey}.{args.PropertyName}", value);
+                    }
                 }
+            };
+            
+            // handle deep property change
+            foreach (PropertyInfo property in deppWatchProperties)
+            {
+                INotifyPropertyChanged? notifyPropertyChanged = property.GetValue(this) as INotifyPropertyChanged;
+                if (notifyPropertyChanged is null)
+                {
+                    continue;
+                }
+                
+                notifyPropertyChanged.PropertyChanged += (s, e) => { OnPropertyChanged(property.Name); };
             }
-        };
-        
-        Inited = true;
-        await OnInitReRenderAsync();
+            
+            await OnInitReRenderAsync();
+            Inited = true;
+        }
     }
     
     public async Task LoadStateAsync(ISessionStorageService sessionStorageService, ILocalStorageService localStorageService)
@@ -122,7 +157,12 @@ public abstract class StateBase<TStore> : ObservableObject, IStore, IScopedDepen
         }
     }
     
-    internal BlazorStoreType GetCurrentStoreType()
+    
+    protected virtual async Task OnInitReRenderAsync()
+    {
+    }
+    
+    private BlazorStoreType GetCurrentStoreType()
     {
         if (_currentStoreType is not null)
         {
@@ -151,11 +191,7 @@ public abstract class StateBase<TStore> : ObservableObject, IStore, IScopedDepen
         return BlazorStoreType.None;
     }
     
-    protected virtual async Task OnInitReRenderAsync()
-    {
-    }
-    
-    internal object? GetObjectValue(string? stringValue, Type type)
+    private object? GetObjectValue(string? stringValue, Type type)
     {
         if (stringValue == null && type.IsValueType)
         {

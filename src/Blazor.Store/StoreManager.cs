@@ -1,4 +1,5 @@
-﻿using Blazored.LocalStorage;
+﻿using AsyncKeyedLock;
+using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using Volo.Abp.DependencyInjection;
 
@@ -9,25 +10,37 @@ public class StoreManager(
     ISessionStorageService sessionStorageService,
     ILocalStorageService localStorageService) : IScopedDependency
 {
-    private object lockObj = new();
+    private readonly AsyncKeyedLocker<string> _initAsyncKeyedLocker = new(o =>
+    {
+        o.PoolSize = 20; // this is NOT a concurrency limit
+        o.PoolInitialFill = 1;
+    });
     
     public Action ReRender;
     protected virtual bool IsInited { get; set; }
     
-    public async Task InitStoresAsync()
+    public virtual async Task InitStoresAsync()
     {
         if (IsInited)
         {
             return;
         }
         
-        foreach (IStore store in stores)
+        using (await _initAsyncKeyedLocker.LockAsync(nameof(StoreManager)))
         {
-            await store.InitReRenderAsync(sessionStorageService, localStorageService);
-            store.ReRender += () => ReRender?.Invoke();
+            if (IsInited)
+            {
+                return;
+            }
+            
+            foreach (IStore store in stores)
+            {
+                await store.InitReRenderAsync(sessionStorageService, localStorageService);
+                store.ReRender += () => ReRender?.Invoke();
+            }
+            
+            IsInited = true;
+            ReRender?.Invoke();
         }
-        
-        IsInited = true;
-        ReRender?.Invoke();
     }
 }
