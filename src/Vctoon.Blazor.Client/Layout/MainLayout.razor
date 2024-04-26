@@ -1,4 +1,5 @@
-﻿@using Microsoft.FluentUI.AspNetCore.Components
+﻿@using System.ComponentModel
+@using Microsoft.FluentUI.AspNetCore.Components
 @using Vctoon.Blazor.Client.Components.Themes
 @using Vctoon.Blazor.Client.States
 @using Volo.Abp.Users
@@ -9,11 +10,12 @@
 @inject AppStore AppStore
 
 
-<FluentDesignTheme @bind-Mode="@Mode"
-                   @bind-OfficeColor="@OfficeColor"
+<FluentDesignTheme @bind-Mode="@ThemeMode"
+                   @bind-OfficeColor="@ThemeOfficeColor"
                    OnLoaded="@OnLoaded"
                    OnLuminanceChanged="@OnLuminanceChanged"
                    StorageName="theme"/>
+
 <FluentLayout @rendermode="InteractiveServer">
     <FluentHeader class="m-2 rounded-2">
         <span class="text-3xl">Vctoon</span>
@@ -98,10 +100,10 @@
 
 @code
 {
-    public DesignThemeModes Mode { get; set; }
+    public DesignThemeModes ThemeMode { get; set; } = DesignThemeModes.Dark;
     
     
-    public OfficeColor? OfficeColor { get; set; }
+    public OfficeColor? ThemeOfficeColor { get; set; }
     
     void OnLoaded(LoadedEventArgs e)
     {
@@ -113,15 +115,30 @@
     
     async Task OpenThemeSettingPanel()
     {
-        DialogParameters parameters = new()
+        var themeConfig = new ThemeSettingPanelContent(ThemeMode, ThemeOfficeColor);
+        
+        themeConfig.PropertyChanged += ThemeConfigOnPropertyChanged;
+        
+        DialogParameters<ThemeSettingPanelContent> parameters = new()
         {
-            Title = $"Hello",
-// OnDialogResult = DialogService.CreateDialogCallback(this, HandlePanelAsync),
+            Title = $"Theme Settings",
             Alignment = HorizontalAlignment.Right,
-            Modal = false,
-            ShowDismiss = false,
-            Width = "300px"
+            Content = themeConfig,
+            PrimaryActionEnabled = false
         };
-        await DialogService.ShowPanelAsync<ThemeSettingPanel>(parameters);
+        await DialogService.ShowPanelAsync<ThemeSettingPanel>(themeConfig, parameters);
+    }
+    
+    private void ThemeConfigOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        var config = sender as ThemeSettingPanelContent;
+        if (config == null)
+        {
+            return;
+        }
+        
+        ThemeMode = config.ThemeMode;
+        ThemeOfficeColor = config.ThemeColor;
+        StateHasChanged();
     }
 }
