@@ -7,10 +7,19 @@
 @inject AppStore AppStore
 <PageTitle>Home</PageTitle>
 
-<FluentCard Width="400px" Height="250px">
-    <span class="text-7xl text-red-500">Hello World!</span>
-</FluentCard>
+<div class="h-full">
 
-@code{
-    
+
+    @for (int i = 0; i < 50; i++)
+    {
+        <FluentCard Width="400px" Height="250px">
+            <span class="text-7xl text-red-500">Hello World!</span>
+        </FluentCard>
+    }
+</div>
+
+
+
+@code {
+
 }

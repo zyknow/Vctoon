@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Cors;
+﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.OpenApi.Models;
@@ -265,8 +265,9 @@ public class VctoonBlazorModule : AbpModule
         webApp.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
-            .AddAdditionalAssemblies(typeof(Blazor.Client._Imports).Assembly);
-        
+            //.AddAdditionalAssemblies(typeof(Blazor.Client._Imports).Assembly);
+            .AddAdditionalAssemblies(typeof(VctoonBlazorClientModule).Assembly);
+
         app.UseAbpSerilogEnrichers();
         app.UseConfiguredEndpoints();
     }

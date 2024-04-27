@@ -2,34 +2,27 @@
 @using Microsoft.FluentUI.AspNetCore.Components.Extensions
 @implements Microsoft.FluentUI.AspNetCore.Components.IDialogContentComponent<ThemeSettingPanelContent>
 
+<FluentDesignTheme @bind-Mode="@Content.ThemeMode"
+                   @bind-OfficeColor="@Content.ThemeColor"
+                   StorageName="theme" />
+
 <FluentDialogBody>
     <div class="flex flex-col space-y-2">
-        <FluentSelect
-            Label="Theme"
-            Items="@(Enum.GetValues<DesignThemeModes>())"
-            @bind-SelectedOption="@Content.ThemeMode"/>
-        
-        @foreach (var color in Enum.GetValues<OfficeColor>().Select(i => (OfficeColor?) i))
-        {
-            <div>1</div>
-            <FluentIcon Value="@(new Icons.Filled.Size20.RectangleLandscape())"
-                        Color="Color.Custom"
-                        CustomColor="@(@color != OfficeColor.Default ? color.ToAttributeValue() : "#036ac4")"/>
-            <FluentLabel>@color</FluentLabel>
-        }
-        
-        @*          <FluentSelect Label="Color"
-                        Items="@(Enum.GetValues<OfficeColor>().Select(i => (OfficeColor?) i))"
-                        @bind-SelectedOption="@Content.ThemeColor">
-              <OptionTemplate>
-                  <FluentStack>
-                      <FluentIcon Value="@(new Icons.Filled.Size20.RectangleLandscape())"
-                                  Color="Color.Custom"
-                                  CustomColor="@(@context.ToAttributeValue() != "default" ? context.ToAttributeValue() : "#036ac4")"/>
-                      <FluentLabel>@context</FluentLabel>
-                  </FluentStack>
-              </OptionTemplate>
-          </FluentSelect> *@
+        <FluentSelect Label="Theme"
+                      Items="@(Enum.GetValues<DesignThemeModes>())"
+                      @bind-SelectedOption="@Content.ThemeMode" />
+
+        <FluentRadioGroup Label="Theme Colors" Name="Theme Colors" @bind-Value=Content.ThemeColor>
+
+            @foreach (var color in Enum.GetValues<OfficeColor>().Select(i => (OfficeColor?)i))
+            {
+                <FluentRadio Value="@color">
+                    <FluentIcon Value="@(new Icons.Filled.Size20.RectangleLandscape())"
+                                Color="Color.Custom"
+                                CustomColor="@(@color != OfficeColor.Default ? color.ToAttributeValue() : "#036ac4")" />
+                </FluentRadio>
+            }
+        </FluentRadioGroup>
     </div>
 </FluentDialogBody>
 

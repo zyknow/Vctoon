@@ -1,0 +1,20 @@
+﻿<FluentNavMenu Width="250" class="max-h-full overflow-y-auto">
+    <FluentNavLink Icon="@(new Icons.Regular.Size24.Home())" Href="/">Home</FluentNavLink>
+    <FluentNavGroup Id="LibraryGroup" Title="Library" Icon="@(new Icons.Regular.Size24.Library())">
+        <FluentNavLink>Item 1.2</FluentNavLink>
+    </FluentNavGroup>
+
+    @for (int i = 0; i < 50; i++)
+    {
+        <FluentNavLink>Home</FluentNavLink>
+    }
+
+
+</FluentNavMenu>
+
+
+
+
+@code {
+
+}
