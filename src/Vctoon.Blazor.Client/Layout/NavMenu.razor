@@ -1,20 +1,36 @@
-﻿<FluentNavMenu Width="250" class="max-h-full overflow-y-auto">
+﻿@inject NavigationManager NavigationManager
+
+<FluentNavMenu Expanded="@Expanded" class="max-h-full h-full overflow-y-auto rounded max-w-60">
     <FluentNavLink Icon="@(new Icons.Regular.Size24.Home())" Href="/">Home</FluentNavLink>
-    <FluentNavGroup Id="LibraryGroup" Title="Library" Icon="@(new Icons.Regular.Size24.Library())">
-        <FluentNavLink>Item 1.2</FluentNavLink>
+    <FluentNavGroup Id="LibraryGroup" Icon="@(new Icons.Regular.Size24.Library())">
+
+        <TitleTemplate>
+
+            <div class="flex flex-row justify-between items-center">
+                <span>Library</span>
+
+
+
+                <div @onclick="ToAddLibrary" @onclick:stopPropagation>
+                    <FluentButton IconStart="@(new Icons.Regular.Size16.Add())"
+                                  BackgroundColor="transparent"
+                                  Appearance="Appearance.Stealth" />
+                </div>
+            </div>
+
+        </TitleTemplate>
+
     </FluentNavGroup>
-
-    @for (int i = 0; i < 50; i++)
-    {
-        <FluentNavLink>Home</FluentNavLink>
-    }
-
 
 </FluentNavMenu>
 
 
-
-
 @code {
+    [Parameter] public bool Expanded { get; set; } = true;
+
+    public void ToAddLibrary()
+    {
+        NavigationManager.NavigateTo("/libraries/create");
+    }
 
 }

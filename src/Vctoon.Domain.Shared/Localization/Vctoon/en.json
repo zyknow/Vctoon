@@ -1,10 +1,19 @@
-{
+﻿{
   "culture": "en",
   "texts": {
     "Menu:Home": "Home",
     "Welcome": "Welcome",
     "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information, visit abp.io.",
     "Vctoon:DataNotFound": "Data not found.",
-    "Vctoon:NameIsAlreadyExists": "The name '{Name}' is already exists."
+    "Vctoon:NameIsAlreadyExists": "The name '{Name}' is already exists.",
+    "Menu:Library": "MenuLibrary",
+    "Library": "Library",
+    "LibraryName": "LibraryName",
+    "LibraryPaths": "LibraryPaths",
+    "CreateLibrary": "Create Library",
+    "EditLibrary": "EditLibrary",
+    "LibraryDeletionConfirmationMessage": "Are you sure to delete the library {0}?",
+    "SuccessfullyDeleted": "Successfully deleted",
+    "TableFilter": "TableFilter"
   }
 }

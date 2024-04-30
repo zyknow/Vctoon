@@ -1,10 +1,19 @@
-{
+﻿{
   "culture": "zh-Hans",
   "texts": {
     "Menu:Home": "首页",
     "Welcome": "欢迎",
     "LongWelcomeMessage": "欢迎使用本应用程序。这是一个基于 ABP 框架的启动项目。更多信息，请访问 abp.io。",
     "Vctoon:DataNotFound": "未找到数据",
-    "Vctoon:NameIsAlreadyExists": " '{Name}' 已经存在"
+    "Vctoon:NameIsAlreadyExists": " '{Name}' 已经存在",
+    "Menu:Library": "MenuLibrary",
+    "Library": "Library",
+    "LibraryName": "LibraryName",
+    "LibraryPaths": "LibraryPaths",
+    "CreateLibrary": "创建库",
+    "EditLibrary": "EditLibrary",
+    "LibraryDeletionConfirmationMessage": "Are you sure to delete the library {0}?",
+    "SuccessfullyDeleted": "Successfully deleted",
+    "TableFilter": "TableFilter"
   }
 }

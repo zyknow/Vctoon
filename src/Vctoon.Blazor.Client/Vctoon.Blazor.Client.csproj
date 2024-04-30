@@ -1,32 +1,42 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <ImplicitUsings>true</ImplicitUsings>
+        <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.4"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.4" />
 
-        <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.7.1"/>
-        <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Emoji" Version="4.6.0"/>
-        <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.7.0"/>
-        <PackageReference Include="Volo.Abp.Core" Version="$(AbpVersion)"/>
-        <PackageReference Include="Volo.Abp.Localization" Version="$(AbpVersion)"/>
-        <PackageReference Include="Volo.Abp.ObjectMapping" Version="$(AbpVersion)"/>
+        <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.7.1" />
+        <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Emoji" Version="4.6.0" />
+        <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.7.0" />
+        <PackageReference Include="Volo.Abp.Core" Version="$(AbpVersion)" />
+        <PackageReference Include="Volo.Abp.ObjectMapping" Version="$(AbpVersion)" />
     </ItemGroup>
+
+    <!--<ItemGroup>
+        <StaticWebAsset Include="wwwroot\\uno.css" SourceType="Computed" AssetKind="All" />
+    </ItemGroup>-->
 
 
     <ItemGroup>
-        <AdditionalFiles Include="Components\LanguageSelector.razor"/>
-        <AdditionalFiles Include="Components\Themes\ThemeSettingPanel.razor"/>
-        <AdditionalFiles Include="Layout\MainLayout.razor"/>
-        <AdditionalFiles Include="Pages\Home.razor"/>
+        <AdditionalFiles Include="Components\LanguageSelector.razor" />
+        <AdditionalFiles Include="Components\Themes\ThemeSettingPanel.razor" />
+        <AdditionalFiles Include="Layout\MainLayout.razor" />
+        <AdditionalFiles Include="Pages\Home.razor" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Blazor.Store\Blazor.Store.csproj"/>
+        <ProjectReference Include="..\Blazor.Store\Blazor.Store.csproj" />
+        <ProjectReference Include="..\Vctoon.Application.Contracts\Vctoon.Application.Contracts.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="wwwroot\" />
     </ItemGroup>
 
 </Project>

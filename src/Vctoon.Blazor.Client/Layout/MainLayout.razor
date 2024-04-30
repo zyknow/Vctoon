@@ -13,7 +13,7 @@
     <FluentLayout @rendermode="InteractiveServer">
         <FluentHeader class="rounded-2">
 
-            <div class="flex flex-row items-center space-x-4">
+            <div class="flex flex-row items-center space-x-4 ">
 
                 <FluentButton IconStart="@(new Icons.Regular.Size28.List())"
                               BackgroundColor="transparent"
@@ -38,11 +38,13 @@
                               Appearance="Appearance.Accent"
                               OnClick="@OpenThemeSettingPanel">
                 </FluentButton>
-
+                
                 <FluentTooltip Anchor="settingIcon">
                     Theme Settings
                 </FluentTooltip>
 
+                <LanguageSelector />
+                
                 <FluentProfileMenu Status="@PresenceStatus.Available"
                                    HeaderLabel="Vctoon"
                                    Initials="@CurrentUser.Name?.FirstOrDefault().ToString()"
@@ -54,8 +56,8 @@
             </div>
         </FluentHeader>
 
-        <FluentStack Orientation="Orientation.Horizontal" style="height: calc(100dvh - 57.8px);">
-            <NavMenu></NavMenu>
+        <FluentStack Orientation="Orientation.Horizontal" Class="mt-2" style="height: calc(100dvh - 65.8px);">
+            <NavMenu Expanded="@NavMenuExpanded"></NavMenu>
 
             <FluentBodyContent class="h-full w-full max-h-full overflow-y-auto">
                 @Body
@@ -82,6 +84,8 @@
 
 
     public OfficeColor? ThemeOfficeColor { get; set; }
+    
+    public bool NavMenuExpanded { get; set; } = true;
 
     async Task OpenThemeSettingPanel()
     {
@@ -114,7 +118,7 @@
 
     async Task SwitchMenuBar()
     {
-        
+        NavMenuExpanded = !NavMenuExpanded;
     }
 
 }

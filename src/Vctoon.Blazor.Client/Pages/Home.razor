@@ -1,15 +1,24 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.FluentUI.AspNetCore.Components
+@using System.Globalization
 @using Vctoon.Blazor.Client.States
+@using Volo.Abp.Localization
 @inherits VctoonComponentBase
+@inject ILanguageProvider LanguageProvider
 @attribute [Authorize]
 @inject AppStore AppStore
+@inject NavigationManager NavigationManager
 <PageTitle>Home</PageTitle>
 
 <div class="h-full">
-
-
+    
+    
+    <FluentCard Width="400px" Height="250px">
+        <span class="text-red-500">CurrentCulture : @CultureInfo.CurrentCulture.Name</span>
+        <FluentButton @onclick="ChangeLang"></FluentButton>
+    </FluentCard>
+    
     @for (int i = 0; i < 50; i++)
     {
         <FluentCard Width="400px" Height="250px">
@@ -19,7 +28,49 @@
 </div>
 
 
-
 @code {
-
+    
+    private LanguageInfo _currentLanguage;
+    private IReadOnlyList<LanguageInfo> _otherLanguages;
+    
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var languages = await LanguageProvider.GetLanguagesAsync();
+            var currentLanguage = languages.FindByCulture(
+                CultureInfo.CurrentCulture.Name,
+                CultureInfo.CurrentUICulture.Name
+            );
+            
+            if (currentLanguage == null)
+            {
+                CultureInfo.CurrentCulture = new CultureInfo("zh");
+                currentLanguage = new LanguageInfo(
+                    CultureInfo.CurrentCulture.Name,
+                    CultureInfo.CurrentUICulture.Name,
+                    CultureInfo.CurrentUICulture.DisplayName);
+            }
+        }
+        
+        
+        base.OnAfterRender(firstRender);
+    }
+    
+    void ChangeLang()
+    {
+        ChangeLanguage(new LanguageInfo("zh-Hans"));
+    }
+    
+    private void ChangeLanguage(LanguageInfo language)
+    {
+        var relativeUrl = NavigationManager.Uri.RemovePreFix(NavigationManager.BaseUri).EnsureStartsWith('/').EnsureStartsWith('~');
+        
+        NavigationManager.NavigateTo(
+            $"Abp/Languages/Switch?culture={language.CultureName}&uiCulture={language.UiCultureName}&returnUrl={relativeUrl}",
+            forceLoad: true
+        );
+    }
+    
 }

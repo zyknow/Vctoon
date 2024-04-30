@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
 using Microsoft.FluentUI.AspNetCore.Components;
+using Microsoft.JSInterop;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Validation.AspNetCore;
+using System.Globalization;
+using System.Threading.Tasks;
 using Tailwind;
 using Vctoon.Blazor.Client;
 using Vctoon.BlobContainers;
@@ -21,9 +24,11 @@ using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Autofac;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.BlobStoring.FileSystem;
+using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
 using Volo.Abp.OpenIddict;
 using Volo.Abp.Security.Claims;
+using Volo.Abp.Settings;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.VirtualFileSystem;
@@ -49,7 +54,7 @@ public class VctoonBlazorModule : AbpModule
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
-        
+
         PreConfigure<OpenIddictBuilder>(builder =>
         {
             builder.AddValidation(options =>
@@ -59,14 +64,14 @@ public class VctoonBlazorModule : AbpModule
                 options.UseAspNetCore();
             });
         });
-        
+
         if (!hostingEnvironment.IsDevelopment())
         {
             PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
             {
                 options.AddDevelopmentEncryptionAndSigningCertificate = false;
             });
-            
+
             PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
             {
                 serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx",
@@ -74,13 +79,13 @@ public class VctoonBlazorModule : AbpModule
             });
         }
     }
-    
+
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         var configuration = context.Services.GetConfiguration();
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var services = context.Services;
-        
+
         ConfigureAuthentication(context);
         ConfigureBundles();
         ConfigureUrls(configuration);
@@ -89,16 +94,12 @@ public class VctoonBlazorModule : AbpModule
         ConfigureCors(context, configuration);
         ConfigureSwaggerServices(context, configuration);
         ConfigureBlobStoring();
-        
+
         services.AddRazorComponents()
-            .AddInteractiveServerComponents()
-            .AddInteractiveWebAssemblyComponents();
-        
-        services.AddHttpClient();
-        
-        services.AddFluentUIComponents();
+                .AddInteractiveServerComponents()
+                .AddInteractiveWebAssemblyComponents();
     }
-    
+
     private void ConfigureBlobStoring()
     {
         Configure<AbpBlobStoringOptions>(options =>
@@ -109,14 +110,14 @@ public class VctoonBlazorModule : AbpModule
             });
         });
     }
-    
+
     private void ConfigureAuthentication(ServiceConfigurationContext context)
     {
         context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults
             .AuthenticationScheme);
         context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options => { options.IsDynamicClaimsEnabled = true; });
     }
-    
+
     private void ConfigureBundles()
     {
         Configure<AbpBundlingOptions>(options =>
@@ -127,7 +128,7 @@ public class VctoonBlazorModule : AbpModule
             );
         });
     }
-    
+
     private void ConfigureUrls(IConfiguration configuration)
     {
         Configure<AppUrlOptions>(options =>
@@ -135,16 +136,16 @@ public class VctoonBlazorModule : AbpModule
             options.Applications["MVC"].RootUrl = configuration["App:SelfUrl"];
             options.RedirectAllowedUrls.AddRange(configuration["App:RedirectAllowedUrls"]?.Split(',') ??
                                                  Array.Empty<string>());
-            
+
             options.Applications["Angular"].RootUrl = configuration["App:ClientUrl"];
             options.Applications["Angular"].Urls[AccountUrlNames.PasswordReset] = "account/reset-password";
         });
     }
-    
+
     private void ConfigureVirtualFileSystem(ServiceConfigurationContext context)
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
-        
+
         if (hostingEnvironment.IsDevelopment())
         {
             Configure<AbpVirtualFileSystemOptions>(options =>
@@ -164,7 +165,7 @@ public class VctoonBlazorModule : AbpModule
             });
         }
     }
-    
+
     private void ConfigureConventionalControllers()
     {
         Configure<AbpAspNetCoreMvcOptions>(options =>
@@ -172,13 +173,13 @@ public class VctoonBlazorModule : AbpModule
             options.ConventionalControllers.Create(typeof(VctoonApplicationModule).Assembly);
         });
     }
-    
+
     private static void ConfigureSwaggerServices(ServiceConfigurationContext context, IConfiguration configuration)
     {
         context.Services.AddAbpSwaggerGen(
             options =>
             {
-                options.SwaggerDoc("v1", new OpenApiInfo {Title = "Vctoon API", Version = "v1"});
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Vctoon API", Version = "v1" });
                 options.DocInclusionPredicate((docName, description) => true);
                 options.CustomSchemaIds(type => type.FullName);
             }
@@ -197,7 +198,7 @@ public class VctoonBlazorModule : AbpModule
         //         options.CustomSchemaIds(type => type.FullName);
         //     });
     }
-    
+
     private void ConfigureCors(ServiceConfigurationContext context, IConfiguration configuration)
     {
         context.Services.AddCors(options =>
@@ -217,29 +218,29 @@ public class VctoonBlazorModule : AbpModule
             });
         });
     }
-    
+
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
         var app = context.GetApplicationBuilder();
         var env = context.GetEnvironment();
-        
+
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
         }
-        
+
         app.UseAbpRequestLocalization();
-        
+
         if (!env.IsDevelopment())
         {
             app.UseErrorPage();
         }
-        
+
         if (env.IsDevelopment())
         {
-            app.RunTailwind("watch", "./");
+            //app.RunTailwind("watch", "./");
         }
-        
+
         app.UseHttpsRedirection();
         app.UseCorrelationId();
         app.UseStaticFiles();
@@ -247,21 +248,21 @@ public class VctoonBlazorModule : AbpModule
         app.UseCors();
         app.UseAuthentication();
         app.UseAbpOpenIddictValidation();
-        
+
         app.UseUnitOfWork();
         app.UseDynamicClaims();
         app.UseAuthorization();
-        
+
         app.UseAntiforgery();
-        
+
         app.UseSwagger();
-        
+
         app.UseAbpSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "Vctoon API"); });
-        
+
         app.UseAuditing();
-        
+
         var webApp = app as WebApplication;
-        
+
         webApp.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
