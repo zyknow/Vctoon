@@ -1,0 +1,13 @@
+﻿{
+  "culture": "en",
+  "texts": {
+    "Library": "Library",
+    "LibraryName": "LibraryName",
+    "LibraryPaths": "LibraryPaths",
+    "CreateLibrary": "Create Library",
+    "EditLibrary": "EditLibrary",
+    "LibraryDeletionConfirmationMessage": "Are you sure to delete the library {0}?",
+    "SuccessfullyDeleted": "Successfully deleted",
+    "TableFilter": "TableFilter"
+  }
+}

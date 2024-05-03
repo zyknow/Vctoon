@@ -49,6 +49,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "core", "core", "{94D29B68-D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazor.Store", "src\Blazor.Store\Blazor.Store.csproj", "{FEDFDF50-9BF4-4882-87E4-627C78F1AFDE}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vctoon.Maui", "src\Vctoon.Maui\Vctoon.Maui.csproj", "{7D77D0DF-07CD-493C-A6A7-A369F978689D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -119,6 +121,10 @@ Global
 		{FEDFDF50-9BF4-4882-87E4-627C78F1AFDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FEDFDF50-9BF4-4882-87E4-627C78F1AFDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FEDFDF50-9BF4-4882-87E4-627C78F1AFDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D77D0DF-07CD-493C-A6A7-A369F978689D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D77D0DF-07CD-493C-A6A7-A369F978689D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D77D0DF-07CD-493C-A6A7-A369F978689D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D77D0DF-07CD-493C-A6A7-A369F978689D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -140,6 +146,7 @@ Global
 		{A28097C8-185D-4E84-9BAB-043E237A6F7A} = {CA9AC87F-097E-4F15-8393-4BC07735A5B0}
 		{4D80953F-D0D0-4C10-99EE-517F119C0984} = {CA9AC87F-097E-4F15-8393-4BC07735A5B0}
 		{FEDFDF50-9BF4-4882-87E4-627C78F1AFDE} = {94D29B68-D135-4F45-BD0F-26CD445D1D46}
+		{7D77D0DF-07CD-493C-A6A7-A369F978689D} = {CA9AC87F-097E-4F15-8393-4BC07735A5B0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {28315BFD-90E7-4E14-A2EA-F3D23AF4126F}

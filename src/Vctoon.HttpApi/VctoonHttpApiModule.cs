@@ -1,5 +1,5 @@
 ﻿using Localization.Resources.AbpUi;
-using Vctoon.Localization;
+using Vctoon.Localization.Vctoon;
 using Volo.Abp.Account;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
@@ -26,7 +26,7 @@ public class VctoonHttpApiModule : AbpModule
     {
         ConfigureLocalization();
     }
-
+    
     private void ConfigureLocalization()
     {
         Configure<AbpLocalizationOptions>(options =>

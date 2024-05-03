@@ -1,4 +1,4 @@
-﻿using Vctoon.Localization;
+﻿using Vctoon.Localization.Vctoon;
 
 namespace Vctoon;
 

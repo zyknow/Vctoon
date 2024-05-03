@@ -1,23 +1,22 @@
 ﻿@page "/libraries/create"
-@using Vctoon.Blazor.Client.Layout
 @using Vctoon.Blazor.Client.Validations
 @inherits VctoonComponentBase
 
 <h3>@L["CreateLibrary"]</h3>
 
-<EditForm Model="@dto" OnValidSubmit="@HandleValidSubmit">
-
-    <AbpDataAnnotationsValidator />
+<EditForm Model="@Dto" OnValidSubmit="@HandleValidSubmit">
     
-    <FluentTextField Label="Name" Placeholder="Name" @bind-Value="@dto.Name" Required/>
-    <FluentValidationMessage For="@(() => dto.Name)" />
+    <AbpDataAnnotationsValidator/>
+    
+    <FluentTextField Label="Name" Placeholder="Name" @bind-Value="@Dto.Name" Required/>
+    <FluentValidationMessage For="@(() => Dto.Name)"/>
     
     <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">@L["Submit"]</FluentButton>
 </EditForm>
 
 
 @code {
-    [SupplyParameterFromForm] public LibraryCreateUpdateDto dto { get; set; } = new();
+    [SupplyParameterFromForm] public LibraryCreateUpdateDto Dto { get; set; } = new();
     
     void HandleValidSubmit(EditContext context)
     {

@@ -1,4 +1,5 @@
-﻿using Vctoon.Localization;
+﻿using Vctoon.Localization.Libraries;
+using Vctoon.Localization.Vctoon;
 using Volo.Abp.AuditLogging;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.FeatureManagement;
@@ -32,27 +33,27 @@ public class VctoonDomainSharedModule : AbpModule
         VctoonGlobalFeatureConfigurator.Configure();
         VctoonModuleExtensionConfigurator.Configure();
     }
-
+    
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
-        Configure<AbpVirtualFileSystemOptions>(options =>
-        {
-            options.FileSets.AddEmbedded<VctoonDomainSharedModule>();
-        });
-
+        Configure<AbpVirtualFileSystemOptions>(options => { options.FileSets.AddEmbedded<VctoonDomainSharedModule>(); });
+        
         Configure<AbpLocalizationOptions>(options =>
         {
             options.Resources
+                .Add<LibraryResource>("en")
+                .AddBaseTypes(typeof(AbpValidationResource))
+                .AddVirtualJson("/Localization/Libraries");
+            
+            options.Resources
                 .Add<VctoonResource>("en")
                 .AddBaseTypes(typeof(AbpValidationResource))
+                .AddBaseTypes(typeof(LibraryResource))
                 .AddVirtualJson("/Localization/Vctoon");
-
+            
             options.DefaultResourceType = typeof(VctoonResource);
         });
-
-        Configure<AbpExceptionLocalizationOptions>(options =>
-        {
-            options.MapCodeNamespace($"Vctoon", typeof(VctoonResource));
-        });
+        
+        Configure<AbpExceptionLocalizationOptions>(options => { options.MapCodeNamespace($"Vctoon", typeof(VctoonResource)); });
     }
 }

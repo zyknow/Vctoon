@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 
     <PropertyGroup>
@@ -22,6 +22,11 @@
     <ItemGroup>
         <EmbeddedResource Include="Localization\Vctoon\*.json"/>
         <Content Remove="Localization\Vctoon\*.json"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Localization\Libraries\*.json"/>
+        <Content Remove="Localization\Libraries\*.json"/>
     </ItemGroup>
 
     <ItemGroup>

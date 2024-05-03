@@ -7,5 +7,5 @@ namespace Vctoon.Blazor.Client.States;
 public partial class AppStore : StateBase<AppStore>
 {
     [ObservableProperty]
-    string currentCulture;
+    private string _currentCulture;
 }
