@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
 using Volo.Abp.Validation;
 using Volo.Abp.Validation.Localization;
 
@@ -40,7 +41,6 @@ public class AbpDataAnnotationsValidator : ComponentBase, IDisposable
         CurrentEditContext.OnValidationStateChanged += OnValidationStateChanged;
         CurrentEditContext.OnFieldChanged += OnFieldChanged;
         CurrentEditContext.OnValidationRequested += OnValidationRequested;
-
     }
 
     private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)

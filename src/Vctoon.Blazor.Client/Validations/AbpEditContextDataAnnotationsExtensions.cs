@@ -47,9 +47,6 @@ public static class AbpEditContextDataAnnotationsExtensions
         {
             FieldIdentifier fieldIdentifier = eventArgs.FieldIdentifier;
 
-            var L = _serviceProvider.GetRequiredService<IStringLocalizer<VctoonResource>>();
-            var dt = L["CreateLibrary"];
-
             if (TryGetValidatableProperty(in fieldIdentifier, out var propertyInfo))
             {
                 var errors = await _objectValidator.GetErrorsAsync(_editContext.Model, propertyInfo.Name);

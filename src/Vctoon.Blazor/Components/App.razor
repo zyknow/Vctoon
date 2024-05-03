@@ -2,25 +2,25 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <base href="/"/>
-    <link rel="stylesheet" href="app.css"/>
-    <link rel="stylesheet" href="uno.css"/>
-    <link rel="stylesheet" href="Vctoon.Blazor.styles.css"/>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link rel="stylesheet" href="app.css" />
+    <link rel="stylesheet" href="uno.css" />
+    <link rel="stylesheet" href="Vctoon.Blazor.styles.css" />
     <link href="_content/Microsoft.FluentUI.AspNetCore.Components/css/reboot.css" rel="stylesheet" />
     @* <link href="_content/Vctoon.Blazor.Client/uno.css" rel="stylesheet" /> *@
     @* <HeadOutlet @rendermode="InteractiveAuto"/> *@
-    <HeadOutlet @rendermode="InteractiveServer"/>
+    <HeadOutlet @rendermode="InteractiveServer" />
 </head>
 
 <body>
-@* <Routes @rendermode="InteractiveAuto"/> *@
-<Routes @rendermode="InteractiveServer"/>
-<script src="_framework/blazor.web.js"></script>
-<script src="_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.lib.module.js" type="module" async></script>
+    @* <Routes @rendermode="InteractiveAuto"/> *@
+    <Routes @rendermode="InteractiveServer" />
+    <script src="_framework/blazor.web.js"></script>
+    <script src="_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.lib.module.js" type="module" async></script>
 
-<script src="_content/Microsoft.FluentUI.AspNetCore.Components/js/loading-theme.js" type="text/javascript"></script>
-<loading-theme storage-name="theme"></loading-theme>
+    <script src="_content/Microsoft.FluentUI.AspNetCore.Components/js/loading-theme.js" type="text/javascript"></script>
+    <loading-theme storage-name="theme"></loading-theme>
 </body>
 </html>
