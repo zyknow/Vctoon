@@ -1,12 +1,8 @@
 ﻿@page "/"
-@using Microsoft.AspNetCore.Authorization
-@using Microsoft.FluentUI.AspNetCore.Components
 @using System.Globalization
-@using Vctoon.Blazor.Client.States
-@using Volo.Abp.Localization
 @inherits VctoonComponentBase
 @inject ILanguageProvider LanguageProvider
-@attribute [Authorize]
+@* @attribute [Authorize] *@
 @inject AppStore AppStore
 @inject NavigationManager NavigationManager
 <PageTitle>Home</PageTitle>

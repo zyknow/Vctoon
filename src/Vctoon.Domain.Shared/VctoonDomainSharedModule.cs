@@ -1,4 +1,5 @@
-﻿using Vctoon.Localization.Libraries;
+﻿using Localization.Resources.AbpUi;
+using Vctoon.Localization.Libraries;
 using Vctoon.Localization.Vctoon;
 using Volo.Abp.AuditLogging;
 using Volo.Abp.BackgroundJobs;
@@ -43,6 +44,7 @@ public class VctoonDomainSharedModule : AbpModule
             options.Resources
                 .Add<LibraryResource>("en")
                 .AddBaseTypes(typeof(AbpValidationResource))
+                .AddBaseTypes(typeof(AbpUiResource))
                 .AddVirtualJson("/Localization/Libraries");
             
             options.Resources

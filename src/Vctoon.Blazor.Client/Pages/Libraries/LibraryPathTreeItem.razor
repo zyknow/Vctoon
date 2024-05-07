@@ -1,0 +1,79 @@
+﻿@using Vctoon.Systems
+@inject ISystemAppService SystemAppService
+@if (!PathTree.IsNullOrEmpty())
+{
+    @foreach (var path in PathTree)
+    {
+        <FluentTreeItem Data="@path.Path" ExpandedChanged="@((expanded) => OnExpandedChanged(expanded, path))">
+            
+            <FluentIcon Value="@(new Icons.Regular.Size20.Folder())"/>
+            @if (ParentPath.IsNullOrWhiteSpace())
+            {
+                @path.Path
+            }
+            else
+            {
+                @path.Path.Replace(@$"{ParentPath}", "").TrimStart('/').TrimStart('\\')
+            }
+            
+            
+            <LibraryPathTreeItem PathTree="@path.Children" ParentPath="@path.Path"></LibraryPathTreeItem>
+        </FluentTreeItem>
+    }
+}
+
+@code {
+    
+    [Parameter] public List<SelectPathTree> PathTree { get; set; } = [];
+    
+    [Parameter] public bool IsRoot { get; set; } = false;
+    
+    [Parameter] public string? ParentPath { get; set; }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && IsRoot)
+        {
+            if (!PathTree.IsNullOrEmpty()) return;
+            var paths = await GetPathDirsAsync();
+            PathTree.AddRange(paths.Select(x => new SelectPathTree(x)));
+            
+            foreach (var selectPathTree in PathTree)
+            {
+                selectPathTree.Children = (await GetPathDirsAsync(selectPathTree.Path)).Select(x => new SelectPathTree(x)).ToList();
+            }
+            
+            StateHasChanged();
+        }
+        
+        await base.OnAfterRenderAsync(firstRender);
+    }
+    
+    
+    async Task OnExpandedChanged(bool expanded, SelectPathTree pathTree)
+    {
+        if (!expanded) return;
+        
+        var children = pathTree.Children.Where(x => x.Children.IsNullOrEmpty()).ToList();
+        
+        if (!children.IsNullOrEmpty())
+        {
+            foreach (var selectPathTree in children)
+            {
+                selectPathTree.Children = (await GetPathDirsAsync(selectPathTree.Path)).Select(x => new SelectPathTree(x)).ToList();
+            }
+            
+            StateHasChanged();
+        }
+    }
+    
+    
+    public async Task<List<string>> GetPathDirsAsync(string? path = null)
+    {
+        var paths = await SystemAppService.GetSystemPathsAsync(path);
+        
+        return paths;
+    }
+    
+    
+}

@@ -1,36 +1,65 @@
-﻿@inject NavigationManager NavigationManager
-
+﻿@using Vctoon.Libraries
+@inherits VctoonComponentBase
+@inject NavigationManager NavigationManager
+@inject ILibraryAppService LibraryAppService
+@inject UserStore UserStore
 <FluentNavMenu Expanded="@Expanded" class="max-h-full h-full overflow-y-auto rounded max-w-60">
     <FluentNavLink Icon="@(new Icons.Regular.Size24.Home())" Href="/">Home</FluentNavLink>
-    <FluentNavGroup Id="LibraryGroup" Icon="@(new Icons.Regular.Size24.Library())">
-
+    <FluentNavGroup Id="LibraryGroup" Icon="@(new Icons.Regular.Size24.Library())" @bind-Expanded="LibrariesExpanded">
+        
         <TitleTemplate>
-
+            
             <div class="flex flex-row justify-between items-center">
                 <span>Library</span>
-
-
-
+                
+                
                 <div @onclick="ToAddLibrary" @onclick:stopPropagation>
                     <FluentButton IconStart="@(new Icons.Regular.Size16.Add())"
                                   BackgroundColor="transparent"
-                                  Appearance="Appearance.Stealth" />
+                                  Appearance="Appearance.Stealth"/>
                 </div>
             </div>
-
+            
+            
         </TitleTemplate>
-
+        
+        <ChildContent>
+            @foreach (var libraryDto in UserStore.Libraries)
+            {
+                <FluentNavLink Icon="@(new Icons.Filled.Size16.Book())">
+                    <div class="flex flex-row items-center">
+                        
+                        <span class="flex-1">@libraryDto.Name</span>
+                        <FluentButton BackgroundColor="transparent"
+                                      IconEnd="@(new Icons.Filled.Size16.MoreVertical())">
+                        </FluentButton>
+                    </div>
+                </FluentNavLink>
+            }
+        </ChildContent>
+        
     </FluentNavGroup>
-
+    
 </FluentNavMenu>
 
 
 @code {
     [Parameter] public bool Expanded { get; set; } = true;
-
+    [Parameter] public bool LibrariesExpanded { get; set; } = true;
+    
     public void ToAddLibrary()
     {
         NavigationManager.NavigateTo("/libraries/create");
     }
-
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            UserStore.LoadLibrariesAsync();
+        }
+        
+        await base.OnAfterRenderAsync(firstRender);
+    }
+    
 }

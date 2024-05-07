@@ -1,6 +1,8 @@
 ﻿using Vctoon.Libraries.Dtos;
 using Vctoon.Localization.Libraries;
 using Vctoon.Services;
+using Volo.Abp;
+using Volo.Abp.Application.Dtos;
 
 namespace Vctoon.Libraries;
 
@@ -28,6 +30,22 @@ public class LibraryAppService : CrudAppService<Library, LibraryDto, Guid, Libra
     protected override string UpdatePolicyName { get; set; } = VctoonPermissions.Library.Update;
     protected override string DeletePolicyName { get; set; } = VctoonPermissions.Library.Delete;
     protected string ScanPolicyName => CreatePolicyName;
+    
+    [RemoteService(false)]
+    public override Task<PagedResultDto<LibraryDto>> GetListAsync(LibraryGetListInput input)
+    {
+        return base.GetListAsync(input);
+    }
+    
+    
+    public async Task<List<LibraryDto>> GetCurrentUserLibraryListAsync()
+    {
+        await CheckGetListPolicyAsync();
+        
+        List<Library> libraries = await Repository.GetListAsync();
+        
+        return ObjectMapper.Map<List<Library>, List<LibraryDto>>(libraries);
+    }
     
     public override async Task<LibraryDto> CreateAsync(LibraryCreateUpdateDto input)
     {

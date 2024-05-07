@@ -1,5 +1,4 @@
-﻿using Blazor.Store;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using Vctoon.Localization.Vctoon;
 

@@ -7,6 +7,8 @@
     "CreateLibrary": "创建库",
     "EditLibrary": "EditLibrary",
     "DisplayName:Name": "库名称",
+    "DisplayName:Paths": "路径",
+    "SelectLibraryPath": "选择库路径",
     "LibraryDeletionConfirmationMessage": "Are you sure to delete the library {0}?",
     "SuccessfullyDeleted": "Successfully deleted",
     "TableFilter": "TableFilter"

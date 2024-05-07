@@ -33,6 +33,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Blazor.Store\Blazor.Store.csproj" />
         <ProjectReference Include="..\Vctoon.Application.Contracts\Vctoon.Application.Contracts.csproj" />
+        <ProjectReference Include="..\Vctoon.HttpApi.Client\Vctoon.HttpApi.Client.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

@@ -1,8 +1,8 @@
-using Serilog;
+﻿using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 
-namespace Vctoon.Blazor;
+namespace Vctoon;
 
 public class Program
 {
@@ -23,13 +23,13 @@ public class Program
         
         try
         {
-            Log.Information("Starting Vctoon.Blazor.");
-            var builder = WebApplication.CreateBuilder(args);
+            Log.Information("Starting Vctoon.HttpApi.Host.");
+            WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
             builder.Host.AddAppSettingsSecretsJson()
                 .UseAutofac()
                 .UseSerilog();
-            await builder.AddApplicationAsync<VctoonBlazorModule>();
-            var app = builder.Build();
+            await builder.AddApplicationAsync<VctoonHttpApiHostModule>();
+            WebApplication app = builder.Build();
             await app.InitializeApplicationAsync();
             await app.RunAsync();
             return 0;

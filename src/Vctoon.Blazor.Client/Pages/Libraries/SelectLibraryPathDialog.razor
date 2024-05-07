@@ -1,0 +1,21 @@
+﻿@inherits VctoonComponentBase
+@inject IStringLocalizer<LibraryResource> L
+@implements IDialogContentComponent<SelectPath>
+<FluentTreeView CurrentSelectedChanged="@OnSelectedChanged">
+    <LibraryPathTreeItem IsRoot></LibraryPathTreeItem>
+</FluentTreeView>
+
+@code {
+    
+    
+    [CascadingParameter] public FluentDialog? Dialog { get; set; }
+    
+    void OnSelectedChanged(FluentTreeItem? item)
+    {
+        var path = item?.Data?.ToString();
+        Content.Path = path;
+        Dialog!.TogglePrimaryActionButton(!path.IsNullOrWhiteSpace());
+    }
+    
+    [Parameter] public SelectPath Content { get; set; } = new("");
+}
