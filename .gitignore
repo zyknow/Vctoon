@@ -265,7 +265,7 @@ Vctoon.db
 Vctoon.db-shm
 Vctoon.db-wal
 
-src/Vctoon.Blazor/Host
+src/Vctoon.HttpApi.Host/Host
 
 # Use abp install-libs to restore.
 **/wwwroot/libs/*
