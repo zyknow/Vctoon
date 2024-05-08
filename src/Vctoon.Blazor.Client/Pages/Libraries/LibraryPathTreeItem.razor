@@ -70,9 +70,18 @@
     
     public async Task<List<string>> GetPathDirsAsync(string? path = null)
     {
-        var paths = await SystemAppService.GetSystemPathsAsync(path);
+        try
+        {
+            var paths = await SystemAppService.GetSystemPathsAsync(path);
+            
+            return paths;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
         
-        return paths;
+        return [];
     }
     
     

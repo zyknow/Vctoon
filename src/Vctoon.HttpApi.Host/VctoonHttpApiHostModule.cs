@@ -162,27 +162,27 @@ public class VctoonHttpApiHostModule : AbpModule
     
     private static void ConfigureSwaggerServices(ServiceConfigurationContext context, IConfiguration configuration)
     {
-        context.Services.AddAbpSwaggerGen(
-            options =>
-            {
-                options.SwaggerDoc("v1", new OpenApiInfo {Title = "Vctoon API", Version = "v1"});
-                options.DocInclusionPredicate((docName, description) => true);
-                options.CustomSchemaIds(type => type.FullName);
-            }
-        );
-        //
-        // context.Services.AddAbpSwaggerGenWithOAuth(
-        //     configuration["AuthServer:Authority"]!,
-        //     new Dictionary<string, string>
-        //     {
-        //         {"Vctoon", "Vctoon API"}
-        //     },
+        // context.Services.AddAbpSwaggerGen(
         //     options =>
         //     {
         //         options.SwaggerDoc("v1", new OpenApiInfo {Title = "Vctoon API", Version = "v1"});
         //         options.DocInclusionPredicate((docName, description) => true);
         //         options.CustomSchemaIds(type => type.FullName);
-        //     });
+        //     }
+        // );
+        //
+        context.Services.AddAbpSwaggerGenWithOAuth(
+            configuration["AuthServer:Authority"]!,
+            new Dictionary<string, string>
+            {
+                {"Vctoon", "Vctoon API"}
+            },
+            options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo {Title = "Vctoon API", Version = "v1"});
+                options.DocInclusionPredicate((docName, description) => true);
+                options.CustomSchemaIds(type => type.FullName);
+            });
     }
     
     private void ConfigureCors(ServiceConfigurationContext context, IConfiguration configuration)
@@ -224,6 +224,7 @@ public class VctoonHttpApiHostModule : AbpModule
         
         app.UseHttpsRedirection();
         app.UseCorrelationId();
+        
         app.UseStaticFiles();
         app.UseRouting();
         app.UseCors();
@@ -238,7 +239,13 @@ public class VctoonHttpApiHostModule : AbpModule
         
         app.UseSwagger();
         
-        app.UseAbpSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "Vctoon API"); });
+        app.UseAbpSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", "Vctoon API");
+            var configuration = context.GetConfiguration();
+            options.OAuthClientId(configuration["AuthServer:SwaggerClientId"]);
+            options.OAuthScopes("Vctoon");
+        });
         
         app.UseAuditing();
         
