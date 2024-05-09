@@ -10,18 +10,15 @@
 @inject IToastService ToastService
 @inject IStringLocalizer<VctoonResource> L
 <div class="mt-2 mx-2">
-    <FluentLayout @rendermode="InteractiveServer">
+    <FluentLayout>
         <FluentHeader class="rounded-2">
-            
             <div class="flex flex-row items-center space-x-4 ">
-                
                 <FluentButton IconStart="@(new Icons.Regular.Size28.List())"
                               BackgroundColor="transparent"
                               Appearance="Appearance.Accent"
                               OnClick="@SwitchMenuBar">
                 </FluentButton>
                 <span class="text-3xl select-none mb-1.3">Vctoon</span>
-                
             </div>
             
             <FluentSpacer/>

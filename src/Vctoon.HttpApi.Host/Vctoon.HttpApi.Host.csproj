@@ -38,10 +38,4 @@
         <None Remove="Logs\**"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <_ContentIncludedByDefault Remove="Components\App.razor"/>
-        <_ContentIncludedByDefault Remove="Components\Pages\Error.razor"/>
-        <_ContentIncludedByDefault Remove="Components\_Imports.razor"/>
-    </ItemGroup>
-
 </Project>

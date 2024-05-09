@@ -22,4 +22,6 @@ public class VctoonBlazorClientModule : AbpModule
             opt.ObjectValidationContributors.Add<BlazorDataAnnotationObjectValidationContributor>();
         });
     }
+    
+    
 }

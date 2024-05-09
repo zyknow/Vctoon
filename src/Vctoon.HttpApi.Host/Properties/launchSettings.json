@@ -1,6 +1,6 @@
-{
+﻿{
   "profiles": {
-    "Vctoon.Blazor": {
+    "Vctoon.HttpApi.Host": {
       "commandName": "Project",
       "launchBrowser": false,
       "applicationUrl": "https://localhost:44358",

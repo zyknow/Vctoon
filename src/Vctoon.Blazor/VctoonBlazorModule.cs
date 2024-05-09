@@ -15,6 +15,7 @@ using Volo.Abp.Http.Client.IdentityModel;
 using Volo.Abp.Http.Client.IdentityModel.Web;
 using Volo.Abp.Modularity;
 using Volo.Abp.Security.Claims;
+using Volo.Abp.VirtualFileSystem;
 
 namespace Vctoon.Blazor;
 
@@ -37,11 +38,29 @@ public class VctoonBlazorModule : AbpModule
         IConfiguration configuration = services.GetConfiguration();
         
         ConfigureAuthentication(context, configuration);
-        
+        ConfigureVirtualFileSystem(context);
         // Add services to the container.
         services.AddRazorComponents()
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
+    }
+    
+    private void ConfigureVirtualFileSystem(ServiceConfigurationContext context)
+    {
+        IWebHostEnvironment hostingEnvironment = context.Services.GetHostingEnvironment();
+        
+        if (hostingEnvironment.IsDevelopment())
+        {
+            Configure<AbpVirtualFileSystemOptions>(options =>
+            {
+                options.FileSets.ReplaceEmbeddedByPhysical<VctoonDomainSharedModule>(
+                    Path.Combine(hostingEnvironment.ContentRootPath,
+                        $"..{Path.DirectorySeparatorChar}Vctoon.Domain.Shared"));
+                options.FileSets.ReplaceEmbeddedByPhysical<VctoonApplicationContractsModule>(
+                    Path.Combine(hostingEnvironment.ContentRootPath,
+                        $"..{Path.DirectorySeparatorChar}Vctoon.Application.Contracts"));
+            });
+        }
     }
     
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
@@ -137,7 +156,7 @@ public class VctoonBlazorModule : AbpModule
             app.RunTailwind("watch");
         }
         
-        app.UseAbpRequestLocalization();
+        // app.UseAbpRequestLocalization();
         
         if (!env.IsDevelopment())
         {
