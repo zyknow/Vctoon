@@ -1,0 +1,139 @@
+﻿@using Vctoon.Libraries
+@inherits VctoonComponentBase
+@inject IStringLocalizer<LibraryResource> L
+@inject IDialogService DialogService
+@inject ILibraryAppService LibraryAppService
+@inject IToastService ToastService
+@inject UserStore UserStore
+<div class="p-4 space-y-8">
+    <h3>@(LibraryId != null ? L["EditLibrary"] : L["CreateLibrary"]) </h3>
+    <EditForm Model="@Dto" OnValidSubmit="@HandleValidSubmit">
+        
+        <div class="flex flex-col space-y-2">
+            <AbpDataAnnotationsValidator/>
+            <div>
+            </div>
+            
+            <div>
+                <FluentTextField Label="@L["DisplayName:Name"]" @bind-Value="@Dto.Name"/>
+                <FluentValidationMessage For="@(() => Dto.Name)"/>
+            </div>
+            
+            <div class="flex flex-col space-x-2">
+                <div class="flex items-center">
+                    <span>@L["DisplayName:Paths"]</span>
+                    
+                    <FluentIcon Value="@(new Icons.Regular.Size20.Add())"
+                                BackgroundColor="transparent"
+                                OnClick="ShowLibraryPathSelect">
+                    </FluentIcon>
+                </div>
+                <div class="flex flex-col space-y-2">
+                    @foreach (var path in Dto.Paths)
+                    {
+                        <div class="flex flex-row items-center">
+                            
+                            <span class="flex-1">@path</span>
+                            <FluentIcon Color="@Color.Error" Value="@(new Icons.Regular.Size20.Delete())"
+                                        BackgroundColor="transparent"
+                                        OnClick="@(() => Dto.Paths.Remove(path))">
+                            </FluentIcon>
+                            
+                        </div>
+                    }
+                </div>
+                <FluentValidationMessage For="@(() => Dto.Paths)"/>
+            </div>
+            <FluentButton Loading="@_submitLoading" Type="ButtonType.Submit" Appearance="Appearance.Accent"
+                          class="">
+                @L["Submit"]
+            </FluentButton>
+            
+        </div>
+        
+        
+    </EditForm>
+</div>
+
+
+@code {
+    [SupplyParameterFromForm] LibraryCreateUpdateDto Dto { get; set; } = new();
+    
+    [Parameter] public virtual Guid? LibraryId { get; set; }
+    
+    bool _submitLoading = false;
+    
+    async Task HandleValidSubmit(EditContext context)
+    {
+        _submitLoading = true;
+        try
+        {
+            if (LibraryId != null)
+            {
+                await LibraryAppService.UpdateAsync(LibraryId.Value, Dto);
+            }
+            else
+            {
+                await LibraryAppService.CreateAsync(Dto);
+                await UserStore.LoadLibrariesAsync();
+                Dto = new LibraryCreateUpdateDto();
+            }
+            
+            await UserStore.LoadLibrariesAsync();
+        }
+        catch (Exception e)
+        {
+            ToastService.ShowError(e.Message);
+        }
+        
+        _submitLoading = false;
+    }
+    
+    
+    async void ShowLibraryPathSelect()
+    {
+        SelectPath selectedPath = new("");
+        
+        DialogParameters parameters = new()
+        {
+            Title = L["SelectLibraryPath"],
+            PrimaryAction = L["Submit"],
+            PrimaryActionEnabled = false,
+            SecondaryAction = L["Cancel"],
+            Width = "80%",
+            PreventScroll = true
+        };
+        
+        var dialog = await DialogService.ShowDialogAsync<SelectLibraryPathDialog>(selectedPath, parameters);
+        var result = await dialog.Result;
+        
+        if (result is { Cancelled: false, Data: not null })
+        {
+            Dto.Paths.AddIfNotContains(selectedPath.Path);
+            StateHasChanged();
+        }
+    }
+    
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        
+        if (firstRender)
+        {
+            if (LibraryId != null)
+            {
+                var dto = await LibraryAppService.GetAsync(LibraryId.Value);
+                Dto.Name = dto.Name;
+                Dto.Paths = dto.Paths;
+                StateHasChanged();
+            }
+        }
+    }
+    
+    protected override Task OnParametersSetAsync()
+    {
+        return base.OnParametersSetAsync();
+    }
+    
+}

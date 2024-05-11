@@ -1,0 +1,8 @@
+﻿@page "/library/edit/{libraryId:guid}"
+@attribute [Authorize(Policy = VctoonPermissions.Library.Update)]
+
+<CreateEditLibraryBase LibraryId="@LibraryId"></CreateEditLibraryBase>
+
+@code {
+    [Parameter] public virtual Guid LibraryId { get; set; }
+}

@@ -1,0 +1,9 @@
+﻿@page "/library/{libraryId:guid}"
+@inherits VctoonComponentBase
+@attribute [Authorize(Policy = VctoonPermissions.Library.Create)]
+
+Library
+
+@code {
+    [Parameter] public virtual Guid LibraryId { get; set; }
+}

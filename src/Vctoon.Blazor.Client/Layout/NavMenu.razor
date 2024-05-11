@@ -2,8 +2,10 @@
 @inherits VctoonComponentBase
 @inject NavigationManager NavigationManager
 @inject ILibraryAppService LibraryAppService
+@inject IDialogService DialogService
+@inject IStringLocalizer<LibraryResource> L
 @inject UserStore UserStore
-<FluentNavMenu Expanded="@Expanded" class="max-h-full h-full overflow-y-auto rounded max-w-60">
+<FluentNavMenu CollapsedChildNavigation Expanded="@Expanded" class="max-h-full h-full overflow-y-auto rounded max-w-60">
     <FluentNavLink Icon="@(new Icons.Regular.Size24.Home())" Href="/">Home</FluentNavLink>
     <FluentNavGroup Id="LibraryGroup" Icon="@(new Icons.Regular.Size24.Library())" @bind-Expanded="LibrariesExpanded">
         
@@ -13,7 +15,7 @@
                 <span>Library</span>
                 
                 
-                <div @onclick="ToAddLibrary" @onclick:stopPropagation>
+                <div @onclick="() => NavigationToCreateOrUpdateLibrary()" @onclick:stopPropagation>
                     <FluentButton IconStart="@(new Icons.Regular.Size16.Add())"
                                   BackgroundColor="transparent"
                                   Appearance="Appearance.Stealth"/>
@@ -24,15 +26,25 @@
         </TitleTemplate>
         
         <ChildContent>
-            @foreach (var libraryDto in UserStore.Libraries)
+            @foreach (var libraryInfo in Libraries)
             {
-                <FluentNavLink Icon="@(new Icons.Filled.Size16.Book())">
+                <FluentNavLink @Href="@(@$"/library/{libraryInfo.Info.Id}")" Icon="@(new Icons.Filled.Size16.Book())"
+                               @onmouseenter="@(() => libraryInfo.ShowMenuIconBtn = true)"
+                               @onmouseleave="() => libraryInfo.ShowMenuIconBtn = libraryInfo.MenuOpen">
                     <div class="flex flex-row items-center">
                         
-                        <span class="flex-1">@libraryDto.Name</span>
-                        <FluentButton BackgroundColor="transparent"
-                                      IconEnd="@(new Icons.Filled.Size16.MoreVertical())">
-                        </FluentButton>
+                        <span class="flex-1">@libraryInfo.Info.Name</span>
+                        
+                        @if (libraryInfo.ShowMenuIconBtn)
+                        {
+                            <div class="flex items-center">
+                                <FluentIcon id="@(@$"{libraryInfo.Info.Name}_libraryBtn")"
+                                            Value="@(new Icons.Filled.Size16.MoreVertical())"
+                                            @onclick="@(() => libraryInfo.MenuOpen = !libraryInfo.MenuOpen)">
+                                </FluentIcon>
+                            </div>
+                        }
+                        
                     </div>
                 </FluentNavLink>
             }
@@ -42,24 +54,118 @@
     
 </FluentNavMenu>
 
+@foreach (var libraryInfo in Libraries)
+{
+    <FluentMenu Anchor="@(@$"{libraryInfo.Info.Name}_libraryBtn")" @bind-Open="@libraryInfo.MenuOpen" VerticalThreshold="170">
+        <FluentMenuItem @onclick="() => ScanLibrary(libraryInfo.Info)">
+            @L["ScanLibrary"]
+        </FluentMenuItem>
+        
+        <FluentMenuItem @onclick="() => NavigationToCreateOrUpdateLibrary(libraryInfo.Info.Id)">
+            @L["Edit"]
+        </FluentMenuItem>
+        
+        <FluentMenuItem @onclick="() => ShowDeleteLibraryDialog(libraryInfo.Info)">
+            <span class="text-red-500">@L["Delete"]</span>
+        </FluentMenuItem>
+    </FluentMenu>
+}
+
 
 @code {
     [Parameter] public bool Expanded { get; set; } = true;
     [Parameter] public bool LibrariesExpanded { get; set; } = true;
     
-    public void ToAddLibrary()
+    List<NavMenuLibraryInfo> Libraries { get; set; } = [];
+    
+    async Task ScanLibrary(LibraryDto library)
     {
-        NavigationManager.NavigateTo("/libraries/create");
+        await LibraryAppService.ScanAsync(library.Id);
+    }
+    
+    void NavigationToCreateOrUpdateLibrary(Guid? libraryId = null)
+    {
+        if (libraryId != null)
+        {
+            var url = NavigationManager.GetUriWithQueryParameters("/library/edit", new Dictionary<string, object>
+            {
+                { "libraryId", libraryId }
+            });
+            NavigationManager.NavigateTo(@$"/library/edit/{libraryId}", true);
+        }
+        else
+        {
+            NavigationManager.NavigateTo(@"/library/create");
+        }
     }
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            UserStore.LoadLibrariesAsync();
+            await UserStore.LoadLibrariesAsync();
+            UpdateUserLibraryChanged();
         }
+        
+        UserStore.PropertyChanged += (sender, args) =>
+        {
+            if (args.PropertyName == nameof(UserStore.Libraries))
+            {
+                UpdateUserLibraryChanged();
+            }
+        };
+        
+        UserStore.Libraries.CollectionChanged += (sender, args) => { UpdateUserLibraryChanged(); };
+        
         
         await base.OnAfterRenderAsync(firstRender);
     }
     
+    void UpdateUserLibraryChanged()
+    {
+        Libraries.Clear();
+        foreach (var userStoreLibrary in UserStore.Libraries)
+        {
+            var info = new NavMenuLibraryInfo(userStoreLibrary);
+            Libraries.Add(info);
+        }
+        
+        StateHasChanged();
+    }
+    
+    void ShowDeleteLibraryDialog(LibraryDto library)
+    {
+        var msg = L["AreYouSureToDeleteLibrary", library.Name];
+        DialogService.ShowConfirmation(L["DeleteLibrary"], async res =>
+        {
+            if (res.Cancelled)
+                return;
+            
+            await LibraryAppService.DeleteAsync(library.Id);
+            await UserStore.LoadLibrariesAsync();
+        }, msg, L["Submit"], L["Cancel"], L["AreYouSure"]);
+    }
+    
+    
+    class NavMenuLibraryInfo(LibraryDto info)
+    {
+        public LibraryDto Info { get; set; } = info;
+        public bool ShowMenuIconBtn { get; set; }
+        
+        bool _menuOpen;
+        
+        public bool MenuOpen
+        {
+            get => _menuOpen;
+            set
+            {
+                _menuOpen = value;
+                if (!_menuOpen)
+                    ShowMenuIconBtn = false;
+            }
+        }
+    }
+    
+    
 }
+

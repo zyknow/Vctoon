@@ -13,7 +13,7 @@ public class VctoonBlazorClientModule : AbpModule
     {
         var services = context.Services;
         
-        services.AddHttpClient();
+        // services.AddHttpClient();
         services.AddFluentUIComponents();
         
         Configure<AbpValidationOptions>(opt =>
@@ -22,6 +22,4 @@ public class VctoonBlazorClientModule : AbpModule
             opt.ObjectValidationContributors.Add<BlazorDataAnnotationObjectValidationContributor>();
         });
     }
-    
-    
 }
