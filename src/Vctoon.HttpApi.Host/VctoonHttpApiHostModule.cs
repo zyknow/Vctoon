@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Cors;
+﻿using Hangfire;
+using Hangfire.SQLite;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Validation.AspNetCore;
@@ -14,6 +16,7 @@ using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite.Bundling;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.AspNetCore.Serilog;
+using Volo.Abp.AspNetCore.SignalR;
 using Volo.Abp.Autofac;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.BlobStoring.FileSystem;
@@ -36,7 +39,9 @@ namespace Vctoon;
     typeof(AbpAccountWebOpenIddictModule),
     typeof(AbpAspNetCoreSerilogModule),
     typeof(AbpSwashbuckleModule),
-    typeof(AbpBlobStoringFileSystemModule)
+    typeof(AbpBlobStoringFileSystemModule),
+    // typeof(AbpBackgroundJobsHangfireModule),
+    typeof(AbpAspNetCoreSignalRModule)
 )]
 public class VctoonHttpApiHostModule : AbpModule
 {
@@ -84,6 +89,25 @@ public class VctoonHttpApiHostModule : AbpModule
         ConfigureCors(context, configuration);
         ConfigureSwaggerServices(context, configuration);
         ConfigureBlobStoring();
+        // ConfigureHangfire(context, configuration);
+    }
+    
+    private void ConfigureHangfire(ServiceConfigurationContext context, IConfiguration configuration)
+    {
+        context.Services.AddHangfire(config => { config.UseSQLiteStorage(configuration.GetConnectionString("Default")); });
+        
+        context.Services.AddHangfireServer(options =>
+        {
+            options.WorkerCount = 20;
+            options.SchedulePollingInterval = TimeSpan.FromSeconds(1);
+        });
+        
+        context.Services.AddHangfireServer(options =>
+        {
+            options.Queues = new[] {"scan-library"};
+            options.WorkerCount = 1;
+            options.SchedulePollingInterval = TimeSpan.FromSeconds(1);
+        });
     }
     
     private void ConfigureBlobStoring()
@@ -221,6 +245,9 @@ public class VctoonHttpApiHostModule : AbpModule
         {
             app.UseErrorPage();
         }
+        
+        
+        // app.UseHangfireDashboard();
         
         app.UseHttpsRedirection();
         app.UseCorrelationId();

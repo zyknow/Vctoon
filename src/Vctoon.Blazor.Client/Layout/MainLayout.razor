@@ -1,5 +1,7 @@
 ﻿@using System.ComponentModel
+@using Microsoft.AspNetCore.Components.Authorization
 @using Vctoon.Blazor.Client.Components.Themes
+@using Vctoon.Blazor.Client.Hubs
 @using Vctoon.Localization.Vctoon
 @using Volo.Abp.Users
 @inherits VctoonLayoutComponentBase
@@ -9,6 +11,10 @@
 @inject AppStore AppStore
 @inject IToastService ToastService
 @inject IStringLocalizer<VctoonResource> L
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject LibraryScanHub LibraryScanHub
+@inject IMessageService MessageService
+@inject  UserStore UserStore
 <div class="mt-2 mx-2">
     <FluentLayout>
         <FluentHeader class="rounded-2">
@@ -23,18 +29,34 @@
             
             <FluentSpacer/>
             
-            <div class="flex flex-row space-x-3 items-center select-none">
+            <div class="flex flex-row space-x-5 items-center select-none">
                 
-                <FluentButton IconStart="@(new Icons.Regular.Size20.Alert())"
-                              BackgroundColor="transparent"
-                              Appearance="Appearance.Accent">
-                </FluentButton>
+                <FluentIcon Value="@(new Icons.Regular.Size24.Alert())" Color="Color.Lightweight">
+                </FluentIcon>
                 
-                <FluentButton IconStart="@(new Icons.Regular.Size20.Settings())"
-                              BackgroundColor="transparent"
-                              Appearance="Appearance.Accent"
-                              OnClick="@OpenThemeSettingPanel">
-                </FluentButton>
+                <div class="cursor-pointer flex items-center relative" onclick="@OpenThemeSettingPanel" @onclick:stopPropagation>
+                    
+                    @if (_backgroundRunning)
+                    {
+                        <div class="animate-spin absolute flex items-center">
+                            <FluentIcon class="scale-150" Color="Color.Warning"
+                                        Value="@(new Icons.Regular.Size24.CircleHintHalfVertical())" Slot="start">
+                            </FluentIcon>
+                        </div>
+                    }
+                    
+                    
+                    <FluentIcon Color="@(_backgroundRunning ? Color.Warning : Color.Lightweight)"
+                                Value="@(backgroundRunningIcons[_backgroundRunning])" Slot="start">
+                        
+                    </FluentIcon>
+                </div>
+                
+                
+                <FluentIcon Color="Color.Lightweight" Value="@(new Icons.Regular.Size24.Settings())"
+                            OnClick="@OpenThemeSettingPanel">
+                </FluentIcon>
+                
                 
                 <FluentTooltip Anchor="settingIcon">
                     Theme Settings
@@ -62,7 +84,7 @@
             <FluentToastProvider/>
             <FluentDialogProvider/>
             <FluentTooltipProvider/>
-            <FluentMessageBarProvider/>
+            <FluentMessageBarProvider Section="AppFluentMessageBarProvider"/>
         </FluentStack>
         
     </FluentLayout>
@@ -83,6 +105,15 @@
     public OfficeColor? ThemeOfficeColor { get; set; }
     
     public bool NavMenuExpanded { get; set; } = true;
+    
+    bool _backgroundRunning;
+    
+    Dictionary<bool, Icon> backgroundRunningIcons = new()
+    {
+        {false, new Icons.Regular.Size24.Flash()},
+        {true, new Icons.Regular.Size24.FlashSparkle()}
+    };
+    
     
     async Task OpenThemeSettingPanel()
     {
@@ -116,6 +147,49 @@
     async Task SwitchMenuBar()
     {
         NavMenuExpanded = !NavMenuExpanded;
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var isAuthenticated = user.Identity.IsAuthenticated;
+            
+            if (isAuthenticated)
+            {
+                await LibraryScanHub.StartAsync();
+                
+                LibraryScanHub.OnScanning += async (msg) =>
+                {
+                    _backgroundRunning = true;
+                    
+                    await InvokeAsync(StateHasChanged);
+                };
+                
+                LibraryScanHub.OnScanned += async (libraryId) =>
+                {
+                    _backgroundRunning = false;
+                    
+                    await InvokeAsync(() =>
+                    {
+// MessageService.ShowMessageBar(options =>
+// {
+//     options.Intent = MessageIntent.Success;
+//     options.Title = L["LibraryScanCompleted"];
+//     options.Body = L["LibraryScanCompletedMessage", UserStore.Libraries.FirstOrDefault(x => x.Id == libraryId)?.Name ?? libraryId.ToString()];
+//     options.Timestamp = DateTime.Now;
+//     options.Section = "AppFluentMessageBarProvider";
+// });
+                        
+                        StateHasChanged();
+                    });
+                };
+            }
+        }
+        
+        await base.OnAfterRenderAsync(firstRender);
     }
     
 }

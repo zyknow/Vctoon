@@ -1,4 +1,4 @@
-using Serilog;
+﻿using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 
@@ -20,7 +20,6 @@ public class Program
             .WriteTo.Async(c => c.File("Logs/logs.txt"))
             .WriteTo.Async(c => c.Console(theme: AnsiConsoleTheme.Code))
             .CreateLogger();
-        
         try
         {
             Log.Information("Starting Vctoon.Blazor.");

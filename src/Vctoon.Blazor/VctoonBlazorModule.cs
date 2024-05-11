@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Tailwind;
 using Vctoon.Blazor.Client;
@@ -70,11 +69,8 @@ public class VctoonBlazorModule : AbpModule
                 options.DefaultScheme = "Cookies";
                 options.DefaultChallengeScheme = "oidc";
             })
-            .AddCookie("Cookies", options =>
-            {
-                options.ExpireTimeSpan = TimeSpan.FromDays(365);
-            })
-            .AddAbpOpenIdConnect("oidc",options =>
+            .AddCookie("Cookies", options => { options.ExpireTimeSpan = TimeSpan.FromDays(365); })
+            .AddAbpOpenIdConnect("oidc", options =>
             {
                 options.Authority = configuration["AuthServer:Authority"];
                 options.RequireHttpsMetadata = configuration.GetValue<bool>("AuthServer:RequireHttpsMetadata");
@@ -90,7 +86,6 @@ public class VctoonBlazorModule : AbpModule
                 options.Scope.Add("email");
                 options.Scope.Add("phone");
                 options.Scope.Add("Vctoon");
-                
             });
         /*
          * This configuration is used when the AuthServer is running on the internal network such as docker or k8s.
@@ -137,6 +132,7 @@ public class VctoonBlazorModule : AbpModule
                 };
             });
         }
+        
         context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
         {
             options.IsDynamicClaimsEnabled = true;
@@ -156,7 +152,7 @@ public class VctoonBlazorModule : AbpModule
             app.RunTailwind("watch");
         }
         
-        // app.UseAbpRequestLocalization();
+        //app.UseAbpRequestLocalization();
         
         if (!env.IsDevelopment())
         {

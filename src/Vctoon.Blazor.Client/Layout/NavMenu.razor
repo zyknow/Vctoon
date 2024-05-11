@@ -1,19 +1,22 @@
 ﻿@using Vctoon.Libraries
+@using Vctoon.Localization.Vctoon
 @inherits VctoonComponentBase
 @inject NavigationManager NavigationManager
 @inject ILibraryAppService LibraryAppService
 @inject IDialogService DialogService
-@inject IStringLocalizer<LibraryResource> L
+@inject IStringLocalizer<VctoonResource> L
 @inject UserStore UserStore
 <FluentNavMenu CollapsedChildNavigation Expanded="@Expanded" class="max-h-full h-full overflow-y-auto rounded max-w-60">
-    <FluentNavLink Icon="@(new Icons.Regular.Size24.Home())" Href="/">Home</FluentNavLink>
+    <FluentNavLink ActiveClass="@activeClass" Icon="@(new Icons.Regular.Size24.Home())" Match="NavLinkMatch.All"
+                   Href="/">
+        @L["Menu:Home"]
+    </FluentNavLink>
     <FluentNavGroup Id="LibraryGroup" Icon="@(new Icons.Regular.Size24.Library())" @bind-Expanded="LibrariesExpanded">
         
         <TitleTemplate>
             
             <div class="flex flex-row justify-between items-center">
-                <span>Library</span>
-                
+                <span>@L["Menu:Library"]</span>
                 
                 <div @onclick="() => NavigationToCreateOrUpdateLibrary()" @onclick:stopPropagation>
                     <FluentButton IconStart="@(new Icons.Regular.Size16.Add())"
@@ -28,22 +31,21 @@
         <ChildContent>
             @foreach (var libraryInfo in Libraries)
             {
-                <FluentNavLink @Href="@(@$"/library/{libraryInfo.Info.Id}")" Icon="@(new Icons.Filled.Size16.Book())"
+                <FluentNavLink ActiveClass="@activeClass" Href="@(@$"/library/{libraryInfo.Info.Id}")"
+                               Icon="@(new Icons.Filled.Size16.Book())"
                                @onmouseenter="@(() => libraryInfo.ShowMenuIconBtn = true)"
                                @onmouseleave="() => libraryInfo.ShowMenuIconBtn = libraryInfo.MenuOpen">
-                    <div class="flex flex-row items-center">
+                    <div class="flex flex-row items-center hidden">
                         
-                        <span class="flex-1">@libraryInfo.Info.Name</span>
+                        <span class="flex-1 ">@libraryInfo.Info.Name</span>
                         
-                        @if (libraryInfo.ShowMenuIconBtn)
-                        {
-                            <div class="flex items-center">
-                                <FluentIcon id="@(@$"{libraryInfo.Info.Name}_libraryBtn")"
-                                            Value="@(new Icons.Filled.Size16.MoreVertical())"
-                                            @onclick="@(() => libraryInfo.MenuOpen = !libraryInfo.MenuOpen)">
-                                </FluentIcon>
-                            </div>
-                        }
+                        
+                        <div class="flex items-center" style="@(@$"{(libraryInfo.ShowMenuIconBtn ? "" : "display:none")}")"
+                             @onclick="() => libraryInfo.MenuOpen = !libraryInfo.MenuOpen" @onclick:preventDefault>
+                            <FluentIcon id="@(@$"{libraryInfo.Info.Name}_libraryBtn")"
+                                        Value="@(new Icons.Filled.Size16.MoreVertical())">
+                            </FluentIcon>
+                        </div>
                         
                     </div>
                 </FluentNavLink>
@@ -78,6 +80,8 @@
     
     List<NavMenuLibraryInfo> Libraries { get; set; } = [];
     
+    string activeClass = "font-bold active";
+    
     async Task ScanLibrary(LibraryDto library)
     {
         await LibraryAppService.ScanAsync(library.Id);
@@ -89,7 +93,7 @@
         {
             var url = NavigationManager.GetUriWithQueryParameters("/library/edit", new Dictionary<string, object>
             {
-                { "libraryId", libraryId }
+                {"libraryId", libraryId}
             });
             NavigationManager.NavigateTo(@$"/library/edit/{libraryId}", true);
         }
@@ -105,17 +109,16 @@
         {
             await UserStore.LoadLibrariesAsync();
             UpdateUserLibraryChanged();
-        }
-        
-        UserStore.PropertyChanged += (sender, args) =>
-        {
-            if (args.PropertyName == nameof(UserStore.Libraries))
+            UserStore.PropertyChanged += (sender, args) =>
             {
-                UpdateUserLibraryChanged();
-            }
-        };
-        
-        UserStore.Libraries.CollectionChanged += (sender, args) => { UpdateUserLibraryChanged(); };
+                if (args.PropertyName == nameof(UserStore.Libraries))
+                {
+                    UpdateUserLibraryChanged();
+                }
+            };
+            
+            UserStore.Libraries.CollectionChanged += (sender, args) => { UpdateUserLibraryChanged(); };
+        }
         
         
         await base.OnAfterRenderAsync(firstRender);
@@ -123,14 +126,17 @@
     
     void UpdateUserLibraryChanged()
     {
-        Libraries.Clear();
-        foreach (var userStoreLibrary in UserStore.Libraries)
+        if (UserStore.Libraries.Count != Libraries.Count || UserStore.Libraries.Any(x => Libraries.All(y => y.Info.Id != x.Id)))
         {
-            var info = new NavMenuLibraryInfo(userStoreLibrary);
-            Libraries.Add(info);
+            Libraries.Clear();
+            foreach (var userStoreLibrary in UserStore.Libraries)
+            {
+                var info = new NavMenuLibraryInfo(userStoreLibrary);
+                Libraries.Add(info);
+            }
+            
+            StateHasChanged();
         }
-        
-        StateHasChanged();
     }
     
     void ShowDeleteLibraryDialog(LibraryDto library)
@@ -168,4 +174,3 @@
     
     
 }
-

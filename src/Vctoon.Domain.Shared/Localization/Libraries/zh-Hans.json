@@ -1,9 +1,9 @@
 ﻿{
   "culture": "zh-Hans",
   "texts": {
-    "Library": "Library",
-    "LibraryName": "LibraryName",
-    "LibraryPaths": "LibraryPaths",
+    "Library": "库",
+    "LibraryName": "库",
+    "LibraryPaths": "库文件路径",
     "CreateLibrary": "创建库",
     "EditLibrary": "编辑库",
     "DisplayName:Name": "库名称",
@@ -11,6 +11,8 @@
     "SelectLibraryPath": "选择库路径",
     "ScanLibrary": "扫描库",
     "AreYouSureToDeleteLibrary": "确定删除 '{0}' 该库吗？",
+    "LibraryScanCompleted": "库扫描完成",
+    "LibraryScanCompletedMessage": "扫描库 '{0}' 完成",
     "LibraryDeletionConfirmationMessage": "Are you sure to delete the library {0}?",
     "SuccessfullyDeleted": "Successfully deleted",
     "TableFilter": "TableFilter"

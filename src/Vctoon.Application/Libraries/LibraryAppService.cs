@@ -3,6 +3,7 @@ using Vctoon.Localization.Libraries;
 using Vctoon.Services;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
+using Volo.Abp.BackgroundJobs;
 
 namespace Vctoon.Libraries;
 
@@ -10,6 +11,7 @@ public class LibraryAppService : CrudAppService<Library, LibraryDto, Guid, Libra
         LibraryCreateUpdateDto>,
     ILibraryAppService
 {
+    private readonly IBackgroundJobManager _backgroundJobManager;
     private readonly LibraryManager _libraryManager;
     private readonly LibraryScanner _libraryScanner;
     
@@ -17,10 +19,11 @@ public class LibraryAppService : CrudAppService<Library, LibraryDto, Guid, Libra
         ILibraryRepository repository,
         LibraryScanner libraryScanner,
         ILibraryPathRepository libraryPathRepository,
-        LibraryManager libraryManager) : base(repository)
+        LibraryManager libraryManager, IBackgroundJobManager backgroundJobManager) : base(repository)
     {
         _libraryScanner = libraryScanner;
         _libraryManager = libraryManager;
+        _backgroundJobManager = backgroundJobManager;
         LocalizationResource = typeof(LibraryResource);
     }
     
@@ -44,7 +47,8 @@ public class LibraryAppService : CrudAppService<Library, LibraryDto, Guid, Libra
         
         List<Library> libraries = await Repository.GetListAsync();
         
-        return ObjectMapper.Map<List<Library>, List<LibraryDto>>(libraries);
+        List<LibraryDto>? dtos = ObjectMapper.Map<List<Library>, List<LibraryDto>>(libraries);
+        return dtos;
     }
     
     public override async Task<LibraryDto> CreateAsync(LibraryCreateUpdateDto input)
@@ -75,6 +79,17 @@ public class LibraryAppService : CrudAppService<Library, LibraryDto, Guid, Libra
     {
         await CheckPolicyAsync(ScanPolicyName);
         await _libraryScanner.ScannerAsync(libraryId);
+        // await _backgroundJobManager.EnqueueAsync(new LibraryScanningArgs()
+        // {
+        //     LibraryId = libraryId
+        // },BackgroundJobPriority.High);
+    }
+    
+    protected override async Task<Library> GetEntityByIdAsync(Guid id)
+    {
+        IQueryable<Library>? query = await Repository.WithDetailsAsync(x => x.Paths.Where(p => p.IsRoot));
+        
+        return await AsyncExecuter.FirstAsync(query);
     }
     
     protected override async Task<IQueryable<Library>> CreateFilteredQueryAsync(LibraryGetListInput input)
