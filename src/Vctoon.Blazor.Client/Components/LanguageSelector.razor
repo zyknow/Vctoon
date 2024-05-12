@@ -3,9 +3,11 @@
 @inject ILanguageProvider LanguageProvider
 @inject NavigationManager NavigationManager
 @inject AppStore AppStore
-<FluentSelect TOption="LanguageInfo" OptionText="@(p => p.DisplayName)" Items="@_languages" Width="120px" SelectedOptionChanged="@OnSelectedOptionChanged" SelectedOption="@_selectedLanguage" Appearance="Appearance.Filled"></FluentSelect>
+<FluentSelect Label="@Label" style="width:100%" TOption="LanguageInfo" OptionText="@(p => p.DisplayName)" Items="@_languages" Width="120px" SelectedOptionChanged="@OnSelectedOptionChanged" SelectedOption="@_selectedLanguage"></FluentSelect>
 
 @code {
+    
+    [Parameter] public string Label { get; set; }
     
     IReadOnlyList<LanguageInfo> _languages = [];
     

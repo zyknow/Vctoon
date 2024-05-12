@@ -6,6 +6,18 @@
     "LongWelcomeMessage": "欢迎使用本应用程序。这是一个基于 ABP 框架的启动项目。更多信息，请访问 abp.io。",
     "Vctoon:DataNotFound": "未找到数据",
     "Vctoon:NameIsAlreadyExists": " '{Name}' 已经存在",
-    "Menu:Library": "库"
+    "Menu:Library": "库",
+    "Toolbar:NotificationTooltip": "通知",
+    "Toolbar:ActiveTooltip": "活动",
+    "Toolbar:SettingsTooltip": "主题设置",
+    "AccountSettings": "账号设置",
+    "AccountLogout": "退出登录",
+    "ThemeSettings": "主题设置",
+    "ThemeMode": "主题模式",
+    "ThemeMode:System": "跟随系统",
+    "ThemeMode:Light": "明亮",
+    "ThemeMode:Dark": "黑暗",
+    "ThemeColor": "主题颜色",
+    "LanguageSelector": "语言选择"
   }
 }

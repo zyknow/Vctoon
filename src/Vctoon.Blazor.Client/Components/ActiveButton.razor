@@ -1,0 +1,105 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Vctoon.Blazor.Client.Hubs
+@inherits VctoonComponentBase
+@inject IStringLocalizer<VctoonResource> L
+@inject LibraryScanHub LibraryScanHub
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div id="ActiveTooltip" class="cursor-pointer flex items-center relative" @onclick:stopPropagation
+     @onclick="() => _showInfo = !_showInfo">
+    
+    @if (_backgroundRunning)
+    {
+        <div class="animate-spin absolute flex items-center">
+            <FluentIcon id="ActiveTooltipBtn" class="scale-150" Color="Color.Warning"
+                        Value="@(new Icons.Regular.Size24.CircleHintHalfVertical())" Slot="start">
+            </FluentIcon>
+        </div>
+    }
+    <FluentIcon Color="@(_backgroundRunning ? Color.Warning : Color.Lightweight)"
+                Value="@(_backgroundRunningIcons[_backgroundRunning])" Slot="start">
+        
+    </FluentIcon>
+</div>
+
+<FluentPopover AnchorId="ActiveTooltip" @bind-Open="_showInfo">
+    <Body>
+    <FluentStack>
+        <div>
+            
+        </div>
+    </FluentStack>
+    </Body>
+</FluentPopover>
+
+<FluentTooltip Anchor="ActiveTooltip"
+               Position="TooltipPosition.Bottom">
+    @L["Toolbar:ActiveTooltip"]
+</FluentTooltip>
+
+@code {
+    bool _backgroundRunning;
+    
+    bool _showInfo;
+    
+    List<ActiveMessage> _activeMessages = [];
+    
+    readonly Dictionary<bool, Icon> _backgroundRunningIcons = new()
+    {
+        {false, new Icons.Regular.Size24.Flash()},
+        {true, new Icons.Regular.Size24.FlashSparkle()}
+    };
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var isAuthenticated = user.Identity.IsAuthenticated;
+            
+            if (isAuthenticated)
+            {
+                await LibraryScanHub.StartAsync();
+                
+                LibraryScanHub.OnScanning += async (msg) =>
+                {
+                    _backgroundRunning = true;
+                    
+                    await InvokeAsync(StateHasChanged);
+                };
+                
+                LibraryScanHub.OnScanned += async (libraryId) =>
+                {
+                    _backgroundRunning = false;
+                    
+                    await InvokeAsync(() =>
+                    {
+// TODO: add message to notification
+// MessageService.ShowMessageBar(options =>
+// {
+//     options.Intent = MessageIntent.Success;
+//     options.Title = L["LibraryScanCompleted"];
+//     options.Body = L["LibraryScanCompletedMessage", UserStore.Libraries.FirstOrDefault(x => x.Id == libraryId)?.Name ?? libraryId.ToString()];
+//     options.Timestamp = DateTime.Now;
+//     options.Section = "AppFluentMessageBarProvider";
+// });
+                        
+                        StateHasChanged();
+                    });
+                };
+            }
+        }
+        
+        await base.OnAfterRenderAsync(firstRender);
+    }
+    
+    public class ActiveMessage
+    {
+        public Guid Id { get; set; }
+        public string Title { get; set; }
+        public string Message { get; set; }
+        public int Process { get; set; }
+    }
+    
+}

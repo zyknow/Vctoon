@@ -1,0 +1,45 @@
+﻿@using Vctoon.Blazor.Client.Services
+@using Volo.Abp.Users
+@inherits VctoonComponentBase
+@inject ICurrentUser CurrentUser
+@inject NavigationManager NavigationManager
+@inject ILoginService LoginService
+<FluentProfileMenu Initials="@CurrentUser.Name?.FirstOrDefault().ToString()" class="min-w-80">
+    <HeaderTemplate>
+        <div class="flex flex-row justify-between">
+            <FluentLabel Typo="@Typography.H3">Vctoon</FluentLabel>
+            <FluentButton Appearance="Appearance.Stealth" OnClick="@Logout">@L["AccountLogout"]</FluentButton>
+        </div>
+    </HeaderTemplate>
+    <ChildContent>
+        <FluentPersona ImageSize="50px"
+                       Initials="@CurrentUser.Name?.FirstOrDefault().ToString()"
+                       StatusSize="PresenceBadgeSize.Small">
+            <ChildContent>
+                <FluentLabel Typo="@Typography.Header">@CurrentUser.Name</FluentLabel>
+                <FluentLabel>@CurrentUser.Email</FluentLabel>
+            </ChildContent>
+            
+        </FluentPersona>
+        
+    </ChildContent>
+    <FooterTemplate>
+        <FluentStack>
+            <FluentSpacer/>
+            <FluentAnchor Appearance="@Appearance.Hypertext"
+                          Href="https://microsoft.com"
+                          Target="_blank">
+                @L["AccountSettings"]
+            </FluentAnchor>
+        </FluentStack>
+    </FooterTemplate>
+</FluentProfileMenu>
+
+@code {
+    
+    void Logout()
+    {
+        LoginService.LogoutAsync();
+    }
+    
+}

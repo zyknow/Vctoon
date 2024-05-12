@@ -1,28 +1,40 @@
-﻿@using Microsoft.FluentUI.AspNetCore.Components
+﻿@inject IStringLocalizer<VctoonResource> L
 @using Microsoft.FluentUI.AspNetCore.Components.Extensions
 @implements Microsoft.FluentUI.AspNetCore.Components.IDialogContentComponent<ThemeSettingPanelContent>
 
 <FluentDesignTheme @bind-Mode="@Content.ThemeMode"
                    @bind-OfficeColor="@Content.ThemeColor"
-                   StorageName="theme" />
+                   StorageName="theme"/>
 
 <FluentDialogBody>
-    <div class="flex flex-col space-y-2">
-        <FluentSelect Label="Theme"
-                      Items="@(Enum.GetValues<DesignThemeModes>())"
-                      @bind-SelectedOption="@Content.ThemeMode" />
-
-        <FluentRadioGroup Label="Theme Colors" Name="Theme Colors" @bind-Value=Content.ThemeColor>
-
-            @foreach (var color in Enum.GetValues<OfficeColor>().Select(i => (OfficeColor?)i))
-            {
-                <FluentRadio Value="@color">
-                    <FluentIcon Value="@(new Icons.Filled.Size20.RectangleLandscape())"
-                                Color="Color.Custom"
-                                CustomColor="@(@color != OfficeColor.Default ? color.ToAttributeValue() : "#036ac4")" />
-                </FluentRadio>
-            }
-        </FluentRadioGroup>
+    <div class="flex flex-col space-y-4">
+        
+        <div>
+            <LanguageSelector Label="@L["LanguageSelector"]"></LanguageSelector>
+        </div>
+        
+        <div>
+            <FluentSelect style="width:100%" Label="@L["ThemeMode"]"
+                          OptionText="@(opt => L[@$"ThemeMode:{opt.ToString()}"])"
+                          Items="@(Enum.GetValues<DesignThemeModes>())"
+                          @bind-SelectedOption="@Content.ThemeMode"/>
+        </div>
+        
+        <div>
+            <FluentRadioGroup Label="@L["ThemeColor"]" Name="Theme Colors" @bind-Value="Content.ThemeColor">
+                
+                @foreach (var color in Enum.GetValues<OfficeColor>().Select(i => (OfficeColor?) i))
+                {
+                    <FluentRadio Value="@color">
+                        <FluentIcon Value="@(new Icons.Filled.Size20.RectangleLandscape())"
+                                    Color="Color.Custom"
+                                    CustomColor="@(@color != OfficeColor.Default ? color.ToAttributeValue() : "#036ac4")"/>
+                    </FluentRadio>
+                }
+            </FluentRadioGroup>
+        </div>
+        
+        
     </div>
 </FluentDialogBody>
 

@@ -1,12 +1,12 @@
 ﻿@using Vctoon.Libraries
-@using Vctoon.Localization.Vctoon
 @inherits VctoonComponentBase
 @inject NavigationManager NavigationManager
 @inject ILibraryAppService LibraryAppService
 @inject IDialogService DialogService
 @inject IStringLocalizer<VctoonResource> L
 @inject UserStore UserStore
-<FluentNavMenu CollapsedChildNavigation Expanded="@Expanded" class="max-h-full h-full overflow-y-auto rounded max-w-60">
+@inject AppStore AppStore
+<FluentNavMenu CollapsedChildNavigation Expanded="@AppStore.NavMenuExpanded" class="max-h-full h-full overflow-y-auto rounded max-w-60">
     <FluentNavLink ActiveClass="@activeClass" Icon="@(new Icons.Regular.Size24.Home())" Match="NavLinkMatch.All"
                    Href="/">
         @L["Menu:Home"]
@@ -75,7 +75,6 @@
 
 
 @code {
-    [Parameter] public bool Expanded { get; set; } = true;
     [Parameter] public bool LibrariesExpanded { get; set; } = true;
     
     List<NavMenuLibraryInfo> Libraries { get; set; } = [];
