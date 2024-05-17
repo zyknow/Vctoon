@@ -1,0 +1,156 @@
+﻿@inherits VctoonComponentBase
+@inject AppStore AppStore
+@typeparam TResource
+@inject IBlazorHttpRequestAccessor BlazorHttpRequestAccessor
+<div @onmouseenter="@(() => _isHover = true)" @onmouseleave="@(() => _isHover = false)"
+     @onclick="() => { if (IsSelectedMode) OnIsCheckedChanged.InvokeAsync(!IsChecked); }">
+    <div style="@(@$"max-width: {ImageWidth}px;max-height: {ImageHeight}px")"
+         class="@(@$"select-none relative overflow-hidden rounded-2 border-1.5 border-accent hover:border-solid {(IsChecked ? "border-4 border-solid" : "")}")">
+        <img class="scale-105" width="@ImageWidth" height="@ImageHeight" src="@_cover" alt=""/>
+        
+        
+        @{
+            @* // black select background *@
+            if (IsHover)
+            {
+                <div class="bg-black z-10 absolute top-0 left-0 bg-opacity-40 p-2 w-full h-full">
+                </div>
+            }
+            
+            
+            if (ShowEdit)
+            {
+                <div class="absolute bottom-0 left-0 p-2 z-20 hover:scale-120 cursor-pointer">
+                    <FluentIcon Color="Color.Custom"
+                                CustomColor="white" Value="@(new Icons.Filled.Size20.Edit())">
+                    </FluentIcon>
+                </div>
+            }
+            
+            if (ShowMenu)
+            {
+                <div class="absolute bottom-0 right-0 p-2 z-20 hover:scale-120 cursor-pointer">
+                    <FluentIcon Color="Color.Custom"
+                                CustomColor="white"
+                                Value="@(new Icons.Filled.Size20.MoreVertical())">
+                    </FluentIcon>
+                </div>
+            }
+            
+            if (ShowPlay)
+            {
+                <div class="absolute bottom-0 right-0  z-19   w-full h-full flex items-center justify-center">
+                    <div class="cursor-pointer hover:scale-120">
+                        <FluentIcon Width="40" Color="Color.Custom" CustomColor="white"
+                                    Value="@(new Icons.Filled.Size20.PlayCircle())">
+                        </FluentIcon>
+                    </div>
+                </div>
+            }
+        }
+        
+        
+        @if (ShowSelectedCheckBox || IsSelectedMode)
+        {
+            <div class="absolute top-0 left-0 z-20 p-2 hover:scale-120 z-30" @onclick="() => { }" @onclick:stopPropagation>
+                <FluentCheckbox Embedded Value="@IsChecked" ValueChanged="@(b => OnIsCheckedChanged.InvokeAsync(b))"></FluentCheckbox>
+            </div>
+        }
+        
+        @if (_progress >= 100)
+        {
+            <div class="absolute top-0 right-0 z-20 bg-black bg-opacity-100 w-10 h-10 rounded-lb-5">
+            </div>
+            <div class="absolute top-0 right-0 z-20 p-2 scale-120">
+                <FluentIcon Color="Color.Success" Value="@(new Icons.Filled.Size20.CheckmarkCircle())"></FluentIcon>
+            </div>
+        }
+        
+    </div>
+    <div class="flex flex-col mt-2 space-y-1" style="@(@$"max-width: {ImageWidth}px")">
+        @if (TitleTemplate != null)
+        {
+            @TitleTemplate
+        }
+        else
+        {
+            <div class="text-wrap break-words overflow-hidden h-10 w-full hover:underline cursor-pointer"
+                 onclick="@(() => OnTitleClick.InvokeAsync())">
+                @_title
+            </div>
+        }
+        
+        @if (SubTitleTemplate != null)
+        {
+            @TitleTemplate
+        }
+        else
+        {
+            <div class="text-info">
+                @_subTitle
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    
+    [Parameter] public virtual TResource Resource { get; set; }
+    
+    [Parameter] public Func<TResource, string>? SubTitle { get; set; }
+    [Parameter] public Func<TResource, string>? Title { get; set; }
+    [Parameter] public Func<TResource, string>? Cover { get; set; }
+    [Parameter] public Func<TResource, int>? Progress { get; set; }
+    
+    [Parameter] public EventCallback OnPlayClick { get; set; }
+    [Parameter] public EventCallback OnTitleClick { get; set; }
+    
+    [Parameter] public virtual bool IsChecked { get; set; }
+    [Parameter] public virtual bool IsSelectedMode { get; set; }
+    [Parameter] public virtual EventCallback<bool> OnIsCheckedChanged { get; set; }
+    
+    [Parameter] public virtual RenderFragment? TitleTemplate { get; set; }
+    [Parameter] public virtual RenderFragment? SubTitleTemplate { get; set; }
+    
+    [Parameter] public bool HoverEnabled { get; set; }
+    [Parameter] public bool MenuEnabled { get; set; }
+    [Parameter] public bool EditEnabled { get; set; }
+    [Parameter] public bool PlayEnabled { get; set; }
+    
+    bool IsHover => _isHover && HoverEnabled;
+    
+    bool _isHover;
+    private string? _subTitle;
+    private string? _title;
+    private string _cover;
+    private int _progress;
+    
+    bool ShowSelectedCheckBox => IsHover || IsSelectedMode;
+    
+    bool ShowMenu => MenuEnabled && IsHover && !IsSelectedMode;
+    bool ShowEdit => EditEnabled && IsHover && !IsSelectedMode;
+    bool ShowPlay => PlayEnabled && IsHover && !IsSelectedMode;
+    
+    int ImageWidth => (int)(100 * AppStore.ImageScale);
+    int ImageHeight => (int)(150 * AppStore.ImageScale);
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (Resource != null)
+            {
+                _subTitle = SubTitle?.Invoke(Resource);
+                _title = Title?.Invoke(Resource);
+                _cover = $@"{BlazorHttpRequestAccessor.RemoteUrl.TrimEnd('/')}/api/app/image/cover?coverPath={Cover?.Invoke(Resource)}";
+                _progress = Progress?.Invoke(Resource) ?? 0;
+            }
+            
+            
+            StateHasChanged();
+        }
+        
+        await base.OnAfterRenderAsync(firstRender);
+    }
+    
+}

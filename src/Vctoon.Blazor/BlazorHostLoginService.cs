@@ -10,4 +10,9 @@ public class BlazorHostLoginService(NavigationManager navigationManager) : ILogi
     {
         navigationManager.NavigateTo("Account/Logout", true);
     }
+    
+    public async Task LoginAsync()
+    {
+        navigationManager.NavigateTo("Account/Login", true);
+    }
 }

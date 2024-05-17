@@ -38,13 +38,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="wwwroot\" />
-    </ItemGroup>
-
-    <ItemGroup>
         <Reference Include="Microsoft.AspNetCore.Components.Authorization">
             <HintPath>C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App\8.0.4\Microsoft.AspNetCore.Components.Authorization.dll</HintPath>
         </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <_ContentIncludedByDefault Remove="Components\Base\StreamImage.razor"/>
     </ItemGroup>
 
 </Project>

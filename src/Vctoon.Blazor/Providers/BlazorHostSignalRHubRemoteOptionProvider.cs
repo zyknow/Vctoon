@@ -1,11 +1,14 @@
 ﻿using System.Net;
 using Microsoft.AspNetCore.Http.Connections.Client;
+using Vctoon.Blazor.Client;
 using Vctoon.Blazor.Client.Providers;
 using Volo.Abp.DependencyInjection;
 
 namespace Vctoon.Blazor.Providers;
 
-public class BlazorHostSignalRHubRemoteOptionProvider(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+public class BlazorHostSignalRHubRemoteOptionProvider(
+    IBlazorHttpRequestAccessor blazorHttpRequestAccessor,
+    IHttpContextAccessor httpContextAccessor)
     : ISignalRHubRemoteOptionProvider, ITransientDependency
 {
     // public string GetRemoteServiceUrl()
@@ -16,11 +19,10 @@ public class BlazorHostSignalRHubRemoteOptionProvider(IConfiguration configurati
     
     public void Config(HttpConnectionOptions options)
     {
-        string? url = configuration["RemoteServices:Default:BaseUrl"];
-        Uri uri = new Uri(url);
+        string? url = blazorHttpRequestAccessor.RemoteUrl;
         foreach (KeyValuePair<string, string> keyValuePair in httpContextAccessor.HttpContext.Request.Cookies)
         {
-            options.Cookies.Add(uri, new Cookie(keyValuePair.Key, keyValuePair.Value));
+            options.Cookies.Add(new Uri(url), new Cookie(keyValuePair.Key, keyValuePair.Value));
         }
     }
 }

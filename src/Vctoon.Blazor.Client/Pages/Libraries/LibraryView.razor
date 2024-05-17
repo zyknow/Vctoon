@@ -1,0 +1,142 @@
+﻿@page "/library/{libraryId:guid}"
+@using Vctoon.Blazor.Client.Services
+@using Vctoon.Comics
+@using Vctoon.Comics.Dtos
+@inherits VctoonComponentBase
+@inject IComicAppService ComicAppService
+@inject ILibraryAppService LibraryAppService
+@inject AppStore AppStore
+@inject NavigationManager NavigationManager
+@inject DateTimeFormatService DateTimeFormatService
+@attribute [Authorize(Policy = VctoonPermissions.Library.Default)]
+<div class="flex flex-col space-y-2 h-full">
+    
+    <LibraryToolbar Library="_library" Selected="_selectedComics" Total="_total" OnStateChange="StateHasChanged"></LibraryToolbar>
+    
+    
+    <div class="max-h-full flex-1 overflow-auto px-2">
+        
+        <div class="flex flex-wrap gap-4">
+            @if (!_comics.IsNullOrEmpty())
+            {
+                @* TODO: virtualize ? *@
+                @foreach (var comic in _comics)
+                {
+                    <div @onclick="args => { if (args.ShiftKey) OnComicShiftClick(comic); }">
+                        
+                        <ResourceCover OnTitleClick="@(() => NavigationToComic(comic))"
+                                       EditEnabled
+                                       HoverEnabled
+                                       MenuEnabled
+                                       PlayEnabled
+                                       Resource="comic"
+                                       Title="c => c.Title"
+                                       SubTitle="c => DateTimeFormatService.FormatCreateDate(c.CreationTime)"
+                                       Cover="c => c.CoverPath"
+                                       Progress="c => (int)c.Progress"
+                                       IsSelectedMode="@(!_selectedComics.IsNullOrEmpty())"
+                                       IsChecked="@_selectedComics.Contains(comic)"
+                                       OnIsCheckedChanged="@(b => ComicCoverCheckChanged(comic, b))">
+                        </ResourceCover>
+                    </div>
+                }
+            }
+            
+        </div>
+        
+    </div>
+    
+    
+</div>
+
+
+@code {
+    [Parameter] public virtual Guid LibraryId { get; set; }
+    
+    LibraryDto _library;
+    
+    readonly List<ComicDto> _comics = [];
+    
+    long _total;
+    
+    readonly List<ComicDto> _selectedComics = [];
+    
+    void NavigationToComic(ComicDto comic)
+    {
+        NavigationManager.NavigateTo($"/library/{LibraryId}/comic/{comic.Id}");
+    }
+    
+    
+    void ComicCoverCheckChanged(ComicDto comic, bool isChecked)
+    {
+        if (isChecked)
+        {
+            _selectedComics.AddIfNotContains(comic);
+        }
+        else
+        {
+            _selectedComics.Remove(comic);
+        }
+    }
+    
+    void OnComicShiftClick(ComicDto comic)
+    {
+        if (_selectedComics.IsNullOrEmpty()) return;
+        
+        var firstIndex = _comics.IndexOf(_selectedComics.First());
+        var lastIndex = _comics.IndexOf(_selectedComics.Last());
+        
+        var start = Math.Min(firstIndex, lastIndex);
+        var end = Math.Max(firstIndex, lastIndex);
+        
+        _selectedComics.Clear();
+        
+        for (var i = start; i <= end; i++)
+        {
+            _selectedComics.Add(_comics[i]);
+        }
+        
+        StateHasChanged();
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        _library = await LibraryAppService.GetAsync(LibraryId);
+        
+        await base.OnInitializedAsync();
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var res = await ComicAppService.GetListAsync(new ComicGetListInput
+            {
+                LibraryId = LibraryId,
+                MaxResultCount = 50
+            });
+            _total = res.TotalCount;
+            
+// test many count
+// for (int i = 0; i < 1000; i++)
+// {
+//     _comics.Add(new ComicDto()
+//         {
+//             Id = Guid.NewGuid(),
+//             Title = "test",
+//             CoverPath = res.Items.FirstOrDefault().CoverPath,
+//             CreationTime = DateTime.Now,
+//         });
+// }
+// _comics.AddRange(res.Items);
+            
+            _comics.AddRange(res.Items.ToList());
+            
+            
+            StateHasChanged();
+        }
+        
+        await base.OnAfterRenderAsync(firstRender);
+    }
+    
+}

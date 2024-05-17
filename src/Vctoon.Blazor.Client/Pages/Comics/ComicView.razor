@@ -1,0 +1,40 @@
+﻿@page "/library/{libraryId:guid}/comic/{comicId:guid}"
+@using Vctoon.Comics
+@using Vctoon.Comics.Dtos
+@inherits VctoonComponentBase
+@attribute [Authorize(VctoonPermissions.Comic.Default)]
+@inject IComicAppService ComicAppService
+@inject ILibraryAppService LibraryAppService
+<div class="flex flex-col space-y-2 h-full">
+    <ComicToolbar Comic="@_comic" Library="@_library" Selected="_selected" Total="@_chapters.Count" OnStateChange="StateHasChanged"></ComicToolbar>
+</div>
+
+@code {
+    
+    [Parameter] public virtual Guid LibraryId { get; set; }
+    [Parameter] public virtual Guid ComicId { get; set; }
+    
+    LibraryDto _library;
+    ComicDto _comic;
+    
+    List<ComicChapterDto> _chapters = [];
+    
+    
+    readonly List<ComicChapterDto> _selected = [];
+    
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _library = await LibraryAppService.GetAsync(LibraryId);
+            _comic = await ComicAppService.GetAsync(ComicId);
+            _chapters = await ComicAppService.GetAllChaptersAsync(ComicId);
+            
+            StateHasChanged();
+        }
+        
+        await base.OnAfterRenderAsync(firstRender);
+    }
+    
+}

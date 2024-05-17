@@ -1,0 +1,121 @@
+﻿@using Vctoon.Blazor.Client.Enums
+@inherits VctoonComponentBase
+@inject AppStore AppStore
+<FluentToolbar>
+    <div class="w-full flex flex-col">
+        
+        <div class="flex flex-row justify-between w-full items-center">
+            
+            <div class="flex flex-row items-center space-x-4 w-full">
+                <div>
+                    @if (ToolbarTitleTemplate != null)
+                    {
+                        @ToolbarTitleTemplate
+                    }
+                    
+                </div>
+                <div class="scale-150 items-center flex mt-2">
+                    @if (ToolbarMenuTemplate != null)
+                    {
+                        @ToolbarMenuTemplate
+                    }
+                    
+                </div>
+                <div class="mt-1.5">
+                    <FluentBadge Appearance="Appearance.Accent">
+                        @Total
+                    </FluentBadge>
+                </div>
+                
+            </div>
+            
+            
+            <div class="flex flex-row items-center justify-center">
+                <div class="flex items-center mt-4 mx-3">
+                    <FluentSlider Orientation="Orientation.Horizontal" class="w-20" Step="0.1" Max="2" Min="1" @bind-Value="AppStore.ImageScale"></FluentSlider>
+                </div>
+                <FluentIcon id="library-display-mode-icon" Value="@(_displayModeIcons[AppStore.LibraryResourceDisplayMode])" OnClick="@(() => _openDisplayModeSelectMenu = true)"></FluentIcon>
+                
+                <FluentMenu Anchor="library-display-mode-icon" @bind-Open="_openDisplayModeSelectMenu">
+                    
+                    @foreach (var iconKv in _displayModeIcons)
+                    {
+                        <FluentMenuItem OnClick="@(e => AppStore.LibraryResourceDisplayMode = iconKv.Key)">
+                            <span slot="start">
+                                <FluentIcon Value="@(iconKv.Value)" Color="Color.Accent" Slot="start"/>
+                            </span>
+                            @L[@$"LibraryResourceDisplay:{iconKv.Key.ToString()}"]
+                        </FluentMenuItem>
+                    }
+                </FluentMenu>
+            </div>
+            
+        </div>
+        
+        <div class="relative h-10">
+            
+            @if (FilterTemplate != null)
+            {
+                <div class="w-full h-full items-center z-19 absolute">
+                    @FilterTemplate
+                </div>
+            }
+            
+            @if (SelectedCount > 0)
+            {
+                <div class="w-full h-full border-3 border-accent border-solid items-center border-rounded-1 z-20 absolute">
+                    <div class="flex flex-row justify-between px-2 items-center h-full w-full">
+                        <div class="flex flex-row ">
+                            <FluentIcon Value="@(new Icons.Filled.Size20.CheckboxChecked())"></FluentIcon>
+                            <div>
+                                @L["Selected"] @SelectedCount @L["Items"]
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-row space-x-4">
+                            @if (ActionbarCenterTemplate != null)
+                            {
+                                @ActionbarCenterTemplate
+                            }
+                        </div>
+                        
+                        <div>
+                            <FluentButton BackgroundColor="transparent" Appearance="Appearance.Lightweight" OnClick="@(() => ClearSelected.InvokeAsync())">@L["Clear"]</FluentButton>
+                            
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        
+    </div>
+    
+    
+</FluentToolbar>
+
+@code {
+    
+    [Parameter] public int SelectedCount { get; set; }
+    
+    [Parameter] public EventCallback ClearSelected { get; set; }
+    
+    [Parameter] public EventCallback ShowTitleActionMenu { get; set; }
+    
+    [Parameter] public long Total { get; set; }
+    
+    [Parameter] public virtual RenderFragment? ToolbarTitleTemplate { get; set; }
+    [Parameter] public virtual RenderFragment? ToolbarMenuTemplate { get; set; }
+    [Parameter] public virtual RenderFragment? ActionbarCenterTemplate { get; set; }
+    [Parameter] public virtual RenderFragment? FilterTemplate { get; set; }
+    
+    readonly Dictionary<LibraryResourceDisplayMode, Icon> _displayModeIcons = new()
+    {
+        { LibraryResourceDisplayMode.Grid, new Icons.Regular.Size24.Grid() },
+        { LibraryResourceDisplayMode.List, new Icons.Filled.Size24.AppsList() },
+        { LibraryResourceDisplayMode.Table, new Icons.Filled.Size24.GroupList() }
+    };
+    
+    bool _openDisplayModeSelectMenu;
+    
+}

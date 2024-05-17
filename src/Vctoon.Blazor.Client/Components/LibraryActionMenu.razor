@@ -1,0 +1,59 @@
+﻿@inherits VctoonComponentBase
+@inject IStringLocalizer<VctoonResource> L
+@inject UserStore UserStore
+@inject ILibraryAppService LibraryAppService
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
+<FluentMenu Anchor="@(Anchor ?? @$"{Library.Name}_libraryBtn")" Open="@Open" VerticalThreshold="170" OpenChanged="@OpenChanged">
+    <FluentMenuItem @onclick="() => ScanLibrary(Library)">
+        @L["ScanLibrary"]
+    </FluentMenuItem>
+    
+    <FluentMenuItem @onclick="() => NavigationToEditLibrary()">
+        @L["Edit"]
+    </FluentMenuItem>
+    
+    <FluentMenuItem @onclick="() => ShowDeleteLibraryDialog(Library)">
+        <span class="text-red-500">@L["Delete"]</span>
+    </FluentMenuItem>
+</FluentMenu>
+
+@code {
+    
+    [Parameter] public LibraryDto Library { get; set; }
+    
+    [Parameter] public bool Open { get; set; }
+    
+    [Parameter] public string? Anchor { get; set; }
+    
+    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
+    
+    void ShowDeleteLibraryDialog(LibraryDto library)
+    {
+        var msg = L["AreYouSureToDeleteLibrary", library.Name];
+        DialogService.ShowConfirmation(L["DeleteLibrary"], async res =>
+        {
+            if (res.Cancelled)
+                return;
+            
+            await LibraryAppService.DeleteAsync(library.Id);
+            await UserStore.LoadLibrariesAsync();
+        }, msg, L["Submit"], L["Cancel"], L["AreYouSure"]);
+    }
+    
+    void NavigationToEditLibrary()
+    {
+        var url = NavigationManager.GetUriWithQueryParameters("/library/edit", new Dictionary<string, object>
+        {
+            { "libraryId", Library.Id }
+        });
+        NavigationManager.NavigateTo(@$"/library/edit/{Library.Id}", true);
+    }
+    
+    
+    async Task ScanLibrary(LibraryDto library)
+    {
+        await LibraryAppService.ScanAsync(library.Id);
+    }
+    
+}

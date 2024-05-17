@@ -1,5 +1,7 @@
-﻿@inherits VctoonLayoutComponentBase
-@inject IStringLocalizer<VctoonResource> L
+﻿@using Vctoon.Blazor.Client.Services
+@inherits VctoonLayoutComponentBase
+@inject ICurrentUser CurrentUser
+@inject ILoginService LoginService
 <div class="mt-2 mx-2">
     <FluentLayout>
         <FluentHeader class="rounded-2">

@@ -8,6 +8,6 @@
     "unocss": "^0.59.2"
   },
   "scripts": {
-    "watch": "unocss \"../**/**/*.razor\" -o \"../Vctoon.Blazor.Client/wwwroot/uno.css\" -w"
+    "watch": "unocss \"../**/**/*.razor\" -o \"../Vctoon.Blazor.Client/wwwroot/uno.css\"  -w"
   }
 }

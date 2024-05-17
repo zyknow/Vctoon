@@ -1,0 +1,53 @@
+﻿@using System.Collections
+@inherits VctoonComponentBase
+@if (Library != null)
+{
+    <ResourceToolbar Total="@Total" ClearSelected="ClearSelected" SelectedCount="@(Selected?.Count ?? 0)">
+        
+        <ToolbarTitleTemplate>
+            <FluentBreadcrumbItem class="font-bold" Href="@(@$"/library/{Library.Id}")">
+                @Library.Name
+            </FluentBreadcrumbItem>
+            
+        </ToolbarTitleTemplate>
+        
+        <ToolbarMenuTemplate>
+            <div class="z-30 mt-1">
+                <FluentIcon @onclick="() => _showActionMenu = !_showActionMenu" id="@_titleMenuId"
+                            Value="@(new Icons.Filled.Size16.MoreVertical())">
+                </FluentIcon>
+            </div>
+            
+        </ToolbarMenuTemplate>
+        
+        <ActionbarCenterTemplate>
+            <FluentIcon Value="@(new Icons.Filled.Size20.Edit())"></FluentIcon>
+            <FluentIcon Value="@(new Icons.Filled.Size20.TextBulletListAdd())"></FluentIcon>
+            <FluentIcon Value="@(new Icons.Filled.Size20.MoreHorizontal())"></FluentIcon>
+        </ActionbarCenterTemplate>
+        
+    </ResourceToolbar>
+}
+<LibraryActionMenu @bind-Open="_showActionMenu" Anchor="@_titleMenuId" Library="Library"></LibraryActionMenu>
+
+@code {
+    [Parameter] public LibraryDto Library { get; set; }
+    
+    [Parameter] public long Total { get; set; }
+    
+    [Parameter] public IList Selected { get; set; }
+    
+    [Parameter] public Action OnStateChange { get; set; }
+    
+    bool _showActionMenu;
+    
+    string _titleMenuId => @$"{Library?.Id}_btn";
+    
+    void ClearSelected()
+    {
+        Selected.Clear();
+        StateHasChanged();
+        OnStateChange?.Invoke();
+    }
+    
+}

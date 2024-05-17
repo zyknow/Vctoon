@@ -3,4 +3,5 @@
 public interface ILoginService
 {
     public Task LogoutAsync();
+    Task LoginAsync();
 }

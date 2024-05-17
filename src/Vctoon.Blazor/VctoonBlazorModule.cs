@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Tailwind;
 using Vctoon.Blazor.Client;
 using Vctoon.Blazor.Components;
 using Volo.Abp;
@@ -42,6 +41,8 @@ public class VctoonBlazorModule : AbpModule
         services.AddRazorComponents()
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
+        
+        services.AddTransient<IBlazorHttpRequestAccessor, BlazorHostHttpRequestAccessor>();
     }
     
     private void ConfigureVirtualFileSystem(ServiceConfigurationContext context)
@@ -86,7 +87,8 @@ public class VctoonBlazorModule : AbpModule
                 options.Scope.Add("email");
                 options.Scope.Add("phone");
                 options.Scope.Add("Vctoon");
-            });
+            })
+            ;
         /*
          * This configuration is used when the AuthServer is running on the internal network such as docker or k8s.
          * Configuring the redirecting URLs for internal network and the web
@@ -149,10 +151,8 @@ public class VctoonBlazorModule : AbpModule
         if (env.IsDevelopment())
         {
             app.UseWebAssemblyDebugging();
-            app.RunTailwind("watch");
+            // app.RunTailwind("watch");
         }
-        
-        //app.UseAbpRequestLocalization();
         
         if (!env.IsDevelopment())
         {

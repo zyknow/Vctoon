@@ -1,5 +1,4 @@
-﻿@using Vctoon.Libraries
-@inherits VctoonComponentBase
+﻿@inherits VctoonComponentBase
 @inject NavigationManager NavigationManager
 @inject ILibraryAppService LibraryAppService
 @inject IDialogService DialogService
@@ -58,19 +57,7 @@
 
 @foreach (var libraryInfo in Libraries)
 {
-    <FluentMenu Anchor="@(@$"{libraryInfo.Info.Name}_libraryBtn")" @bind-Open="@libraryInfo.MenuOpen" VerticalThreshold="170">
-        <FluentMenuItem @onclick="() => ScanLibrary(libraryInfo.Info)">
-            @L["ScanLibrary"]
-        </FluentMenuItem>
-        
-        <FluentMenuItem @onclick="() => NavigationToCreateOrUpdateLibrary(libraryInfo.Info.Id)">
-            @L["Edit"]
-        </FluentMenuItem>
-        
-        <FluentMenuItem @onclick="() => ShowDeleteLibraryDialog(libraryInfo.Info)">
-            <span class="text-red-500">@L["Delete"]</span>
-        </FluentMenuItem>
-    </FluentMenu>
+    <LibraryActionMenu Anchor="@(@$"{libraryInfo.Info.Name}_libraryBtn")" Library="@libraryInfo.Info" @bind-Open="@libraryInfo.MenuOpen"></LibraryActionMenu>
 }
 
 
@@ -81,26 +68,26 @@
     
     string activeClass = "font-bold active";
     
-    async Task ScanLibrary(LibraryDto library)
+    void UpdateUserLibraryChanged()
     {
-        await LibraryAppService.ScanAsync(library.Id);
+        if (UserStore.Libraries.Count != Libraries.Count || UserStore.Libraries.Any(x => Libraries.All(y => y.Info.Id != x.Id)))
+        {
+            Libraries.Clear();
+            foreach (var userStoreLibrary in UserStore.Libraries)
+            {
+                var info = new NavMenuLibraryInfo(userStoreLibrary);
+                Libraries.Add(info);
+            }
+            
+            StateHasChanged();
+        }
     }
     
-    void NavigationToCreateOrUpdateLibrary(Guid? libraryId = null)
+    void NavigationToCreateOrUpdateLibrary()
     {
-        if (libraryId != null)
-        {
-            var url = NavigationManager.GetUriWithQueryParameters("/library/edit", new Dictionary<string, object>
-            {
-                {"libraryId", libraryId}
-            });
-            NavigationManager.NavigateTo(@$"/library/edit/{libraryId}", true);
-        }
-        else
-        {
-            NavigationManager.NavigateTo(@"/library/create");
-        }
+        NavigationManager.NavigateTo(@"/library/create");
     }
+    
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -121,34 +108,6 @@
         
         
         await base.OnAfterRenderAsync(firstRender);
-    }
-    
-    void UpdateUserLibraryChanged()
-    {
-        if (UserStore.Libraries.Count != Libraries.Count || UserStore.Libraries.Any(x => Libraries.All(y => y.Info.Id != x.Id)))
-        {
-            Libraries.Clear();
-            foreach (var userStoreLibrary in UserStore.Libraries)
-            {
-                var info = new NavMenuLibraryInfo(userStoreLibrary);
-                Libraries.Add(info);
-            }
-            
-            StateHasChanged();
-        }
-    }
-    
-    void ShowDeleteLibraryDialog(LibraryDto library)
-    {
-        var msg = L["AreYouSureToDeleteLibrary", library.Name];
-        DialogService.ShowConfirmation(L["DeleteLibrary"], async res =>
-        {
-            if (res.Cancelled)
-                return;
-            
-            await LibraryAppService.DeleteAsync(library.Id);
-            await UserStore.LoadLibrariesAsync();
-        }, msg, L["Submit"], L["Cancel"], L["AreYouSure"]);
     }
     
     

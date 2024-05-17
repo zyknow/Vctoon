@@ -1,9 +1,10 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
-@using Vctoon.Blazor.Client.Hubs
+﻿@using Vctoon.Blazor.Client.Hubs
 @inherits VctoonComponentBase
 @inject IStringLocalizer<VctoonResource> L
 @inject LibraryScanHub LibraryScanHub
-@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ICurrentUser CurrentUser
+@inject IMessageService MessageService
+@inject AppStore AppStore
 
 <div id="ActiveTooltip" class="cursor-pointer flex items-center relative" @onclick:stopPropagation
      @onclick="() => _showInfo = !_showInfo">
@@ -22,11 +23,21 @@
     </FluentIcon>
 </div>
 
-<FluentPopover AnchorId="ActiveTooltip" @bind-Open="_showInfo">
+<FluentPopover Class="min-w-60" AnchorId="ActiveTooltip" @bind-Open="_showInfo">
     <Body>
-    <FluentStack>
+    <FluentStack Orientation="Orientation.Vertical">
+        <FluentSwitch @bind-Value="@AppStore.ActivePopoverAutoOpen">@L["Active:MessageAutoOpen"]</FluentSwitch>
+        <FluentDivider></FluentDivider>
         <div>
-            
+            @foreach (var message in _activeMessages)
+            {
+                <div class="flex flex-row justify-between items-center">
+                    <div>
+                        <FluentLabel Color="@(message.Process != 100 ? Color.Accent : Color.Success)">@message.Message</FluentLabel>
+                    </div>
+                    <FluentProgressRing Class="@(@$"{(message.Process != 100 ? "" : "hidden")}")"></FluentProgressRing>
+                </div>
+            }
         </div>
     </FluentStack>
     </Body>
@@ -46,19 +57,15 @@
     
     readonly Dictionary<bool, Icon> _backgroundRunningIcons = new()
     {
-        {false, new Icons.Regular.Size24.Flash()},
-        {true, new Icons.Regular.Size24.FlashSparkle()}
+        { false, new Icons.Regular.Size24.Flash() },
+        { true, new Icons.Regular.Size24.FlashSparkle() }
     };
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
-            var isAuthenticated = user.Identity.IsAuthenticated;
-            
-            if (isAuthenticated)
+            if (CurrentUser.IsAuthenticated)
             {
                 await LibraryScanHub.StartAsync();
                 
@@ -66,24 +73,64 @@
                 {
                     _backgroundRunning = true;
                     
-                    await InvokeAsync(StateHasChanged);
+                    var message = new ActiveMessage
+                    {
+                        Id = msg.LibraryId,
+                        Title = msg.Title,
+                        Message = msg.Message
+                    };
+                    
+                    var currentMessage = _activeMessages.FirstOrDefault(x => x.Equals(message));
+                    
+                    if (currentMessage == null)
+                    {
+                        _activeMessages.AddIfNotContains(message);
+                    }
+                    else
+                    {
+                        currentMessage.Title = message.Title;
+                        currentMessage.Message = message.Message;
+                    }
+                    
+                    
+                    await InvokeAsync(() =>
+                    {
+                        if (AppStore.ActivePopoverAutoOpen)
+                        {
+                            _showInfo = true;
+                        }
+                        
+                        StateHasChanged();
+                    });
                 };
                 
                 LibraryScanHub.OnScanned += async (libraryId) =>
                 {
                     _backgroundRunning = false;
                     
+                    
+                    if (AppStore.ActivePopoverAutoOpen)
+                    {
+                        _showInfo = true;
+                    }
+                    
+                    var currentMessage = _activeMessages.FirstOrDefault(x => x.Id == libraryId);
+                    
+                    if (currentMessage != null)
+                    {
+                        currentMessage.Process = 100;
+                    }
+                    
                     await InvokeAsync(() =>
                     {
-// TODO: add message to notification
-// MessageService.ShowMessageBar(options =>
-// {
-//     options.Intent = MessageIntent.Success;
-//     options.Title = L["LibraryScanCompleted"];
-//     options.Body = L["LibraryScanCompletedMessage", UserStore.Libraries.FirstOrDefault(x => x.Id == libraryId)?.Name ?? libraryId.ToString()];
-//     options.Timestamp = DateTime.Now;
-//     options.Section = "AppFluentMessageBarProvider";
-// });
+                        // MessageService.ShowMessageBar(options =>
+                        // {
+                        //     options.Intent = MessageIntent.Success;
+                        //     options.Title = L["LibraryScanCompleted"];
+                        //     options.Body = L["LibraryScanCompletedMessage", UserStore.Libraries.FirstOrDefault(x => x.Id == libraryId)?.Name ?? libraryId.ToString()];
+                        //     options.Timestamp = DateTime.Now;
+                        //     options.Section = "AppFluentMessageBarProvider";
+                        // });
                         
                         StateHasChanged();
                     });
@@ -100,6 +147,16 @@
         public string Title { get; set; }
         public string Message { get; set; }
         public int Process { get; set; }
+        
+        public override bool Equals(object obj)
+        {
+            if (obj is ActiveMessage message)
+            {
+                return Id == message.Id;
+            }
+            
+            return false;
+        }
     }
     
 }
