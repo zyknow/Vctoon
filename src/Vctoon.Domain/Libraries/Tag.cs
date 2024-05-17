@@ -1,11 +1,13 @@
+using Volo.Abp.Domain.Entities.Auditing;
+
 namespace Vctoon.Libraries;
 
-public class Tag : AggregateRoot<Guid>
+public class Tag : AuditedEntity<Guid>
 {
     protected Tag()
     {
     }
-
+    
     public Tag(
         Guid id,
         string name
@@ -13,9 +15,9 @@ public class Tag : AggregateRoot<Guid>
     {
         SetName(name);
     }
-
+    
     public string Name { get; protected set; }
-
+    
     public void SetName(string name)
     {
         Check.NotNullOrWhiteSpace(name, nameof(name));

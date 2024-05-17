@@ -1,11 +1,13 @@
+using Volo.Abp.Domain.Entities.Auditing;
+
 namespace Vctoon.Libraries;
 
-public class Library : AggregateRoot<Guid>
+public class Library : AuditedEntity<Guid>
 {
     protected Library()
     {
     }
-
+    
     internal Library(
         Guid id,
         string name
@@ -13,27 +15,27 @@ public class Library : AggregateRoot<Guid>
     {
         SetName(name);
     }
-
+    
     public string Name { get; protected set; }
-
+    
     public virtual List<LibraryPath> Paths { get; internal set; } = new();
-
+    
     public void SetName(string name)
     {
         Check.NotNullOrWhiteSpace(name, nameof(name));
         Name = name;
     }
-
+    
     public void AddPath(LibraryPath libraryPath)
     {
         if (Paths.Any(x => x.Path == libraryPath.Path || x.Id == libraryPath.Id))
         {
             return;
         }
-
+        
         Paths.Add(libraryPath);
     }
-
+    
     public void AddPaths(List<LibraryPath> libraryPaths)
     {
         var addPaths = libraryPaths.DistinctBy(x => x.Path).ToList();
@@ -42,7 +44,7 @@ public class Library : AggregateRoot<Guid>
             AddPath(libraryPath);
         }
     }
-
+    
     public void RemovePath(string path)
     {
         var libraryPath = Paths.FirstOrDefault(x => x.Path == path);
@@ -50,10 +52,10 @@ public class Library : AggregateRoot<Guid>
         {
             return;
         }
-
+        
         Paths.Remove(libraryPath);
     }
-
+    
     public void RemovePaths(List<string> paths)
     {
         foreach (var path in paths)

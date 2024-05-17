@@ -19,4 +19,6 @@ public interface IComicAppService :
     /// <param name="toCompleted"></param>
     /// <exception cref="UserFriendlyException"></exception>
     Task ChangeProcessStatusAsync(Guid id, bool toCompleted);
+    
+    Task<List<ComicChapterDto>> GetAllChaptersAsync(Guid comicId);
 }
