@@ -18,6 +18,18 @@
     "ThemeMode:Light": "明亮",
     "ThemeMode:Dark": "黑暗",
     "ThemeColor": "主题颜色",
-    "LanguageSelector": "语言选择"
+    "LanguageSelector": "语言选择",
+    "Active:MessageAutoOpen": "自动展开",
+    "LibraryResourceDisplay:Grid": "网格",
+    "LibraryResourceDisplay:List": "列表",
+    "LibraryResourceDisplay:Table": "表格",
+    "DateFormat:BeforeYear": "年前",
+    "DateFormat:BeforeMonth": "月前",
+    "DateFormat:BeforeDay": "天前",
+    "DateFormat:BeforeHour": "小时前",
+    "DateFormat:BeforeMinute": "分钟前",
+    "DateFormat:BeforeMoment": "刚刚",
+    "CreateDateFormat": "创建于 {0}",
+    "UpdateDateFormat": "更新于 {0}"
   }
 }
