@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
 using Vctoon.Comics.Dtos;
 using Vctoon.Libraries;
 using Vctoon.Services;
@@ -12,7 +13,8 @@ public class ComicAppService(
     IComicRepository repository,
     ContentProgressQueryService contentProgressQueryService,
     IContentProgressRepository contentProgressRepository,
-    ComicChapterManager comicChapterManager)
+    ComicChapterManager comicChapterManager,
+    IComicChapterRepository comicChapterRepository)
     : CrudAppService<Comic, ComicDto, Guid, ComicGetListInput, ComicCreateUpdateDto,
             ComicCreateUpdateDto>(repository),
         IComicAppService
@@ -22,21 +24,24 @@ public class ComicAppService(
     protected override string CreatePolicyName { get; set; } = VctoonPermissions.Comic.Create;
     protected override string UpdatePolicyName { get; set; } = VctoonPermissions.Comic.Update;
     protected override string DeletePolicyName { get; set; } = VctoonPermissions.Comic.Delete;
-
+    
     public override async Task<PagedResultDto<ComicDto>> GetListAsync(ComicGetListInput input)
     {
         var res = await base.GetListAsync(input);
-
+        
         if (CurrentUser.Id is null)
         {
             return res;
         }
-
-        await contentProgressQueryService.AppendCompletionRateAsync(CurrentUser.Id.Value, res.Items.ToList());
-
+        
+        if (!res.Items.IsNullOrEmpty())
+        {
+            await contentProgressQueryService.AppendCompletionRateAsync(CurrentUser.Id.Value, res.Items.ToList());
+        }
+        
         return res;
     }
-
+    
     /// <summary>
     ///   Change process status of a comic
     /// </summary>
@@ -51,19 +56,19 @@ public class ComicAppService(
         {
             throw new UserFriendlyException("User is not authenticated");
         }
-
+        
         if (!toCompleted)
         {
             var chapterIds = await AsyncExecuter.ToListAsync(
                 (await Repository.WithDetailsAsync(x => x.Chapters))
                 .SelectMany(x => x.Chapters
                     .Select(x => x.Id)));
-
+            
             if (chapterIds.IsNullOrEmpty())
             {
                 throw new UserFriendlyException("Comic has no chapters");
             }
-
+            
             await contentProgressRepository.DeleteAsync(x => chapterIds.Contains(x.ComicChapterId.Value));
             await contentProgressRepository.DeleteAsync(x => x.ComicId == id);
         }
@@ -73,34 +78,48 @@ public class ComicAppService(
                 (await Repository.WithDetailsAsync(x => x.Chapters))
                 .Where(x => x.Id == id)
                 .SelectMany(x => x.Chapters));
-
+            
             if (chapters.IsNullOrEmpty())
             {
                 throw new UserFriendlyException("Comic has no chapters");
             }
-
+            
             foreach (var comicChapter in chapters)
             {
                 await comicChapterManager.UpdateOrAddProcessAsync(comicChapter, CurrentUser.Id.Value, 100);
             }
         }
     }
-
+    
     public override async Task<ComicDto> GetAsync(Guid id)
     {
         var comic = await base.GetAsync(id);
-
+        
         if (CurrentUser.Id is null)
         {
             return comic;
         }
-
+        
         await contentProgressQueryService.AppendCompletionRateAsync(CurrentUser.Id.Value, comic);
-
+        
         return comic;
     }
-
-
+    
+    public async Task<List<ComicChapterDto>> GetAllChaptersAsync(Guid comicId)
+    {
+        // TODO: should check permission by chapter?
+        await CheckGetListPolicyAsync();
+        
+        List<ComicChapter> chapters = await AsyncExecuter.ToListAsync(
+            (await comicChapterRepository.GetQueryableAsync())
+            .Where(x => x.ComicId == comicId)
+        );
+        
+        List<ComicChapterDto> chapterDtos = ObjectMapper.Map<List<ComicChapter>, List<ComicChapterDto>>(chapters);
+        
+        return chapterDtos;
+    }
+    
     protected override async Task<IQueryable<Comic>> CreateFilteredQueryAsync(ComicGetListInput input)
     {
         // TODO: AbpHelper generated
