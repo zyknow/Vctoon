@@ -8,11 +8,11 @@
     <FluentMenuItem @onclick="() => ScanLibrary(Library)">
         @L["ScanLibrary"]
     </FluentMenuItem>
-    
+
     <FluentMenuItem @onclick="() => NavigationToEditLibrary()">
         @L["Edit"]
     </FluentMenuItem>
-    
+
     <FluentMenuItem @onclick="() => ShowDeleteLibraryDialog(Library)">
         <span class="text-red-500">@L["Delete"]</span>
     </FluentMenuItem>
@@ -38,6 +38,7 @@
             
             await LibraryAppService.DeleteAsync(library.Id);
             await UserStore.LoadLibrariesAsync();
+            NavigationManager.NavigateTo(@$"/", replace: true);
         }, msg, L["Submit"], L["Cancel"], L["AreYouSure"]);
     }
     
@@ -55,5 +56,5 @@
     {
         await LibraryAppService.ScanAsync(library.Id);
     }
-    
+
 }

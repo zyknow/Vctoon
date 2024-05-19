@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Vctoon.Comics.Dtos;
+using Vctoon.Libraries;
+using Vctoon.Libraries.Dtos;
 using Vctoon.Services;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
@@ -10,7 +12,8 @@ namespace Vctoon.Comics;
 public class ComicChapterAppService(
     IComicChapterRepository repository,
     ContentProgressQueryService contentProgressQueryService,
-    ComicChapterManager comicChapterManager)
+    ComicChapterManager comicChapterManager,
+    IImageFileRepository imageFileRepository)
     : CrudAppService<ComicChapter, ComicChapterDto, Guid, ComicChapterGetListInput,
             ComicChapterCreateUpdateDto, ComicChapterCreateUpdateDto>(repository),
         IComicChapterAppService
@@ -34,6 +37,12 @@ public class ComicChapterAppService(
         await contentProgressQueryService.AppendCompletionRateAsync(CurrentUser.Id.Value, res.Items.ToList());
         
         return res;
+    }
+    
+    public async Task<List<ImageFileDto>> GetChapterAllImageFileAsync(Guid chapterId)
+    {
+        List<ImageFile> imageFiles = await imageFileRepository.GetListAsync(x => x.ComicChapterId == chapterId);
+        return ObjectMapper.Map<List<ImageFile>, List<ImageFileDto>>(imageFiles);
     }
     
     public async Task UpdateProgressAsync(Guid id, double progress)
@@ -67,8 +76,8 @@ public class ComicChapterAppService(
         // TODO: AbpHelper generated
         return (await base.CreateFilteredQueryAsync(input))
             .WhereIf(!input.Title.IsNullOrWhiteSpace(), x => x.Title.Contains(input.Title))
-            .WhereIf(input.PageCount != null, x => x.PageCount == input.PageCount)
-            .WhereIf(input.Size != null, x => x.Size == input.Size)
+            // .WhereIf(input.PageCount != null, x => x.PageCount == input.PageCount)
+            // .WhereIf(input.Size != null, x => x.Size == input.Size)
             .WhereIf(input.ComicId != null, x => x.ComicId == input.ComicId)
             ;
     }

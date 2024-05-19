@@ -123,6 +123,7 @@
                     
                     await InvokeAsync(() =>
                     {
+                        WeakReferenceMessenger.Default.Send(new LibraryScanCompletedMessage(libraryId));
                         // MessageService.ShowMessageBar(options =>
                         // {
                         //     options.Intent = MessageIntent.Success;

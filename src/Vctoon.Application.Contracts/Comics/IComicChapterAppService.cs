@@ -1,4 +1,5 @@
 using Vctoon.Comics.Dtos;
+using Vctoon.Libraries.Dtos;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 
@@ -15,4 +16,5 @@ public interface IComicChapterAppService :
     Task<PagedResultDto<ComicChapterDto>> GetListAsync(ComicChapterGetListInput input);
     Task UpdateProgressAsync(Guid id, double progress);
     Task<ComicChapterDto> GetAsync(Guid id);
+    Task<List<ImageFileDto>> GetChapterAllImageFileAsync(Guid chapterId);
 }

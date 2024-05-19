@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SharpCompress.Archives;
+using Vctoon.Comics;
 using Vctoon.Hubs;
 using Vctoon.Libraries;
 using Vctoon.Services.Base;
@@ -19,45 +20,106 @@ public class LibraryScanner(
     ILogger<LibraryScanner> logger,
     IUnitOfWorkManager unitOfWorkManager,
     ImageFileScanner imageFileScanner,
-    IServiceScopeFactory serviceScopeFactory
+    IServiceScopeFactory serviceScopeFactory,
+    ComicManager comicManager,
+    IServiceProvider serviceProvider
 )
     : VctoonHubServiceBase(libraryScanHub), ITransientDependency
 
 {
+    private static object LockObject = new();
+    
+    private readonly int _maxDegreeOfParallelism = 10;
     public readonly List<string> ArchiveExtensions = [".zip", ".rar", ".cbz"];
     
     // TODO:  get extensions from settings
     public readonly List<string> ImageExtensions = [".jpg", ".png", ".jpeg", ".bmp", ".gif", ".webp"];
     
+    public static List<Guid> ScanningLibraryId { get; set; } = [];
     
     public async Task ScannerAsync(Guid libraryId)
     {
-        var query = (await libraryRepository.WithDetailsAsync(x => x.Paths)).Where(x => x.Id == libraryId);
-        var library =
-            await AsyncExecuter.FirstOrDefaultAsync(query);
-        if (library is null)
+        lock (LockObject)
         {
-            throw new BusinessException("Library is not found");
+            if (ScanningLibraryId.Contains(libraryId))
+            {
+                logger.LogWarning($"Library {libraryId} is being scanned, please wait");
+                return;
+            }
+            
+            ScanningLibraryId.Add(libraryId);
         }
         
-        unitOfWorkManager.Current?.OnCompleted(async () =>
+        try
         {
-            using IServiceScope scope = serviceScopeFactory.CreateScope();
-            IHubContext<LibraryScanHub> libraryScanHub = scope.ServiceProvider.GetRequiredService<IHubContext<LibraryScanHub>>();
-            await libraryScanHub.Clients.All.SendAsync(HubEventConst.Library.OnScanned, libraryId);
-        });
+            IQueryable<Library>? query = (await libraryRepository.WithDetailsAsync(x => x.Paths)).Where(x => x.Id == libraryId);
+            Library? library =
+                await AsyncExecuter.FirstOrDefaultAsync(query);
+            if (library is null)
+            {
+                throw new BusinessException("Library is not found");
+            }
+            
+            logger.LogInformation($"Start scanning library: {library.Name}");
+            
+            await SendLibraryScanMessageAsync(libraryId, L["ScanningLibraryPathDirectory"]);
+            await ScanningLibraryPathDirectoryStructureAsync(library);
+            
+            await libraryRepository.UpdateAsync(library, true);
+            
+            await SendLibraryScanMessageAsync(libraryId, L["ScanningLibraryPathFiles"]);
+            
+            await ScanningLibraryFileAsync(library);
+            
+            await comicManager.CheckRemoveEmptyComicAsync(libraryId, true);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, $"Scanning library {libraryId} failed");
+            throw;
+        }
+        finally
+        {
+            ScanningLibraryId.Remove(libraryId);
+            await SendLibraryScannedAsync(libraryId);
+            logger.LogInformation($"End scanning library: {libraryId}");
+        }
+    }
+    
+    private async Task ScanningLibraryFileAsync(Library library)
+    {
+        using SemaphoreSlim? semaphore = new SemaphoreSlim(_maxDegreeOfParallelism);
+        List<Task>? scanLibraryPathFileTasks = new List<Task>();
         
-        
-        await SendLibraryScanMessageAsync(libraryId, L["ScanningLibraryPathDirectory"]);
-        await ScanningLibraryPathDirectoryStructureAsync(library);
-        
-        await SendLibraryScanMessageAsync(libraryId, L["ScanningLibraryPathFiles"]);
         foreach (var libraryPath in library.Paths)
         {
-            await ScanningLibraryPathFilesAsync(libraryPath);
+            await semaphore.WaitAsync();
+            
+            Task? task = Task.Run(async () =>
+            {
+                try
+                {
+                    using IUnitOfWork? uow = unitOfWorkManager.Begin(
+                        true, false
+                    );
+                    using IServiceScope? scope = serviceProvider.CreateScope();
+                    LibraryScanner? libraryScanner = scope.ServiceProvider.GetRequiredService<LibraryScanner>();
+                    await libraryScanner.ScanningLibraryPathFileAsync(libraryPath);
+                    
+                    await uow.CompleteAsync();
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            });
+            
+            scanLibraryPathFileTasks.Add(task);
         }
         
-        await libraryRepository.UpdateAsync(library);
+        await Task.WhenAll(scanLibraryPathFileTasks);
+        
+        await libraryRepository.UpdateAsync(library, true);
     }
     
     private async Task ScanningLibraryPathDirectoryStructureAsync(Library library)
@@ -103,7 +165,7 @@ public class LibraryScanner(
                Directory.GetLastWriteTimeUtc(libraryPath.Path) > libraryPath.LastResolveTime;
     }
     
-    private async Task ScanningLibraryPathFilesAsync(LibraryPath libraryPath)
+    private async Task ScanningLibraryPathFileAsync(LibraryPath libraryPath)
     {
         if (NeedScanLibraryPathFiles(libraryPath))
         {
@@ -128,8 +190,8 @@ public class LibraryScanner(
                 await imageFileScanner.ScanByArchiveInfoAsync(archiveInfo, libraryPath.LibraryId);
             }
             
-            // libraryPath.LastModifyTime = Directory.GetLastWriteTimeUtc(libraryPath.Path);
-            // libraryPath.LastResolveTime = DateTime.UtcNow;
+            libraryPath.LastModifyTime = Directory.GetLastWriteTimeUtc(libraryPath.Path);
+            libraryPath.LastResolveTime = DateTime.UtcNow;
         }
     }
     

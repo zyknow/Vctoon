@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Tailwind;
 using Vctoon.Blazor.Client;
 using Vctoon.Blazor.Components;
 using Volo.Abp;
@@ -151,7 +152,7 @@ public class VctoonBlazorModule : AbpModule
         if (env.IsDevelopment())
         {
             app.UseWebAssemblyDebugging();
-            // app.RunTailwind("watch");
+            app.RunTailwind("watch");
         }
         
         if (!env.IsDevelopment())

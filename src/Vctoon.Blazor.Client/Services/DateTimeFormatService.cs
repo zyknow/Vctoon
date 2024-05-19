@@ -13,30 +13,30 @@ public class DateTimeFormatService(IStringLocalizer<VctoonResource> L) : ITransi
         TimeSpan diff = now - date;
         if (diff.TotalMinutes < 1)
         {
-            return L["DateFormat:Moment"];
+            return L["DateFormat:BeforeMoment"];
         }
         
         if (diff.TotalHours < 1)
         {
-            return L["CreateDateFormat", @$"{(int)diff.TotalMinutes} {L["DateFormat:BeforeMinute"]}"];
+            return L["CreateDateFormat", @$"{(int) diff.TotalMinutes} {L["DateFormat:BeforeMinute"]}"];
         }
         
         if (diff.TotalDays < 1)
         {
-            return L["CreateDateFormat", @$"{(int)diff.TotalHours} {L["DateFormat:BeforeHour"]}"];
+            return L["CreateDateFormat", @$"{(int) diff.TotalHours} {L["DateFormat:BeforeHour"]}"];
         }
         
         if (diff.TotalDays < 30)
         {
-            return L["CreateDateFormat", @$"{(int)diff.TotalDays} {L["DateFormat:BeforeDay"]}"];
+            return L["CreateDateFormat", @$"{(int) diff.TotalDays} {L["DateFormat:BeforeDay"]}"];
         }
         
         if (diff.TotalDays < 365)
         {
-            return L["CreateDateFormat", @$"{(int)diff.TotalDays / 30} {L["DateFormat:BeforeMonth"]}"];
+            return L["CreateDateFormat", @$"{(int) diff.TotalDays / 30} {L["DateFormat:BeforeMonth"]}"];
         }
         
-        return L["CreateDateFormat", @$"{(int)diff.TotalDays / 365} {L["DateFormat:BeforeYear"]}"];
+        return L["CreateDateFormat", @$"{(int) diff.TotalDays / 365} {L["DateFormat:BeforeYear"]}"];
     }
     
     public string FormatModifyDate(DateTime date)
@@ -51,24 +51,24 @@ public class DateTimeFormatService(IStringLocalizer<VctoonResource> L) : ITransi
         
         if (diff.TotalHours < 1)
         {
-            return L["ModifyDateFormat", @$"{(int)diff.TotalMinutes} {L["DateFormat:BeforeMinute"]}"];
+            return L["ModifyDateFormat", @$"{(int) diff.TotalMinutes} {L["DateFormat:BeforeMinute"]}"];
         }
         
         if (diff.TotalDays < 1)
         {
-            return L["ModifyDateFormat", @$"{(int)diff.TotalHours} {L["DateFormat:BeforeHour"]}"];
+            return L["ModifyDateFormat", @$"{(int) diff.TotalHours} {L["DateFormat:BeforeHour"]}"];
         }
         
         if (diff.TotalDays < 30)
         {
-            return L["ModifyDateFormat", @$"{(int)diff.TotalDays} {L["DateFormat:BeforeDay"]}"];
+            return L["ModifyDateFormat", @$"{(int) diff.TotalDays} {L["DateFormat:BeforeDay"]}"];
         }
         
         if (diff.TotalDays < 365)
         {
-            return L["ModifyDateFormat", @$"{(int)diff.TotalDays / 30} {L["DateFormat:BeforeMonth"]}"];
+            return L["ModifyDateFormat", @$"{(int) diff.TotalDays / 30} {L["DateFormat:BeforeMonth"]}"];
         }
         
-        return L["ModifyDateFormat", @$"{(int)diff.TotalDays / 365} {L["DateFormat:BeforeYear"]}"];
+        return L["ModifyDateFormat", @$"{(int) diff.TotalDays / 365} {L["DateFormat:BeforeYear"]}"];
     }
 }

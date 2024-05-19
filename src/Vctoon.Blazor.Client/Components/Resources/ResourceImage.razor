@@ -1,14 +1,16 @@
 ﻿@inherits VctoonComponentBase
 @inject AppStore AppStore
-@typeparam TResource
+@* @typeparam TResource *@
 @inject IBlazorHttpRequestAccessor BlazorHttpRequestAccessor
-<div @onmouseenter="@(() => _isHover = true)" @onmouseleave="@(() => _isHover = false)"
-     @onclick="() => { if (IsSelectedMode) OnIsCheckedChanged.InvokeAsync(!IsChecked); }">
-    <div style="@(@$"max-width: {ImageWidth}px;max-height: {ImageHeight}px")"
-         class="@(@$"select-none relative overflow-hidden rounded-2 border-1.5 border-accent hover:border-solid {(IsChecked ? "border-4 border-solid" : "")}")">
-        <img class="scale-105" width="@ImageWidth" height="@ImageHeight" src="@_cover" alt=""/>
+<div style="@(DynamicHeightWidthEnabled ? @$"width: {ImageWidth}px;" : "")">
+    <div @onmouseenter="@(() => _isHover = true)" @onmouseleave="@(() => _isHover = false)"
+         @onclick="() => { if (IsSelectedMode) OnIsCheckedChanged.InvokeAsync(!IsChecked); }"
+         style="@(DynamicHeightWidthEnabled ? @$"width: {ImageWidth}px;height: {ImageHeight}px" : "width:100%;height:100%")"
+         class="@(@$"relative select-none relative overflow-hidden rounded-2 box-border border-1.5 border-accent {(HoverEnabled ? "hover:border-solid" : "")} {(IsChecked ? "border-4 border-solid" : "")}")">
+        @* <img src="@ImageUrl" alt="" style="@((DynamicHeightWidthEnabled ? @$"width: {ImageWidth}px;height: {ImageHeight}px" : "width:100%;height:100%"))" /> *@
+        <img loading="lazy" src="@ImageUrl" alt="" class="w-full h-full object-cover"/>
         
-        
+        <FluentProgress BackgroundColor="transparent" Min="0" Max="100" Value="@Progress"></FluentProgress>
         @{
             @* // black select background *@
             if (IsHover)
@@ -50,14 +52,14 @@
         }
         
         
-        @if (ShowSelectedCheckBox || IsSelectedMode)
+        @if ((ShowSelectedCheckBox || IsSelectedMode) && SelectEnabled)
         {
             <div class="absolute top-0 left-0 z-20 p-2 hover:scale-120 z-30" @onclick="() => { }" @onclick:stopPropagation>
                 <FluentCheckbox Embedded Value="@IsChecked" ValueChanged="@(b => OnIsCheckedChanged.InvokeAsync(b))"></FluentCheckbox>
             </div>
         }
         
-        @if (_progress >= 100)
+        @if (Progress >= 100)
         {
             <div class="absolute top-0 right-0 z-20 bg-black bg-opacity-100 w-10 h-10 rounded-lb-5">
             </div>
@@ -67,40 +69,54 @@
         }
         
     </div>
-    <div class="flex flex-col mt-2 space-y-1" style="@(@$"max-width: {ImageWidth}px")">
-        @if (TitleTemplate != null)
-        {
-            @TitleTemplate
-        }
-        else
-        {
-            <div class="text-wrap break-words overflow-hidden h-10 w-full hover:underline cursor-pointer"
-                 onclick="@(() => OnTitleClick.InvokeAsync())">
-                @_title
+    @if (TitleTemplate != null || SubTitleTemplate != null || !Title.IsNullOrEmpty() || !SubTitle.IsNullOrEmpty())
+    {
+        <div class="flex flex-col mt-2 space-y-1">
+            <div>
+                
+                @if (TitleTemplate != null)
+                {
+                    @TitleTemplate
+                }
+                else
+                {
+                    <div class="text-wrap break-words overflow-hidden h-10 hover:underline cursor-pointer"
+                         onclick="@(() => OnTitleClick.InvokeAsync())">
+                        @Title
+                    </div>
+                }
             </div>
-        }
-        
-        @if (SubTitleTemplate != null)
-        {
-            @TitleTemplate
-        }
-        else
-        {
-            <div class="text-info">
-                @_subTitle
-            </div>
-        }
-    </div>
+            
+            
+            @if (SubTitleTemplate != null)
+            {
+                @SubTitleTemplate
+            }
+            else
+            {
+                <div class="text-info">
+                    @SubTitle
+                </div>
+            }
+        </div>
+    }
+    
 </div>
 
 @code {
     
-    [Parameter] public virtual TResource Resource { get; set; }
+// [Parameter] public virtual TResource Resource { get; set; }
     
-    [Parameter] public Func<TResource, string>? SubTitle { get; set; }
-    [Parameter] public Func<TResource, string>? Title { get; set; }
-    [Parameter] public Func<TResource, string>? Cover { get; set; }
-    [Parameter] public Func<TResource, int>? Progress { get; set; }
+// [Parameter] public Func<TResource, string>? SubTitle { get; set; }
+// [Parameter] public Func<TResource, string>? Title { get; set; }
+// [Parameter] public Func<TResource, string>? ImageRelativeUrl { get; set; }
+// [Parameter] public Func<TResource, int>? Progress { get; set; }
+// [Parameter] public Func<TResource, string> ImageUrl { get; set; }
+    
+    [Parameter] public string SubTitle { get; set; }
+    [Parameter] public string Title { get; set; }
+    [Parameter] public int? Progress { get; set; }
+    [Parameter] public string ImageUrl { get; set; }
     
     [Parameter] public EventCallback OnPlayClick { get; set; }
     [Parameter] public EventCallback OnTitleClick { get; set; }
@@ -116,14 +132,17 @@
     [Parameter] public bool MenuEnabled { get; set; }
     [Parameter] public bool EditEnabled { get; set; }
     [Parameter] public bool PlayEnabled { get; set; }
+    [Parameter] public bool SelectEnabled { get; set; }
+    [Parameter] public bool DynamicHeightWidthEnabled { get; set; }
+    
     
     bool IsHover => _isHover && HoverEnabled;
     
     bool _isHover;
-    private string? _subTitle;
-    private string? _title;
-    private string _cover;
-    private int _progress;
+// private string? _subTitle;
+// private string? _title;
+// private string _imageUrl;
+// private int _progress;
     
     bool ShowSelectedCheckBox => IsHover || IsSelectedMode;
     
@@ -131,22 +150,15 @@
     bool ShowEdit => EditEnabled && IsHover && !IsSelectedMode;
     bool ShowPlay => PlayEnabled && IsHover && !IsSelectedMode;
     
-    int ImageWidth => (int)(100 * AppStore.ImageScale);
-    int ImageHeight => (int)(150 * AppStore.ImageScale);
+    double ImageWidth => 100 * AppStore.ImageScale;
     
+    double ImageHeight => ImageWidth * 4 / 3;
+    
+//
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            if (Resource != null)
-            {
-                _subTitle = SubTitle?.Invoke(Resource);
-                _title = Title?.Invoke(Resource);
-                _cover = $@"{BlazorHttpRequestAccessor.RemoteUrl.TrimEnd('/')}/api/app/image/cover?coverPath={Cover?.Invoke(Resource)}";
-                _progress = Progress?.Invoke(Resource) ?? 0;
-            }
-            
-            
             StateHasChanged();
         }
         

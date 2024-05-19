@@ -1,0 +1,12 @@
+﻿<div class="flex flex-col space-y-2 h-full">
+    @Toolbar
+    <div class="max-h-full flex-1 overflow-auto px-2 space-y-2">
+        @Content
+    </div>
+</div>
+
+@code {
+    
+    [Parameter] public virtual RenderFragment? Content { get; set; }
+    [Parameter] public virtual RenderFragment? Toolbar { get; set; }
+}
