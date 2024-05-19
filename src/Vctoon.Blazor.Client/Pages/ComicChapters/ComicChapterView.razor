@@ -97,8 +97,6 @@
             _comic = await ComicAppService.GetAsync(ComicId);
             _chapter = await ComicChapterAppService.GetAsync(ChapterId);
             await LoadResourceAsync();
-            
-            StateHasChanged();
         }
         
         await base.OnAfterRenderAsync(firstRender);

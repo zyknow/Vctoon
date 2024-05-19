@@ -93,8 +93,6 @@
             _comic = await ComicAppService.GetAsync(ComicId);
             
             await LoadResourceAsync();
-            
-            StateHasChanged();
         }
         
         await base.OnAfterRenderAsync(firstRender);
