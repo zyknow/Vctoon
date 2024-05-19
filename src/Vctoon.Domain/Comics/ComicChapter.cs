@@ -13,24 +13,24 @@ public class ComicChapter : AuditedEntity<Guid>
         Guid id,
         string title,
         string coverPath,
-        long pageCount,
-        long size,
+        // long pageCount,
+        // long size,
         Guid comicId
     ) : base(id)
     {
         Title = title;
         CoverPath = coverPath;
-        PageCount = pageCount;
-        Size = size;
+        // PageCount = pageCount;
+        // Size = size;
         ComicId = comicId;
     }
     
     public string Title { get; set; }
     public string CoverPath { get; set; }
     
-    public long PageCount { get; set; }
+    // public long PageCount { get; set; }
     
-    public long Size { get; set; }
+    // public long Size { get; set; }
     
     public Guid ComicId { get; set; }
     
