@@ -16,7 +16,8 @@ public class ImageFileScanner(
     IComicRepository comicRepository,
     IHubContext<LibraryScanHub> libraryScanHub,
     ImageCoverSaver imageCoverSaver,
-    ComicManager comicManager
+    ComicManager comicManager,
+    IArchiveInfoRepository archiveInfoRepository
 ) : VctoonHubServiceBase(libraryScanHub), ITransientDependency
 {
     public async Task ScanByLibraryPathAsync(LibraryPath libraryPath, List<string> imageFilePaths, bool autoSave = false)
@@ -55,8 +56,8 @@ public class ImageFileScanner(
             chapter = new ComicChapter(GuidGenerator.Create(), title, cover,
                 comic.Id);
             
-            await comicChapterRepository.InsertAsync(chapter, autoSave);
             await comicRepository.InsertAsync(comic, autoSave);
+            await comicChapterRepository.InsertAsync(chapter, autoSave);
             
             comicChapterId = chapter.Id;
         }
@@ -88,7 +89,10 @@ public class ImageFileScanner(
     
     public async Task ScanByArchiveInfoAsync(ArchiveInfo archiveInfo, Guid libraryId, bool autoSave = false)
     {
-        var query = (await imageFileRepository.GetQueryableAsync()).Where(x => x.ArchiveInfoPathId == archiveInfo.Id);
+        List<Guid> archivePathIds = archiveInfo.Paths.Select(x => x.Id).ToList();
+        
+        IQueryable<ImageFile> query = (await imageFileRepository.GetQueryableAsync()).Where(x =>
+            archivePathIds.Contains(x.ArchiveInfoPathId.Value));
         
         var repImages = await AsyncExecuter.ToListAsync(query);
         
@@ -153,21 +157,19 @@ public class ImageFileScanner(
             }
         }
         
+        if (!addComics.IsNullOrEmpty())
+            await comicRepository.InsertManyAsync(addComics, autoSave);
+        
         if (!addComicChapters.IsNullOrEmpty())
         {
             await comicChapterRepository.InsertManyAsync(addComicChapters, autoSave);
         }
         
-        if (!addComics.IsNullOrEmpty())
-        {
-            await comicRepository.InsertManyAsync(addComics, autoSave);
-        }
-        
         if (!addImageEntities.IsNullOrEmpty())
-        {
             await imageFileRepository.InsertManyAsync(addImageEntities, autoSave);
-        }
         
         archiveInfo.LastResolveTime = DateTime.UtcNow;
+        
+        await archiveInfoRepository.UpdateAsync(archiveInfo, autoSave);
     }
 }

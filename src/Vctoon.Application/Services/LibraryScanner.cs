@@ -22,7 +22,7 @@ public class LibraryScanner(
     ImageFileScanner imageFileScanner,
     IServiceScopeFactory serviceScopeFactory,
     ComicManager comicManager,
-    IServiceProvider serviceProvider
+    LibraryManager libraryManager
 )
     : VctoonHubServiceBase(libraryScanHub), ITransientDependency
 
@@ -70,8 +70,6 @@ public class LibraryScanner(
             await SendLibraryScanMessageAsync(libraryId, L["ScanningLibraryPathFiles"]);
             
             await ScanningLibraryFileAsync(library);
-            
-            await comicManager.CheckRemoveEmptyComicAsync(libraryId, true);
         }
         catch (Exception e)
         {
@@ -99,14 +97,16 @@ public class LibraryScanner(
             {
                 try
                 {
-                    using IUnitOfWork? uow = unitOfWorkManager.Begin(
-                        true, false
-                    );
-                    using IServiceScope? scope = serviceProvider.CreateScope();
-                    LibraryScanner? libraryScanner = scope.ServiceProvider.GetRequiredService<LibraryScanner>();
-                    await libraryScanner.ScanningLibraryPathFileAsync(libraryPath);
-                    
-                    await uow.CompleteAsync();
+                    using (IUnitOfWork? uow = unitOfWorkManager.Begin(true))
+                    {
+                        await using AsyncServiceScope scope = uow.ServiceProvider.CreateAsyncScope();
+                        LibraryScanner? libraryScanner = scope.ServiceProvider.GetRequiredService<LibraryScanner>();
+                        // do not auto save
+                        await libraryScanner.ScanningLibraryPathFileAsync(libraryPath, true);
+                    }
+                }
+                catch (Exception e)
+                {
                 }
                 finally
                 {
@@ -118,6 +118,8 @@ public class LibraryScanner(
         }
         
         await Task.WhenAll(scanLibraryPathFileTasks);
+        
+        await libraryManager.DeleteLibraryEmptyComicAsync(library);
         
         await libraryRepository.UpdateAsync(library, true);
     }
@@ -165,7 +167,7 @@ public class LibraryScanner(
                Directory.GetLastWriteTimeUtc(libraryPath.Path) > libraryPath.LastResolveTime;
     }
     
-    private async Task ScanningLibraryPathFileAsync(LibraryPath libraryPath)
+    private async Task ScanningLibraryPathFileAsync(LibraryPath libraryPath, bool autoSave = false)
     {
         if (NeedScanLibraryPathFiles(libraryPath))
         {
@@ -176,18 +178,32 @@ public class LibraryScanner(
             var imageFilePaths =
                 filePaths.Where(x => ImageExtensions.Contains(Path.GetExtension(x).ToLower())).ToList();
             
-            await imageFileScanner.ScanByLibraryPathAsync(libraryPath, imageFilePaths);
+            await imageFileScanner.ScanByLibraryPathAsync(libraryPath, imageFilePaths, autoSave);
             
             var archiveFilePaths =
                 filePaths.Where(x => ArchiveExtensions.Contains(Path.GetExtension(x).ToLower())).ToList();
             
             await SendLibraryScanMessageAsync(libraryPath.LibraryId, L["ScanningArchiveInfo"], libraryPath.Path);
             
+            
+            List<Guid> deleteArchiveIds =
+                await AsyncExecuter.ToListAsync(
+                    (await archiveInfoRepository.GetQueryableAsync())
+                    .Where(x => x.LibraryPathId == libraryPath.Id)
+                    .Where(x => !archiveFilePaths.Contains(x.Path))
+                    .Select(x => x.Id));
+            
+            if (!deleteArchiveIds.IsNullOrEmpty())
+            {
+                await archiveInfoRepository.DeleteManyAsync(deleteArchiveIds, autoSave);
+            }
+            
             foreach (var archiveFilePath in archiveFilePaths)
             {
-                var archiveInfo = await ScanningArchiveInfoDirectoryStructureAsync(archiveFilePath);
+                ArchiveInfo archiveInfo =
+                    await ScanningArchiveInfoDirectoryStructureAsync(archiveFilePath, libraryPath.Id, autoSave);
                 
-                await imageFileScanner.ScanByArchiveInfoAsync(archiveInfo, libraryPath.LibraryId);
+                await imageFileScanner.ScanByArchiveInfoAsync(archiveInfo, libraryPath.LibraryId, autoSave);
             }
             
             libraryPath.LastModifyTime = Directory.GetLastWriteTimeUtc(libraryPath.Path);
@@ -202,19 +218,20 @@ public class LibraryScanner(
     }
     
     
-    private async Task<ArchiveInfo> ScanningArchiveInfoDirectoryStructureAsync(string archivePath)
+    private async Task<ArchiveInfo> ScanningArchiveInfoDirectoryStructureAsync(string archivePath, Guid libraryPathId,
+        bool autoSave = false)
     {
         var query = await archiveInfoRepository.WithDetailsAsync(x => x.Paths);
         
         
         var archiveInfo =
             await AsyncExecuter.FirstOrDefaultAsync(query, x =>
-                x.Path == archivePath);
+                x.Path == archivePath && x.LibraryPathId == libraryPathId);
         
         if (archiveInfo is null)
         {
-            archiveInfo = new ArchiveInfo(GuidGenerator.Create(), archivePath, Path.GetExtension(archivePath));
-            await archiveInfoRepository.InsertAsync(archiveInfo);
+            archiveInfo = new ArchiveInfo(GuidGenerator.Create(), archivePath, Path.GetExtension(archivePath), libraryPathId);
+            await archiveInfoRepository.InsertAsync(archiveInfo, autoSave);
         }
         
         if (!NeedScanArchiveInfo(archiveInfo))
@@ -240,7 +257,7 @@ public class LibraryScanner(
             .ToList();
         archiveInfo.Paths.AddRange(addArchivePaths);
         
-        archiveInfoRepository.UpdateAsync(archiveInfo);
+        archiveInfoRepository.UpdateAsync(archiveInfo, autoSave);
         
         return archiveInfo;
     }
