@@ -23,7 +23,7 @@
             <div class="flex flex-col">
                 <div class="flex flex-wrap md:space-x-6 w-full">
                     <div class="max-w-80">
-                        <ResourceImage Progress="@((int) _comic.Progress)" ImageUrl="@ImageUrlProvider.GetCoverUrl(_comic.CoverPath)"
+                        <ResourceImage Progress="@((int)_comic.Progress)" ImageUrl="@ImageUrlProvider.GetCoverUrl(_comic.CoverPath)"
                                        HoverEnabled PlayEnabled>
                         </ResourceImage>
                     </div>
@@ -65,7 +65,7 @@
                                        IsSelectedMode="@(!SelectedResources.IsNullOrEmpty())"
                                        IsChecked="@SelectedResources.Contains(image)"
                                        OnIsCheckedChanged="@(b => ResourceImageCheckChanged(image, b))"
-                                       ImageUrl="@ImageUrlProvider.GetImageUrl(image.Id)">
+                                       ImageUrl="@ImageUrlProvider.GetImageUrl(image.Id, _imageCoverWidth)">
                         </ResourceImage>
                     </div>
                 }
@@ -88,6 +88,8 @@
     ComicChapterDto _chapter;
     
     List<TagDto> tags = [];
+    
+    readonly int _imageCoverWidth = 480;
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
