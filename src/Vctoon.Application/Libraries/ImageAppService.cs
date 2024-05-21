@@ -2,6 +2,7 @@ using Vctoon.BlobContainers;
 using Vctoon.ImageProviders;
 using Volo.Abp;
 using Volo.Abp.BlobStoring;
+using Volo.Abp.Domain.Repositories;
 
 namespace Vctoon.Libraries;
 
@@ -35,7 +36,6 @@ public class ImageAppService(
         }
         
         var imageFile = await imageFileRepository.GetAsync(imageFileId);
-        
         if (imageFile == null)
         {
             throw new UserFriendlyException("Image file not found");
@@ -46,12 +46,8 @@ public class ImageAppService(
             return await imageProvider.GetImageStreamAsync(imageFile.Path, maxWidth);
         }
         
-        var archiveInfoQuery =
-            await archiveInfoRepository.WithDetailsAsync(x =>
-                x.Paths);
-        
-        var archiveInfo = await AsyncExecuter.FirstOrDefaultAsync(archiveInfoQuery.Where(x =>
-            x.Paths.First(p => p.Id == imageFile.LibraryPathId).Id == imageFile.LibraryPathId));
+        ArchiveInfo? archiveInfo =
+            await archiveInfoRepository.FirstOrDefaultAsync(x => x.Paths.Any(p => p.Id == imageFile.ArchiveInfoPathId));
         
         if (archiveInfo == null)
         {
