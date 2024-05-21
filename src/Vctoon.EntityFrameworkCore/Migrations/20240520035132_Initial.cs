@@ -12,28 +12,15 @@ namespace Vctoon.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "_ArchiveInfos",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Path = table.Column<string>(type: "TEXT", nullable: false),
-                    Extension = table.Column<string>(type: "TEXT", nullable: false),
-                    LastModifyTime = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    LastResolveTime = table.Column<DateTime>(type: "TEXT", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK__ArchiveInfos", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "_Libraries",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    ExtraProperties = table.Column<string>(type: "TEXT", nullable: false),
-                    ConcurrencyStamp = table.Column<string>(type: "TEXT", maxLength: 40, nullable: false)
+                    CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -46,8 +33,10 @@ namespace Vctoon.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    ExtraProperties = table.Column<string>(type: "TEXT", nullable: false),
-                    ConcurrencyStamp = table.Column<string>(type: "TEXT", maxLength: 40, nullable: false)
+                    CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -60,8 +49,10 @@ namespace Vctoon.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    ExtraProperties = table.Column<string>(type: "TEXT", nullable: false),
-                    ConcurrencyStamp = table.Column<string>(type: "TEXT", maxLength: 40, nullable: false)
+                    CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -512,27 +503,6 @@ namespace Vctoon.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "_ArchiveInfoPaths",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Path = table.Column<string>(type: "TEXT", nullable: true),
-                    LastModifyTime = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    LastResolveTime = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    ArchiveInfoId = table.Column<Guid>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK__ArchiveInfoPaths", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK__ArchiveInfoPaths__ArchiveInfos_ArchiveInfoId",
-                        column: x => x.ArchiveInfoId,
-                        principalTable: "_ArchiveInfos",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "_Comics",
                 columns: table => new
                 {
@@ -540,8 +510,10 @@ namespace Vctoon.Migrations
                     Title = table.Column<string>(type: "TEXT", nullable: false),
                     CoverPath = table.Column<string>(type: "TEXT", nullable: false),
                     LibraryId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ExtraProperties = table.Column<string>(type: "TEXT", nullable: false),
-                    ConcurrencyStamp = table.Column<string>(type: "TEXT", maxLength: 40, nullable: false)
+                    CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -871,9 +843,11 @@ namespace Vctoon.Migrations
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Title = table.Column<string>(type: "TEXT", nullable: false),
                     CoverPath = table.Column<string>(type: "TEXT", nullable: false),
-                    PageCount = table.Column<long>(type: "INTEGER", nullable: false),
-                    Size = table.Column<long>(type: "INTEGER", nullable: false),
-                    ComicId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    ComicId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -906,6 +880,28 @@ namespace Vctoon.Migrations
                         name: "FK__ComicTags__Tags_TagsId",
                         column: x => x.TagsId,
                         principalTable: "_Tags",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "_ArchiveInfos",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Path = table.Column<string>(type: "TEXT", nullable: false),
+                    Extension = table.Column<string>(type: "TEXT", nullable: false),
+                    LastModifyTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastResolveTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LibraryPathId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK__ArchiveInfos", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK__ArchiveInfos__LibraryPaths_LibraryPathId",
+                        column: x => x.LibraryPathId,
+                        principalTable: "_LibraryPaths",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -999,6 +995,60 @@ namespace Vctoon.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "_ContentProgresses",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ComicChapterId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    ComicId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    CompletionRate = table.Column<double>(type: "REAL", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK__ContentProgresses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK__ContentProgresses_AbpUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AbpUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK__ContentProgresses__ComicChapters_ComicChapterId",
+                        column: x => x.ComicChapterId,
+                        principalTable: "_ComicChapters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK__ContentProgresses__Comics_ComicId",
+                        column: x => x.ComicId,
+                        principalTable: "_Comics",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "_ArchiveInfoPaths",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Path = table.Column<string>(type: "TEXT", nullable: true),
+                    LastModifyTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastResolveTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    ArchiveInfoId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK__ArchiveInfoPaths", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK__ArchiveInfoPaths__ArchiveInfos_ArchiveInfoId",
+                        column: x => x.ArchiveInfoId,
+                        principalTable: "_ArchiveInfos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "_ImageFiles",
                 columns: table => new
                 {
@@ -1007,8 +1057,6 @@ namespace Vctoon.Migrations
                     Path = table.Column<string>(type: "TEXT", nullable: false),
                     Extension = table.Column<string>(type: "TEXT", nullable: false),
                     Size = table.Column<long>(type: "INTEGER", nullable: false),
-                    Width = table.Column<long>(type: "INTEGER", nullable: false),
-                    Height = table.Column<long>(type: "INTEGER", nullable: false),
                     LibraryPathId = table.Column<Guid>(type: "TEXT", nullable: true),
                     ArchiveInfoPathId = table.Column<Guid>(type: "TEXT", nullable: true),
                     ComicChapterId = table.Column<Guid>(type: "TEXT", nullable: false)
@@ -1066,6 +1114,11 @@ namespace Vctoon.Migrations
                 column: "ArchiveInfoId");
 
             migrationBuilder.CreateIndex(
+                name: "IX__ArchiveInfos_LibraryPathId",
+                table: "_ArchiveInfos",
+                column: "LibraryPathId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX__ComicChapters_ComicId",
                 table: "_ComicChapters",
                 column: "ComicId");
@@ -1084,6 +1137,21 @@ namespace Vctoon.Migrations
                 name: "IX__ComicTags_TagsId",
                 table: "_ComicTags",
                 column: "TagsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX__ContentProgresses_ComicChapterId",
+                table: "_ContentProgresses",
+                column: "ComicChapterId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX__ContentProgresses_ComicId",
+                table: "_ContentProgresses",
+                column: "ComicId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX__ContentProgresses_UserId",
+                table: "_ContentProgresses",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX__ImageFiles_ArchiveInfoPathId",
@@ -1355,6 +1423,9 @@ namespace Vctoon.Migrations
                 name: "_ComicTags");
 
             migrationBuilder.DropTable(
+                name: "_ContentProgresses");
+
+            migrationBuilder.DropTable(
                 name: "_ImageFileTags");
 
             migrationBuilder.DropTable(
@@ -1469,9 +1540,6 @@ namespace Vctoon.Migrations
                 name: "_ComicChapters");
 
             migrationBuilder.DropTable(
-                name: "_LibraryPaths");
-
-            migrationBuilder.DropTable(
                 name: "AbpAuditLogs");
 
             migrationBuilder.DropTable(
@@ -1482,6 +1550,9 @@ namespace Vctoon.Migrations
 
             migrationBuilder.DropTable(
                 name: "_Comics");
+
+            migrationBuilder.DropTable(
+                name: "_LibraryPaths");
 
             migrationBuilder.DropTable(
                 name: "_Libraries");

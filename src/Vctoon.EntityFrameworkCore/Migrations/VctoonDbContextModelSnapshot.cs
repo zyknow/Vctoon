@@ -173,11 +173,16 @@ namespace Vctoon.Migrations
                     b.Property<DateTime?>("LastResolveTime")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("LibraryPathId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Path")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LibraryPathId");
 
                     b.ToTable("_ArchiveInfos", (string)null);
                 });
@@ -2207,6 +2212,15 @@ namespace Vctoon.Migrations
                     b.HasOne("Vctoon.Comics.Comic", null)
                         .WithMany("Chapters")
                         .HasForeignKey("ComicId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Vctoon.Libraries.ArchiveInfo", b =>
+                {
+                    b.HasOne("Vctoon.Libraries.LibraryPath", null)
+                        .WithMany()
+                        .HasForeignKey("LibraryPathId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

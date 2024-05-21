@@ -18,44 +18,45 @@ public static class LibraryDbContextModelBuilderExtensions
         {
             return;
         }
-
-
+        
+        
         builder.Entity<Library>(b =>
         {
             b.ToTable(VctoonConsts.DbTablePrefix + "Libraries", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
-
+            
             // b.HasMany(x => x.Paths).WithOne().HasForeignKey(x => x.LibraryId).OnDelete(DeleteBehavior.Cascade);
-
+            
             b.HasMany<Comic>().WithOne().HasForeignKey(x => x.LibraryId).OnDelete(DeleteBehavior.Cascade);
-
+            
             /* Configure more properties here */
         });
-
+        
         builder.Entity<LibraryPath>(b =>
         {
             b.ToTable(VctoonConsts.DbTablePrefix + "LibraryPaths", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
             b.HasMany<ImageFile>().WithOne().HasForeignKey(x => x.LibraryPathId).OnDelete(DeleteBehavior.Cascade);
+            b.HasMany<ArchiveInfo>().WithOne().HasForeignKey(x => x.LibraryPathId).OnDelete(DeleteBehavior.Cascade);
             // b.HasMany(x => x.Children).WithOne().HasForeignKey(x => x.ParentId).OnDelete(DeleteBehavior.Cascade);
             /* Configure more properties here */
         });
-
-
+        
+        
         builder.Entity<TagGroup>(b =>
         {
             b.ToTable(VctoonConsts.DbTablePrefix + "TagGroups", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
-
+            
             /* Configure more properties here */
         });
-
-
+        
+        
         builder.Entity<Tag>(b =>
         {
             b.ToTable(VctoonConsts.DbTablePrefix + "Tags", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
-
+            
             b.HasMany<Comic>().WithMany(x => x.Tags)
                 .UsingEntity(j => j.ToTable(VctoonDbContext.EfCoreShadowTableName.ComicTags));
             b.HasMany<ComicChapter>().WithMany(x => x.Tags)
@@ -66,47 +67,45 @@ public static class LibraryDbContextModelBuilderExtensions
                 .UsingEntity(j => j.ToTable(VctoonDbContext.EfCoreShadowTableName.TagGroupTags));
             /* Configure more properties here */
         });
-
+        
         builder.Entity<ImageFile>(b =>
         {
             b.ToTable(VctoonConsts.DbTablePrefix + "ImageFiles", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
-
+            
             /* Configure more properties here */
         });
-
+        
         builder.Entity<ArchiveInfo>(b =>
         {
             b.ToTable(VctoonConsts.DbTablePrefix + "ArchiveInfos", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
-
+            
             b.HasMany(x => x.Paths).WithOne().HasForeignKey(x => x.ArchiveInfoId).OnDelete(DeleteBehavior.Cascade);
-
-
             /* Configure more properties here */
         });
-
-
+        
+        
         builder.Entity<ArchiveInfoPath>(b =>
         {
             b.ToTable(VctoonConsts.DbTablePrefix + "ArchiveInfoPaths", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
-
+            
             // b.HasMany(x => x.Children).WithOne().HasForeignKey(x => x.ParentId).OnDelete(DeleteBehavior.Cascade);
             b.HasMany<ImageFile>().WithOne().HasForeignKey(x => x.ArchiveInfoPathId).OnDelete(DeleteBehavior.Cascade);
-
+            
             /* Configure more properties here */
         });
-
+        
         builder.Entity<ContentProgress>(b =>
         {
             b.ToTable(VctoonConsts.DbTablePrefix + "ContentProgresses", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
-
+            
             b.HasOne<IdentityUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
             b.HasOne<ComicChapter>().WithMany().HasForeignKey(x => x.ComicChapterId).OnDelete(DeleteBehavior.Cascade);
             b.HasOne<Comic>().WithMany().HasForeignKey(x => x.ComicId).OnDelete(DeleteBehavior.Cascade);
-
+            
             /* Configure more properties here */
         });
     }

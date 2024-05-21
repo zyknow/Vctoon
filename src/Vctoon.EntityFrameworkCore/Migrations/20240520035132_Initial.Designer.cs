@@ -12,7 +12,7 @@ using Volo.Abp.EntityFrameworkCore;
 namespace Vctoon.Migrations
 {
     [DbContext(typeof(VctoonDbContext))]
-    [Migration("20240421121651_Initial")]
+    [Migration("20240520035132_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -88,21 +88,25 @@ namespace Vctoon.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("TEXT")
-                        .HasColumnName("ConcurrencyStamp");
-
                     b.Property<string>("CoverPath")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ExtraProperties")
-                        .IsRequired()
+                    b.Property<DateTime>("CreationTime")
                         .HasColumnType("TEXT")
-                        .HasColumnName("ExtraProperties");
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("LastModifierId");
 
                     b.Property<Guid>("LibraryId")
                         .HasColumnType("TEXT");
@@ -130,11 +134,21 @@ namespace Vctoon.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<long>("PageCount")
-                        .HasColumnType("INTEGER");
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("CreationTime");
 
-                    b.Property<long>("Size")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("LastModifierId");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -162,11 +176,16 @@ namespace Vctoon.Migrations
                     b.Property<DateTime?>("LastResolveTime")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("LibraryPathId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Path")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LibraryPathId");
 
                     b.ToTable("_ArchiveInfos", (string)null);
                 });
@@ -195,6 +214,34 @@ namespace Vctoon.Migrations
                     b.ToTable("_ArchiveInfoPaths", (string)null);
                 });
 
+            modelBuilder.Entity("Vctoon.Libraries.ContentProgress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ComicChapterId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ComicId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("CompletionRate")
+                        .HasColumnType("REAL");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ComicChapterId");
+
+                    b.HasIndex("ComicId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("_ContentProgresses", (string)null);
+                });
+
             modelBuilder.Entity("Vctoon.Libraries.ImageFile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -210,9 +257,6 @@ namespace Vctoon.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<long>("Height")
-                        .HasColumnType("INTEGER");
-
                     b.Property<Guid?>("LibraryPathId")
                         .HasColumnType("TEXT");
 
@@ -225,9 +269,6 @@ namespace Vctoon.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<long>("Size")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long>("Width")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -246,17 +287,21 @@ namespace Vctoon.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .HasMaxLength(40)
+                    b.Property<DateTime>("CreationTime")
                         .HasColumnType("TEXT")
-                        .HasColumnName("ConcurrencyStamp");
+                        .HasColumnName("CreationTime");
 
-                    b.Property<string>("ExtraProperties")
-                        .IsRequired()
+                    b.Property<Guid?>("CreatorId")
                         .HasColumnType("TEXT")
-                        .HasColumnName("ExtraProperties");
+                        .HasColumnName("CreatorId");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("LastModifierId");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -300,17 +345,21 @@ namespace Vctoon.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .HasMaxLength(40)
+                    b.Property<DateTime>("CreationTime")
                         .HasColumnType("TEXT")
-                        .HasColumnName("ConcurrencyStamp");
+                        .HasColumnName("CreationTime");
 
-                    b.Property<string>("ExtraProperties")
-                        .IsRequired()
+                    b.Property<Guid?>("CreatorId")
                         .HasColumnType("TEXT")
-                        .HasColumnName("ExtraProperties");
+                        .HasColumnName("CreatorId");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("LastModifierId");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -326,17 +375,21 @@ namespace Vctoon.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .HasMaxLength(40)
+                    b.Property<DateTime>("CreationTime")
                         .HasColumnType("TEXT")
-                        .HasColumnName("ConcurrencyStamp");
+                        .HasColumnName("CreationTime");
 
-                    b.Property<string>("ExtraProperties")
-                        .IsRequired()
+                    b.Property<Guid?>("CreatorId")
                         .HasColumnType("TEXT")
-                        .HasColumnName("ExtraProperties");
+                        .HasColumnName("CreatorId");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("LastModifierId");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -2166,11 +2219,39 @@ namespace Vctoon.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Vctoon.Libraries.ArchiveInfo", b =>
+                {
+                    b.HasOne("Vctoon.Libraries.LibraryPath", null)
+                        .WithMany()
+                        .HasForeignKey("LibraryPathId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Vctoon.Libraries.ArchiveInfoPath", b =>
                 {
                     b.HasOne("Vctoon.Libraries.ArchiveInfo", null)
                         .WithMany("Paths")
                         .HasForeignKey("ArchiveInfoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Vctoon.Libraries.ContentProgress", b =>
+                {
+                    b.HasOne("Vctoon.Comics.ComicChapter", null)
+                        .WithMany()
+                        .HasForeignKey("ComicChapterId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Vctoon.Comics.Comic", null)
+                        .WithMany()
+                        .HasForeignKey("ComicId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Volo.Abp.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
