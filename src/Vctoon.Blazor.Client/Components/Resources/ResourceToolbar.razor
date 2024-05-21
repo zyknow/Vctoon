@@ -52,15 +52,8 @@
             
         </div>
         
+        
         <div class="relative h-10">
-            
-            @if (FilterTemplate != null)
-            {
-                <div class="w-full h-full items-center z-19 absolute">
-                    @FilterTemplate
-                </div>
-            }
-            
             @if (SelectedCount > 0)
             {
                 <div class="w-full h-full border-3 border-accent border-solid items-center border-rounded-1 z-20 absolute">
@@ -86,6 +79,17 @@
                     </div>
                 </div>
             }
+            else
+            {
+                <div class="w-full h-full items-center z-19 absolute">
+                    @if (FilterTemplate != null)
+                    {
+                        @FilterTemplate
+                    }
+                    
+/* <FluentSelect sele Appearance="Appearance.Stealth"></FluentSelect> */
+                </div>
+            }
         </div>
         
         
@@ -108,6 +112,7 @@
     [Parameter] public virtual RenderFragment? ToolbarMenuTemplate { get; set; }
     [Parameter] public virtual RenderFragment? ActionbarCenterTemplate { get; set; }
     [Parameter] public virtual RenderFragment? FilterTemplate { get; set; }
+    
     
     readonly Dictionary<LibraryResourceDisplayMode, Icon> _displayModeIcons = new()
     {
