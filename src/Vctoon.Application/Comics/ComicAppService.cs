@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Vctoon.Comics.Dtos;
 using Vctoon.Libraries;
@@ -27,7 +27,38 @@ public class ComicAppService(
     
     public override async Task<PagedResultDto<ComicDto>> GetListAsync(ComicGetListInput input)
     {
-        var res = await base.GetListAsync(input);
+        await CheckGetListPolicyAsync();
+        
+        IQueryable<Comic>? query = await CreateFilteredQueryAsync(input);
+        int totalCount = await AsyncExecuter.CountAsync(query);
+        
+        List<Comic> entities = new();
+        List<ComicDto> entityDtos = new();
+        
+        if (totalCount > 0)
+        {
+            if (!input.Sorting.IsNullOrWhiteSpace() &&
+                input.Sorting.Contains(nameof(ComicDto.Progress), StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.order(x => x.Progresses.Where(x => x.UserId == CurrentUser.Id).First().CompletionRate);
+            }
+            else
+            {
+                query = ApplySorting(query, input);
+            }
+            
+            query = ApplyPaging(query, input);
+            
+            entities = await AsyncExecuter.ToListAsync(query);
+            entityDtos = await MapToGetListOutputDtosAsync(entities);
+        }
+        
+        PagedResultDto<ComicDto> res = new(
+            totalCount,
+            entityDtos
+        );
+        
+        // var res = await base.GetListAsync(input);
         
         if (CurrentUser.Id is null)
         {
@@ -36,7 +67,7 @@ public class ComicAppService(
         
         if (!res.Items.IsNullOrEmpty())
         {
-            await contentProgressQueryService.AppendCompletionRateAsync(CurrentUser.Id.Value, res.Items.ToList());
+            //await contentProgressQueryService.AppendCompletionRateAsync(CurrentUser.Id.Value, res.Items.ToList());
         }
         
         return res;
@@ -123,9 +154,16 @@ public class ComicAppService(
     protected override async Task<IQueryable<Comic>> CreateFilteredQueryAsync(ComicGetListInput input)
     {
         // TODO: AbpHelper generated
-        return (await base.CreateFilteredQueryAsync(input))
-            .WhereIf(!input.Title.IsNullOrWhiteSpace(), x => x.Title.Contains(input.Title))
-            .WhereIf(input.LibraryId != null, x => x.LibraryId == input.LibraryId)
+        IQueryable<Comic> query = (await base.CreateFilteredQueryAsync(input))
+                .WhereIf(!input.Title.IsNullOrWhiteSpace(), x => x.Title.Contains(input.Title))
+                .WhereIf(input.LibraryId != null, x => x.LibraryId == input.LibraryId)
             ;
+        
+        //if (!input.Sorting.IsNullOrWhiteSpace() && input.Sorting.Contains(nameof(ComicDto.Progress), StringComparison.OrdinalIgnoreCase))
+        //{
+        //    query = query.OrderBy(x => x.Progresses.Where(x => x.UserId == CurrentUser.Id).First().CompletionRate);
+        //}
+        
+        return query;
     }
 }

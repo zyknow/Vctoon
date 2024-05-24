@@ -104,7 +104,7 @@ public static class LibraryDbContextModelBuilderExtensions
             
             b.HasOne<IdentityUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
             b.HasOne<ComicChapter>().WithMany().HasForeignKey(x => x.ComicChapterId).OnDelete(DeleteBehavior.Cascade);
-            b.HasOne<Comic>().WithMany().HasForeignKey(x => x.ComicId).OnDelete(DeleteBehavior.Cascade);
+            b.HasOne<Comic>().WithMany(x => x.Progresses).HasForeignKey(x => x.ComicId).OnDelete(DeleteBehavior.Cascade);
             
             /* Configure more properties here */
         });

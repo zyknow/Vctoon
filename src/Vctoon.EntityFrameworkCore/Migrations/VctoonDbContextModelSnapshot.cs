@@ -2242,7 +2242,7 @@ namespace Vctoon.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Vctoon.Comics.Comic", null)
-                        .WithMany()
+                        .WithMany("Progresses")
                         .HasForeignKey("ComicId")
                         .OnDelete(DeleteBehavior.Cascade);
 
@@ -2426,6 +2426,8 @@ namespace Vctoon.Migrations
             modelBuilder.Entity("Vctoon.Comics.Comic", b =>
                 {
                     b.Navigation("Chapters");
+
+                    b.Navigation("Progresses");
                 });
 
             modelBuilder.Entity("Vctoon.Comics.ComicChapter", b =>
