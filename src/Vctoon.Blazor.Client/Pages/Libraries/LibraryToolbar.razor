@@ -1,14 +1,15 @@
 ﻿@using System.Collections
+@using Vctoon.Comics.Dtos
 @inherits VctoonComponentBase
 @if (Library != null)
 {
-    <ResourceToolbar Total="@Total" ClearSelected="ClearSelected" SelectedCount="@(Selected?.Count ?? 0)">
+    <ResourceToolbar OnSortByChanged="@OnSortByChanged" SoftType="@typeof(ComicDto)" Total="@Total" ClearSelected="ClearSelected"
+                     SelectedCount="@(Selected?.Count ?? 0)">
         
         <ToolbarTitleTemplate>
             <FluentBreadcrumbItem class="font-bold" Href="@(@$"/library/{Library.Id}")">
                 @Library.Name
             </FluentBreadcrumbItem>
-            
         </ToolbarTitleTemplate>
         
         <ToolbarMenuTemplate>
@@ -38,6 +39,8 @@
     [Parameter] public IList Selected { get; set; }
     
     [Parameter] public Action OnStateChange { get; set; }
+    
+    [Parameter] public EventCallback<string> OnSortByChanged { get; set; }
     
     bool _showActionMenu;
     

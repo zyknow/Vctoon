@@ -15,23 +15,13 @@ public static class ComicDbContextModelBuilderExtensions
         {
             return;
         }
-
+        
         builder.Entity<Comic>(b =>
         {
             b.ToTable(VctoonConsts.DbTablePrefix + "Comics", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
-
-            b.HasMany(x => x.Chapters).WithOne().HasForeignKey(x => x.ComicId).OnDelete(DeleteBehavior.Cascade);
-            /* Configure more properties here */
-        });
-
-
-        builder.Entity<ComicChapter>(b =>
-        {
-            b.ToTable(VctoonConsts.DbTablePrefix + "ComicChapters", VctoonConsts.DbSchema);
-            b.ConfigureByConvention();
-
-            b.HasMany(x => x.Images).WithOne().HasForeignKey(x => x.ComicChapterId).OnDelete(DeleteBehavior.Cascade);
+            
+            b.HasMany(x => x.Images).WithOne().HasForeignKey(x => x.ComicId).OnDelete(DeleteBehavior.Cascade);
             /* Configure more properties here */
         });
     }

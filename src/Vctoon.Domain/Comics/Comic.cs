@@ -29,7 +29,7 @@ public class Comic : AuditedEntity<Guid>
     
     public List<Tag> Tags { get; set; } = new();
     
-    public List<ContentProgress> Progresses { get; set; } = new();
+    public List<ImageFile> Images { get; set; } = new();
     
-    public List<ComicChapter> Chapters { get; set; } = new();
+    public List<ContentProgress> Progresses { get; set; } = new();
 }

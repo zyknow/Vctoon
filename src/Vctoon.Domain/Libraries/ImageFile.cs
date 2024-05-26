@@ -14,7 +14,7 @@ public class ImageFile : Entity<Guid>
         long size,
         // long width,
         // long height,
-        Guid comicChapterId,
+        Guid comicId,
         Guid? libraryPathId = null,
         Guid? archiveInfoPathId = null
     ) : base(id)
@@ -27,7 +27,7 @@ public class ImageFile : Entity<Guid>
         // Height = height;
         LibraryPathId = libraryPathId;
         ArchiveInfoPathId = archiveInfoPathId;
-        ComicChapterId = comicChapterId;
+        ComicId = comicId;
     }
     
     public string Name { get; set; }
@@ -40,7 +40,7 @@ public class ImageFile : Entity<Guid>
     // public long Height { get; set; }
     public Guid? LibraryPathId { get; set; }
     public Guid? ArchiveInfoPathId { get; set; }
-    public Guid ComicChapterId { get; set; }
+    public Guid ComicId { get; set; }
     
     public List<Tag> Tags { get; set; } = new();
 }

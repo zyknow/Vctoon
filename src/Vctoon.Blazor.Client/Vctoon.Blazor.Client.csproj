@@ -44,8 +44,4 @@
         </Reference>
     </ItemGroup>
 
-    <ItemGroup>
-        <_ContentIncludedByDefault Remove="Components\Base\StreamImage.razor"/>
-    </ItemGroup>
-
 </Project>

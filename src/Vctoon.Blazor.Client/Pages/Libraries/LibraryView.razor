@@ -11,7 +11,7 @@
     <ResourceView>
         <Toolbar>
             <LibraryToolbar Library="_library" Selected="SelectedResources" Total="Total"
-                            OnStateChange="StateHasChanged">
+                            OnStateChange="StateHasChanged" OnSortByChanged="@OnSortByChanged">
             </LibraryToolbar>
         </Toolbar>
         <Content>
@@ -53,10 +53,19 @@
     
     LibraryDto _library;
     
+    
     void NavigationToComic(ComicDto comic)
     {
         NavigationManager.NavigateTo($"/library/{LibraryId}/comic/{comic.Id}");
     }
+    
+    async Task OnSortByChanged(string sortBy)
+    {
+        CurrentResourceSortBy = sortBy;
+        Resources.Clear();
+        await LoadResourceAsync(true);
+    }
+    
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -91,7 +100,8 @@
         {
             LibraryId = LibraryId,
             MaxResultCount = 50,
-            SkipCount = Resources.Count
+            SkipCount = Resources.Count,
+            Sorting = CurrentResourceSortBy
         });
         
         return (res.Items.ToList(), res.TotalCount);

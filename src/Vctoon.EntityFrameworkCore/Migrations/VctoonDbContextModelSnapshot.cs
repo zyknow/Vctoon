@@ -20,21 +20,6 @@ namespace Vctoon.Migrations
                 .HasAnnotation("_Abp_DatabaseProvider", EfCoreDatabaseProvider.Sqlite)
                 .HasAnnotation("ProductVersion", "8.0.0");
 
-            modelBuilder.Entity("ComicChapterTag", b =>
-                {
-                    b.Property<Guid>("ComicChapterId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("TagsId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("ComicChapterId", "TagsId");
-
-                    b.HasIndex("TagsId");
-
-                    b.ToTable("_ComicChapterTags", (string)null);
-                });
-
             modelBuilder.Entity("ComicTag", b =>
                 {
                     b.Property<Guid>("ComicId")
@@ -119,45 +104,6 @@ namespace Vctoon.Migrations
                     b.ToTable("_Comics", (string)null);
                 });
 
-            modelBuilder.Entity("Vctoon.Comics.ComicChapter", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("ComicId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CoverPath")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("CreationTime");
-
-                    b.Property<Guid?>("CreatorId")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("CreatorId");
-
-                    b.Property<DateTime?>("LastModificationTime")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("LastModificationTime");
-
-                    b.Property<Guid?>("LastModifierId")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("LastModifierId");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ComicId");
-
-                    b.ToTable("_ComicChapters", (string)null);
-                });
-
             modelBuilder.Entity("Vctoon.Libraries.ArchiveInfo", b =>
                 {
                     b.Property<Guid>("Id")
@@ -216,9 +162,6 @@ namespace Vctoon.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("ComicChapterId")
-                        .HasColumnType("TEXT");
-
                     b.Property<Guid?>("ComicId")
                         .HasColumnType("TEXT");
 
@@ -229,8 +172,6 @@ namespace Vctoon.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ComicChapterId");
 
                     b.HasIndex("ComicId");
 
@@ -247,7 +188,7 @@ namespace Vctoon.Migrations
                     b.Property<Guid?>("ArchiveInfoPathId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("ComicChapterId")
+                    b.Property<Guid>("ComicId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Extension")
@@ -272,7 +213,7 @@ namespace Vctoon.Migrations
 
                     b.HasIndex("ArchiveInfoPathId");
 
-                    b.HasIndex("ComicChapterId");
+                    b.HasIndex("ComicId");
 
                     b.HasIndex("LibraryPathId");
 
@@ -2138,21 +2079,6 @@ namespace Vctoon.Migrations
                     b.ToTable("AbpTenantConnectionStrings", (string)null);
                 });
 
-            modelBuilder.Entity("ComicChapterTag", b =>
-                {
-                    b.HasOne("Vctoon.Comics.ComicChapter", null)
-                        .WithMany()
-                        .HasForeignKey("ComicChapterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Vctoon.Libraries.Tag", null)
-                        .WithMany()
-                        .HasForeignKey("TagsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("ComicTag", b =>
                 {
                     b.HasOne("Vctoon.Comics.Comic", null)
@@ -2207,15 +2133,6 @@ namespace Vctoon.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Vctoon.Comics.ComicChapter", b =>
-                {
-                    b.HasOne("Vctoon.Comics.Comic", null)
-                        .WithMany("Chapters")
-                        .HasForeignKey("ComicId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Vctoon.Libraries.ArchiveInfo", b =>
                 {
                     b.HasOne("Vctoon.Libraries.LibraryPath", null)
@@ -2236,11 +2153,6 @@ namespace Vctoon.Migrations
 
             modelBuilder.Entity("Vctoon.Libraries.ContentProgress", b =>
                 {
-                    b.HasOne("Vctoon.Comics.ComicChapter", null)
-                        .WithMany()
-                        .HasForeignKey("ComicChapterId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("Vctoon.Comics.Comic", null)
                         .WithMany("Progresses")
                         .HasForeignKey("ComicId")
@@ -2260,9 +2172,9 @@ namespace Vctoon.Migrations
                         .HasForeignKey("ArchiveInfoPathId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Vctoon.Comics.ComicChapter", null)
+                    b.HasOne("Vctoon.Comics.Comic", null)
                         .WithMany("Images")
-                        .HasForeignKey("ComicChapterId")
+                        .HasForeignKey("ComicId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -2425,14 +2337,9 @@ namespace Vctoon.Migrations
 
             modelBuilder.Entity("Vctoon.Comics.Comic", b =>
                 {
-                    b.Navigation("Chapters");
+                    b.Navigation("Images");
 
                     b.Navigation("Progresses");
-                });
-
-            modelBuilder.Entity("Vctoon.Comics.ComicChapter", b =>
-                {
-                    b.Navigation("Images");
                 });
 
             modelBuilder.Entity("Vctoon.Libraries.ArchiveInfo", b =>

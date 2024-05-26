@@ -6,12 +6,12 @@ using Volo.Abp.Domain.Repositories;
 
 namespace Vctoon.Libraries;
 
-public class ImageAppService(
+public class ResourceAppService(
     IBlobContainer<CoverContainer> coverContainer,
     IImageFileRepository imageFileRepository,
     IImageProvider imageProvider,
     IArchiveInfoRepository archiveInfoRepository)
-    : VctoonAppService, IImageAppService
+    : VctoonAppService, IResourceAppService
 {
     public async Task<Stream> GetCoverAsync(string coverPath)
     {

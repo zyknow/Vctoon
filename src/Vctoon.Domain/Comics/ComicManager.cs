@@ -5,7 +5,6 @@ namespace Vctoon.Comics;
 public class ComicManager(
     IContentProgressRepository contentProgressRepository,
     IComicRepository comicRepository,
-    IComicChapterRepository comicChapterRepository,
     IImageFileRepository imageFileRepository,
     IArchiveInfoRepository archiveInfoRepository,
     ILibraryPathRepository libraryPathRepository) : DomainService

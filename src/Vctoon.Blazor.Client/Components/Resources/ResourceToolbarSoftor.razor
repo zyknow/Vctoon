@@ -1,0 +1,87 @@
+﻿@inherits VctoonComponentBase
+
+<FluentButton id="@_anchorId" Appearance="Appearance.Stealth" IconEnd="@(SortBy.IsNullOrEmpty() ? null : _sortIcons[SortBy])"
+              OnClick="@(() => _isOpen = !_isOpen)">
+    @if (!SortBy.IsNullOrEmpty())
+    {
+        @L["ResourceSoftBy", SelectedSortName]
+    }
+    else
+    {
+        @L["ResourceSoft"]
+    }
+</FluentButton>
+
+<FluentMenu @bind-Open="@_isOpen" Anchor="@_anchorId">
+    
+    @foreach (var sortName in SoftNames)
+    {
+        <FluentMenuItem OnClick="@(() => OnClickSortMenuItem(sortName))">
+            @sortName
+            @if (SelectedSortName == sortName)
+            {
+                <span slot="end">
+                    @if (SortBy == "asc")
+                    {
+                        <FluentIcon Value="@_sortIcons["asc"]" Color="Color.Accent" Slot="start"/>
+                    }
+                    else if (SortBy == "desc")
+                    {
+                        <FluentIcon Value="@_sortIcons["desc"]" Color="Color.Accent" Slot="start"/>
+                    }
+                </span>
+            }
+        </FluentMenuItem>
+    }
+</FluentMenu>
+
+@code {
+    [Parameter] public string? SortBy { get; set; }
+    [Parameter] public List<string> SoftNames { get; set; } = [];
+    [Parameter] public string SelectedSortName { get; set; }
+    
+    [Parameter] public EventCallback<string>? OnSortByChanged { get; set; }
+    
+    bool _isOpen;
+    
+    string _anchorId;
+    
+    Dictionary<string, Icon> _sortIcons = new()
+    {
+        {"asc", new Icons.Regular.Size16.ArrowSortUp()},
+        {"desc", new Icons.Filled.Size16.ArrowSortDown()}
+    };
+    
+    protected override void OnInitialized()
+    {
+        _anchorId = $"sort_{Guid.NewGuid()}";
+        base.OnInitialized();
+    }
+    
+    async Task OnClickSortMenuItem(string sortName)
+    {
+        if (SelectedSortName == sortName)
+        {
+            if (SortBy.IsNullOrEmpty())
+            {
+                SortBy = "asc";
+            }
+            else if (SortBy == "asc")
+            {
+                SortBy = "desc";
+            }
+            else if (SortBy == "desc")
+            {
+                SortBy = null;
+            }
+        }
+        else
+        {
+            SelectedSortName = sortName;
+            SortBy = "asc";
+        }
+        
+        OnSortByChanged?.InvokeAsync(@$"{SelectedSortName} {SortBy}");
+    }
+    
+}

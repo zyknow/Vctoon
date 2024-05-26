@@ -23,12 +23,6 @@ public class VctoonPermissionDefinitionProvider : PermissionDefinitionProvider
         comicPermission.AddChild(VctoonPermissions.Comic.Update, L("Permission:Update"));
         comicPermission.AddChild(VctoonPermissions.Comic.Delete, L("Permission:Delete"));
         
-        var comicChapterPermission =
-            myGroup.AddPermission(VctoonPermissions.ComicChapter.Default, L("Permission:ComicChapter"));
-        comicChapterPermission.AddChild(VctoonPermissions.ComicChapter.Create, L("Permission:Create"));
-        comicChapterPermission.AddChild(VctoonPermissions.ComicChapter.Update, L("Permission:Update"));
-        comicChapterPermission.AddChild(VctoonPermissions.ComicChapter.Delete, L("Permission:Delete"));
-        
         var tagPermission = myGroup.AddPermission(VctoonPermissions.Tag.Default, L("Permission:Tag"));
         tagPermission.AddChild(VctoonPermissions.Tag.Create, L("Permission:Create"));
         tagPermission.AddChild(VctoonPermissions.Tag.Update, L("Permission:Update"));

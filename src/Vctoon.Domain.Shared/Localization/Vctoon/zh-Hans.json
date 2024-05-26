@@ -30,6 +30,8 @@
     "DateFormat:BeforeMinute": "分钟前",
     "DateFormat:BeforeMoment": "刚刚",
     "CreateDateFormat": "创建于 {0}",
-    "UpdateDateFormat": "更新于 {0}"
+    "UpdateDateFormat": "更新于 {0}",
+    "ResourceSoft": "排序",
+    "ResourceSoftBy": "由 {0} 排序"
   }
 }

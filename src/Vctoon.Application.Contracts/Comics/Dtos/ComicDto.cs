@@ -12,8 +12,4 @@ public class ComicDto : AuditedEntityDto<Guid>
     public Guid LibraryId { get; set; }
     
     public double Progress { get; set; }
-    
-    // public List<Tag> Tags { get; set; }
-    //
-    // public List<ComicChapter> Chapters { get; set; }
 }

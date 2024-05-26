@@ -837,30 +837,6 @@ namespace Vctoon.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "_ComicChapters",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Title = table.Column<string>(type: "TEXT", nullable: false),
-                    CoverPath = table.Column<string>(type: "TEXT", nullable: false),
-                    ComicId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    CreatorId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    LastModificationTime = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    LastModifierId = table.Column<Guid>(type: "TEXT", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK__ComicChapters", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK__ComicChapters__Comics_ComicId",
-                        column: x => x.ComicId,
-                        principalTable: "_Comics",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "_ComicTags",
                 columns: table => new
                 {
@@ -880,6 +856,32 @@ namespace Vctoon.Migrations
                         name: "FK__ComicTags__Tags_TagsId",
                         column: x => x.TagsId,
                         principalTable: "_Tags",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "_ContentProgresses",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ComicId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    CompletionRate = table.Column<double>(type: "REAL", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK__ContentProgresses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK__ContentProgresses_AbpUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AbpUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK__ContentProgresses__Comics_ComicId",
+                        column: x => x.ComicId,
+                        principalTable: "_Comics",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -971,63 +973,6 @@ namespace Vctoon.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "_ComicChapterTags",
-                columns: table => new
-                {
-                    ComicChapterId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    TagsId = table.Column<Guid>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK__ComicChapterTags", x => new { x.ComicChapterId, x.TagsId });
-                    table.ForeignKey(
-                        name: "FK__ComicChapterTags__ComicChapters_ComicChapterId",
-                        column: x => x.ComicChapterId,
-                        principalTable: "_ComicChapters",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK__ComicChapterTags__Tags_TagsId",
-                        column: x => x.TagsId,
-                        principalTable: "_Tags",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "_ContentProgresses",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ComicChapterId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    ComicId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    CompletionRate = table.Column<double>(type: "REAL", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK__ContentProgresses", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK__ContentProgresses_AbpUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AbpUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK__ContentProgresses__ComicChapters_ComicChapterId",
-                        column: x => x.ComicChapterId,
-                        principalTable: "_ComicChapters",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK__ContentProgresses__Comics_ComicId",
-                        column: x => x.ComicId,
-                        principalTable: "_Comics",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "_ArchiveInfoPaths",
                 columns: table => new
                 {
@@ -1059,7 +1004,7 @@ namespace Vctoon.Migrations
                     Size = table.Column<long>(type: "INTEGER", nullable: false),
                     LibraryPathId = table.Column<Guid>(type: "TEXT", nullable: true),
                     ArchiveInfoPathId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    ComicChapterId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    ComicId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -1071,9 +1016,9 @@ namespace Vctoon.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK__ImageFiles__ComicChapters_ComicChapterId",
-                        column: x => x.ComicChapterId,
-                        principalTable: "_ComicChapters",
+                        name: "FK__ImageFiles__Comics_ComicId",
+                        column: x => x.ComicId,
+                        principalTable: "_Comics",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -1119,16 +1064,6 @@ namespace Vctoon.Migrations
                 column: "LibraryPathId");
 
             migrationBuilder.CreateIndex(
-                name: "IX__ComicChapters_ComicId",
-                table: "_ComicChapters",
-                column: "ComicId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX__ComicChapterTags_TagsId",
-                table: "_ComicChapterTags",
-                column: "TagsId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX__Comics_LibraryId",
                 table: "_Comics",
                 column: "LibraryId");
@@ -1137,11 +1072,6 @@ namespace Vctoon.Migrations
                 name: "IX__ComicTags_TagsId",
                 table: "_ComicTags",
                 column: "TagsId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX__ContentProgresses_ComicChapterId",
-                table: "_ContentProgresses",
-                column: "ComicChapterId");
 
             migrationBuilder.CreateIndex(
                 name: "IX__ContentProgresses_ComicId",
@@ -1159,9 +1089,9 @@ namespace Vctoon.Migrations
                 column: "ArchiveInfoPathId");
 
             migrationBuilder.CreateIndex(
-                name: "IX__ImageFiles_ComicChapterId",
+                name: "IX__ImageFiles_ComicId",
                 table: "_ImageFiles",
-                column: "ComicChapterId");
+                column: "ComicId");
 
             migrationBuilder.CreateIndex(
                 name: "IX__ImageFiles_LibraryPathId",
@@ -1417,9 +1347,6 @@ namespace Vctoon.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "_ComicChapterTags");
-
-            migrationBuilder.DropTable(
                 name: "_ComicTags");
 
             migrationBuilder.DropTable(
@@ -1537,7 +1464,7 @@ namespace Vctoon.Migrations
                 name: "_ArchiveInfoPaths");
 
             migrationBuilder.DropTable(
-                name: "_ComicChapters");
+                name: "_Comics");
 
             migrationBuilder.DropTable(
                 name: "AbpAuditLogs");
@@ -1547,9 +1474,6 @@ namespace Vctoon.Migrations
 
             migrationBuilder.DropTable(
                 name: "_ArchiveInfos");
-
-            migrationBuilder.DropTable(
-                name: "_Comics");
 
             migrationBuilder.DropTable(
                 name: "_LibraryPaths");

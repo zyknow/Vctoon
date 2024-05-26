@@ -59,8 +59,6 @@ public static class LibraryDbContextModelBuilderExtensions
             
             b.HasMany<Comic>().WithMany(x => x.Tags)
                 .UsingEntity(j => j.ToTable(VctoonDbContext.EfCoreShadowTableName.ComicTags));
-            b.HasMany<ComicChapter>().WithMany(x => x.Tags)
-                .UsingEntity(j => j.ToTable(VctoonDbContext.EfCoreShadowTableName.ComicChapterTags));
             b.HasMany<ImageFile>().WithMany(x => x.Tags)
                 .UsingEntity(j => j.ToTable(VctoonDbContext.EfCoreShadowTableName.ImageFileTags));
             b.HasMany<TagGroup>().WithMany(x => x.Tags)
@@ -103,7 +101,6 @@ public static class LibraryDbContextModelBuilderExtensions
             b.ConfigureByConvention();
             
             b.HasOne<IdentityUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
-            b.HasOne<ComicChapter>().WithMany().HasForeignKey(x => x.ComicChapterId).OnDelete(DeleteBehavior.Cascade);
             b.HasOne<Comic>().WithMany(x => x.Progresses).HasForeignKey(x => x.ComicId).OnDelete(DeleteBehavior.Cascade);
             
             /* Configure more properties here */

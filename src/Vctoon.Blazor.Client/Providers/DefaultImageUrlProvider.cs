@@ -7,7 +7,7 @@ public class DefaultImageUrlProvider(IBlazorHttpRequestAccessor blazorHttpReques
 {
     public string GetCoverUrl(string coverPath)
     {
-        string? url = $@"{blazorHttpRequestAccessor.RemoteUrl.TrimEnd('/')}/api/app/image/cover?coverPath={coverPath}";
+        string? url = $@"{blazorHttpRequestAccessor.RemoteUrl.TrimEnd('/')}/api/app/resource/cover?coverPath={coverPath}";
         return url;
     }
     
@@ -19,7 +19,7 @@ public class DefaultImageUrlProvider(IBlazorHttpRequestAccessor blazorHttpReques
         }
         
         string? url =
-            $@"{blazorHttpRequestAccessor.RemoteUrl.TrimEnd('/')}/api/app/image/image/{imageFileId}?maxWidth={maxWidth}";
+            $@"{blazorHttpRequestAccessor.RemoteUrl.TrimEnd('/')}/api/app/resource/image/{imageFileId}?maxWidth={maxWidth}";
         
         return url;
     }

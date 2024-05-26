@@ -6,31 +6,15 @@ namespace Vctoon.Libraries;
 public class LibraryManager(
     ILibraryRepository libraryRepository,
     IArchiveInfoRepository archiveInfoRepository,
-    IComicRepository comicRepository,
-    IComicChapterRepository comicChapterRepository) : DomainService
+    IComicRepository comicRepository) : DomainService
 {
     public async Task DeleteLibraryEmptyComicAsync(Library library, bool autoSave = false)
     
     {
-        List<Guid> comicIds = await AsyncExecuter.ToListAsync(
-            (await comicRepository.GetQueryableAsync())
-            .Where(x => x.LibraryId == library.Id)
-            .Select(x => x.Id)
-        );
-        
-        List<Guid> deleteChapterIds = await AsyncExecuter.ToListAsync(
-            (await comicChapterRepository.GetQueryableAsync())
-            .Where(x => comicIds.Contains(x.ComicId))
-            .Where(x => !x.Images.Any())
-            .Select(x => x.Id)
-        );
-        
-        await comicChapterRepository.DeleteManyAsync(deleteChapterIds, autoSave);
-        
         List<Guid> deleteComicIds = await AsyncExecuter.ToListAsync(
             (await comicRepository.GetQueryableAsync())
-            .Where(x => comicIds.Contains(x.Id))
-            .Where(x => !x.Chapters.Any())
+            .Where(x => x.LibraryId == library.Id)
+            .Where(x => !x.Images.Any())
             .Select(x => x.Id)
         );
         

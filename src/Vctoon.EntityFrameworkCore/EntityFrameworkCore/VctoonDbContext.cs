@@ -28,9 +28,9 @@ public class VctoonDbContext(DbContextOptions<VctoonDbContext> options) :
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-
+        
         /* Include modules to your migration db context */
-
+        
         builder.ConfigurePermissionManagement();
         builder.ConfigureSettingManagement();
         builder.ConfigureBackgroundJobs();
@@ -39,12 +39,12 @@ public class VctoonDbContext(DbContextOptions<VctoonDbContext> options) :
         builder.ConfigureOpenIddict();
         builder.ConfigureFeatureManagement();
         builder.ConfigureTenantManagement();
-
+        
         builder.ConfigureComics();
         builder.ConfigureLibraries();
-
+        
         /* Configure your own tables/entities inside here */
-
+        
         //builder.Entity<YourEntity>(b =>
         //{
         //    b.ToTable(VctoonConsts.DbTablePrefix + "YourEntities", VctoonConsts.DbSchema);
@@ -52,18 +52,17 @@ public class VctoonDbContext(DbContextOptions<VctoonDbContext> options) :
         //    //...
         //});
     }
-
-
+    
+    
     public class EfCoreShadowTableName
     {
         public const string TagGroupTags = $"{VctoonConsts.DbTablePrefix}TagGroupTags";
-        public const string ComicChapterTags = $"{VctoonConsts.DbTablePrefix}ComicChapterTags";
         public const string ImageFileTags = $"{VctoonConsts.DbTablePrefix}ImageFileTags";
         public const string ComicTags = $"{VctoonConsts.DbTablePrefix}ComicTags";
     }
-
+    
     #region Entities from the modules
-
+    
     /* Notice: We only implemented IIdentityDbContext and ITenantManagementDbContext
      * and replaced them for this DbContext. This allows you to perform JOIN
      * queries for the entities of these modules over the repositories easily. You
@@ -74,7 +73,7 @@ public class VctoonDbContext(DbContextOptions<VctoonDbContext> options) :
      * More info: Replacing a DbContext of a module ensures that the related module
      * uses this DbContext on runtime. Otherwise, it will use its own DbContext class.
      */
-
+    
     //Identity
     public DbSet<IdentityUser> Users { get; set; }
     public DbSet<IdentityRole> Roles { get; set; }
@@ -83,15 +82,14 @@ public class VctoonDbContext(DbContextOptions<VctoonDbContext> options) :
     public DbSet<IdentitySecurityLog> SecurityLogs { get; set; }
     public DbSet<IdentityLinkUser> LinkUsers { get; set; }
     public DbSet<IdentityUserDelegation> UserDelegations { get; set; }
-
+    
     // Tenant Management
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
-
+    
     // Vctoon
     public DbSet<Library> Libraries { get; set; }
     public DbSet<Comic> Comics { get; set; }
-    public DbSet<ComicChapter> ComicChapters { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<TagGroup> TagGroups { get; set; }
     public DbSet<ImageFile> ImageFiles { get; set; }
@@ -99,8 +97,8 @@ public class VctoonDbContext(DbContextOptions<VctoonDbContext> options) :
     public DbSet<ArchiveInfoPath> ArchiveInfoPaths { get; set; }
     public DbSet<LibraryPath> LibraryPaths { get; set; }
     public DbSet<ContentProgress> ContentProgresses { get; set; }
-
+    
     #endregion
-
+    
     /* Add DbSet properties for your Aggregate Roots / Entities here. */
 }

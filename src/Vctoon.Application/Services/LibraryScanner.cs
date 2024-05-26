@@ -29,7 +29,7 @@ public class LibraryScanner(
 {
     private static object LockObject = new();
     
-    private readonly int _maxDegreeOfParallelism = 10;
+    private readonly int _maxDegreeOfParallelism = 1;
     public readonly List<string> ArchiveExtensions = [".zip", ".rar", ".cbz"];
     
     // TODO:  get extensions from settings

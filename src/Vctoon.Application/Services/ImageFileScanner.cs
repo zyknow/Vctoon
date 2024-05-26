@@ -12,7 +12,6 @@ namespace Vctoon.Services;
 public class ImageFileScanner(
     ILogger<ImageFileScanner> logger,
     IImageFileRepository imageFileRepository,
-    IComicChapterRepository comicChapterRepository,
     IComicRepository comicRepository,
     IHubContext<LibraryScanHub> libraryScanHub,
     ImageCoverSaver imageCoverSaver,
@@ -33,33 +32,31 @@ public class ImageFileScanner(
             {
                 Id = x.Id,
                 Path = x.Path,
-                ComicChapterId = x.ComicChapterId
+                ComicId = x.ComicId
             });
         
         var repImages = await AsyncExecuter.ToListAsync(query);
         
-        ComicChapter? chapter = !repImages.IsNullOrEmpty()
-            ? await comicChapterRepository.GetAsync(repImages.First().ComicChapterId)
-            : null;
-        var comicChapterId = repImages.FirstOrDefault()?.ComicChapterId ?? Guid.Empty;
+        // Comic? comic = !repImages.IsNullOrEmpty()
+        //     ? await comicRepository.GetAsync(repImages.First().ComicId)
+        //     : null;
+        Guid comicId = repImages.FirstOrDefault()?.ComicId ?? Guid.Empty;
         
         if (repImages.IsNullOrEmpty())
         {
-            // create comic and comicChapter
+            // create comic
             await using FileStream? fileStream = File.OpenRead(imageFilePaths.First());
             string? cover = await imageCoverSaver.SaveAsync(fileStream);
             
             string? title = Path.GetFileName(libraryPath.Path);
             var comic = new Comic(GuidGenerator.Create(), title, cover, libraryPath.LibraryId);
             
-            // create ComicChapter and Comic
-            chapter = new ComicChapter(GuidGenerator.Create(), title, cover,
-                comic.Id);
+            // create and Comic
+            comic = new Comic(GuidGenerator.Create(), title, cover,
+                libraryPath.LibraryId);
             
             await comicRepository.InsertAsync(comic, autoSave);
-            await comicChapterRepository.InsertAsync(chapter, autoSave);
-            
-            comicChapterId = chapter.Id;
+            comicId = comic.Id;
         }
         
         
@@ -70,7 +67,7 @@ public class ImageFileScanner(
             await imageFileRepository.DeleteManyAsync(deleteImages.Select(x => x.Id), autoSave);
             if (deleteImages.Count == repImages.Count)
             {
-                await comicChapterRepository.DeleteAsync(comicChapterId, autoSave);
+                await comicRepository.DeleteAsync(comicId, autoSave);
             }
         }
         
@@ -79,7 +76,7 @@ public class ImageFileScanner(
         
         List<ImageFile> addImageFileEntities = addImageFileInfos.Select(addImage =>
             new ImageFile(GuidGenerator.Create(), addImage.Name, addImage.FullName, addImage.Extension,
-                addImage.Length, comicChapterId, libraryPath.Id)).ToList();
+                addImage.Length, comicId, libraryPath.Id)).ToList();
         
         if (!addImageFileEntities.IsNullOrEmpty())
         {
@@ -120,14 +117,13 @@ public class ImageFileScanner(
         }).ToList();
         
         List<Comic> addComics = [];
-        List<ComicChapter> addComicChapters = [];
         
         foreach (var imageFilese in addImageEntities.GroupBy(x => Path.GetDirectoryName(x.Path)))
         {
-            var comicChapterId = repImages.FirstOrDefault(x => Path.GetDirectoryName(x.Path) == imageFilese.Key)
-                ?.ComicChapterId;
+            Guid? comicId = repImages.FirstOrDefault(x => Path.GetDirectoryName(x.Path) == imageFilese.Key)
+                ?.ComicId;
             
-            if (comicChapterId == null)
+            if (comicId == null)
             {
                 var title = Path.GetFileName(imageFilese.Key);
                 if (title.IsNullOrEmpty())
@@ -142,28 +138,19 @@ public class ImageFileScanner(
                 
                 var comic = new Comic(GuidGenerator.Create(), title, cover, libraryId);
                 
-                var comicChapter = new ComicChapter(GuidGenerator.Create(), title, cover,
-                    comic.Id);
-                
                 addComics.Add(comic);
-                addComicChapters.Add(comicChapter);
                 
-                comicChapterId = comicChapter.Id;
+                comicId = comic.Id;
             }
             
             foreach (var imageFile in imageFilese)
             {
-                imageFile.ComicChapterId = comicChapterId.Value;
+                imageFile.ComicId = comicId.Value;
             }
         }
         
         if (!addComics.IsNullOrEmpty())
             await comicRepository.InsertManyAsync(addComics, autoSave);
-        
-        if (!addComicChapters.IsNullOrEmpty())
-        {
-            await comicChapterRepository.InsertManyAsync(addComicChapters, autoSave);
-        }
         
         if (!addImageEntities.IsNullOrEmpty())
             await imageFileRepository.InsertManyAsync(addImageEntities, autoSave);

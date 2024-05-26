@@ -34,7 +34,7 @@ public class VctoonEntityFrameworkCoreModule : AbpModule
     {
         VctoonEfCoreEntityExtensionMappings.Configure();
     }
-
+    
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         context.Services.AddAbpDbContext<VctoonDbContext>(options =>
@@ -42,11 +42,10 @@ public class VctoonEntityFrameworkCoreModule : AbpModule
             /* Remove "includeAllEntities: true" to create
              * default repositories only for aggregate roots */
             options.AddDefaultRepositories(true);
-
-
+            
+            
             options.AddRepository<Library, LibraryRepository>();
             options.AddRepository<Comic, ComicRepository>();
-            options.AddRepository<ComicChapter, ComicChapterRepository>();
             options.AddRepository<Tag, TagRepository>();
             options.AddRepository<TagGroup, TagGroupRepository>();
             options.AddRepository<ImageFile, ImageFileRepository>();
@@ -55,14 +54,14 @@ public class VctoonEntityFrameworkCoreModule : AbpModule
             options.AddRepository<LibraryPath, LibraryPathRepository>();
             options.AddRepository<ContentProgress, ContentProgressRepository>();
         });
-
+        
         Configure<AbpDbContextOptions>(options =>
         {
             /* The main point to change your DBMS.
              * See also VctoonMigrationsDbContextFactory for EF Core tooling. */
             options.UseSqlite();
         });
-
+        
         Configure<AbpUnitOfWorkDefaultOptions>(options =>
         {
             options.TransactionBehavior = UnitOfWorkTransactionBehavior.Disabled;

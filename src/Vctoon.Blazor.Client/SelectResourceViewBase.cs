@@ -6,6 +6,7 @@ namespace Vctoon.Blazor.Client;
 
 public abstract class SelectResourceViewBase<TResource> : VctoonComponentBase
 {
+    protected string CurrentResourceSortBy;
     [Inject] public NavigationManager NavigationManager { get; set; }
     
     [Inject] public IImageUrlProvider ImageUrlProvider { get; set; }
@@ -19,6 +20,7 @@ public abstract class SelectResourceViewBase<TResource> : VctoonComponentBase
     public virtual long LoadResourceCount { get; set; } = 50;
     
     protected List<TResource> SelectedResources { get; set; } = [];
+    
     
     protected virtual void ResourceImageCheckChanged(TResource resource, bool isChecked)
     {

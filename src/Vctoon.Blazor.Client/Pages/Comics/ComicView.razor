@@ -1,11 +1,11 @@
 ﻿@page "/library/{libraryId:guid}/comic/{comicId:guid}"
 @using Vctoon.Comics
 @using Vctoon.Comics.Dtos
-@inherits SelectResourceViewBase<ComicChapterDto>
+@inherits SelectResourceViewBase<ImageFileDto>
 @attribute [Authorize(VctoonPermissions.Comic.Default)]
 @inject IComicAppService ComicAppService
-@inject IComicChapterAppService ComicChapterAppService
 @inject ILibraryAppService LibraryAppService
+@inject IImageFileAppService ImageFileAppService
 @if (_comic != null)
 {
     <ResourceView>
@@ -49,25 +49,23 @@
                 </div>
             </div>
             
-            <div>
-                @foreach (var chapter in Resources)
+            <div class="flex flex-wrap gap-4">
+                @foreach (var image in Resources)
                 {
-                    <div @onclick="args => { if (args.ShiftKey) OnResourceShiftClick(chapter); }">
+                    <div @onclick="args => { if (args.ShiftKey) OnResourceShiftClick(image); }">
                         <ResourceImage SelectEnabled
                                        HoverEnabled
                                        PlayEnabled
                                        DynamicHeightWidthEnabled
-                                       OnTitleClick="@(() => OnChapterTitleClick(chapter))"
-                                       Title="@chapter.Title"
+                                       Title="@image.Name"
                                        IsSelectedMode="@(!SelectedResources.IsNullOrEmpty())"
-                                       IsChecked="@SelectedResources.Contains(chapter)"
-                                       OnIsCheckedChanged="@(b => ResourceImageCheckChanged(chapter, b))"
-                                       ImageUrl="@ImageUrlProvider.GetCoverUrl(chapter.CoverPath)">
+                                       IsChecked="@SelectedResources.Contains(image)"
+                                       OnIsCheckedChanged="@(b => ResourceImageCheckChanged(image, b))"
+                                       ImageUrl="@ImageUrlProvider.GetImageUrl(image.Id, _imageCoverWidth)">
                         </ResourceImage>
                     </div>
                 }
             </div>
-            
         </Content>
         
     </ResourceView>
@@ -84,6 +82,8 @@
     
     List<TagDto> tags = [];
     
+    readonly int _imageCoverWidth = 480;
+    
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -98,14 +98,10 @@
         await base.OnAfterRenderAsync(firstRender);
     }
     
-    void OnChapterTitleClick(ComicChapterDto chapter)
-    {
-        NavigationManager.NavigateTo($"/library/{LibraryId}/comic/{ComicId}/chapter/{chapter.Id}");
-    }
     
-    protected override async Task<(List<ComicChapterDto> Items, long TotalCount)> GetResourceListAsync()
+    protected override async Task<(List<ImageFileDto> Items, long TotalCount)> GetResourceListAsync()
     {
-        var res = await ComicChapterAppService.GetListAsync(new ComicChapterGetListInput
+        var res = await ImageFileAppService.GetListAsync(new ImageFileGetListInput()
         {
             ComicId = _comic.Id,
             MaxResultCount = 50,
