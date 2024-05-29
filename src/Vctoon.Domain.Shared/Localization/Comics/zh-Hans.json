@@ -1,0 +1,11 @@
+﻿{
+  "culture": "zh-Hans",
+  "texts": {
+    "Comic": "漫画",
+    "ComicName": "漫画",
+    "DisplayName:Title": "标题",
+    "DisplayName:Progress": "阅读进度",
+    "DisplayName:LastModificationTime": "修改时间",
+    "DisplayName:CreationTime": "创建时间"
+  }
+}

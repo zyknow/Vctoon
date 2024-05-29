@@ -1,74 +1,77 @@
 ﻿@page "/library/{libraryId:guid}/comic/{comicId:guid}"
 @using Vctoon.Comics
 @using Vctoon.Comics.Dtos
-@inherits SelectResourceViewBase<ImageFileDto>
+@inherits ResourceViewBase<ImageFileDto>
 @attribute [Authorize(VctoonPermissions.Comic.Default)]
 @inject IComicAppService ComicAppService
 @inject ILibraryAppService LibraryAppService
 @inject IImageFileAppService ImageFileAppService
 @if (_comic != null)
 {
-    <ResourceView>
+    <CascadingValue Value="@Info">
         
-        <Toolbar>
-            <ComicToolbar Comic="@_comic" Library="@_library" Selected="@SelectedResources" Total="@Total"
-                          OnStateChange="StateHasChanged">
-            </ComicToolbar>
-        </Toolbar>
-        <Content>
-            <div class="flex flex-col">
-                <div class="flex flex-wrap md:space-x-6 w-full">
-                    <div class="max-w-80">
-                        <ResourceImage Progress="@((int) _comic.Progress)" ImageUrl="@ImageUrlProvider.GetCoverUrl(_comic.CoverPath)"
-                                       HoverEnabled PlayEnabled>
-                        </ResourceImage>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="text-2xl font-bold">
-                            @_comic.Title
+        <ResourceView>
+            
+            <Toolbar>
+                <ComicToolbar Comic="@_comic" Library="@_library">
+                </ComicToolbar>
+            </Toolbar>
+            <Content>
+                <div class="flex flex-col">
+                    <div class="flex flex-wrap md:space-x-6 w-full">
+                        <div class="max-w-80">
+                            <ResourceImage Progress="@((int?)_comic.Progress)"
+                                           ImageUrl="@ImageUrlProvider.GetCoverUrl(_comic.CoverPath)"
+                                           HoverEnabled PlayEnabled>
+                            </ResourceImage>
                         </div>
-                        <div class="flex flex-col space-y-1">
-                            <div>
-                                @DateTimeFormatService.FormatCreateDate(_comic.CreationTime)
-                                
+                        <div class="space-y-4">
+                            <div class="text-2xl font-bold">
+                                @_comic.Title
                             </div>
-                            @if (_comic.LastModificationTime.HasValue)
-                            {
+                            <div class="flex flex-col space-y-1">
                                 <div>
-                                    @DateTimeFormatService.FormatModifyDate(_comic.LastModificationTime.Value)
+                                    @DateTimeFormatService.FormatCreateDate(_comic.CreationTime)
+                                    
                                 </div>
+                                @if (_comic.LastModificationTime.HasValue)
+                                {
+                                    <div>
+                                        @DateTimeFormatService.FormatModifyDate(_comic.LastModificationTime.Value)
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        
+                        <div>
+                            @foreach (var tag in tags)
+                            {
                             }
                         </div>
                     </div>
-                    
-                    <div>
-                        @foreach (var tag in tags)
-                        {
-                        }
-                    </div>
                 </div>
-            </div>
+                
+                <div class="flex flex-wrap gap-4">
+                    @foreach (var image in Info.Resources)
+                    {
+                        <div @onclick="args => { if (args.ShiftKey) OnResourceShiftClick(image); }">
+                            <ResourceImage SelectEnabled
+                                           HoverEnabled
+                                           PlayEnabled
+                                           DynamicHeightWidthEnabled
+                                           Title="@image.Name"
+                                           IsSelectedMode="@(!Info.SelectedResources.IsNullOrEmpty())"
+                                           IsChecked="@Info.SelectedResources.Contains(image)"
+                                           OnIsCheckedChanged="@(b => ResourceImageCheckChanged(image, b))"
+                                           ImageUrl="@ImageUrlProvider.GetImageUrl(image.Id, _imageCoverWidth)">
+                            </ResourceImage>
+                        </div>
+                    }
+                </div>
+            </Content>
             
-            <div class="flex flex-wrap gap-4">
-                @foreach (var image in Resources)
-                {
-                    <div @onclick="args => { if (args.ShiftKey) OnResourceShiftClick(image); }">
-                        <ResourceImage SelectEnabled
-                                       HoverEnabled
-                                       PlayEnabled
-                                       DynamicHeightWidthEnabled
-                                       Title="@image.Name"
-                                       IsSelectedMode="@(!SelectedResources.IsNullOrEmpty())"
-                                       IsChecked="@SelectedResources.Contains(image)"
-                                       OnIsCheckedChanged="@(b => ResourceImageCheckChanged(image, b))"
-                                       ImageUrl="@ImageUrlProvider.GetImageUrl(image.Id, _imageCoverWidth)">
-                        </ResourceImage>
-                    </div>
-                }
-            </div>
-        </Content>
-        
-    </ResourceView>
+        </ResourceView>
+    </CascadingValue>
 }
 
 
@@ -105,7 +108,7 @@
         {
             ComicId = _comic.Id,
             MaxResultCount = 50,
-            SkipCount = Resources.Count
+            SkipCount = Info.Resources.Count
         });
         
         return (res.Items.ToList(), res.TotalCount);

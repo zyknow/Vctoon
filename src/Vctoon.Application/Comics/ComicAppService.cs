@@ -20,14 +20,16 @@ public class ComicAppService(
     protected override string UpdatePolicyName { get; set; } = VctoonPermissions.Comic.Update;
     protected override string DeletePolicyName { get; set; } = VctoonPermissions.Comic.Delete;
     
-    public override async Task<ComicDto> GetAsync(Guid id)
+    
+    protected override async Task<Comic> GetEntityByIdAsync(Guid id)
     {
-        var comic = await base.GetAsync(id);
-        
-        if (CurrentUser.Id is null)
+        if (!CurrentUser.Id.HasValue)
         {
-            return comic;
+            return await base.GetEntityByIdAsync(id);
         }
+        
+        Comic? comic = await AsyncExecuter.FirstOrDefaultAsync((await Repository.WithDetailsAsync(x => x.Progresses))
+            .Where(x => x.Id == id));
         
         return comic;
     }
@@ -48,32 +50,33 @@ public class ComicAppService(
     protected override async Task<IQueryable<Comic>> CreateFilteredQueryAsync(ComicGetListInput input)
     {
         // TODO: AbpHelper generated
-        IQueryable<Comic> query = (await base.CreateFilteredQueryAsync(input))
-                .WhereIf(!input.Title.IsNullOrWhiteSpace(), x => x.Title.Contains(input.Title))
-                .WhereIf(input.LibraryId != null, x => x.LibraryId == input.LibraryId)
-            ;
-        
-        //if (!input.Sorting.IsNullOrWhiteSpace() && input.Sorting.Contains(nameof(ComicDto.Progress), StringComparison.OrdinalIgnoreCase))
-        //{
-        //    query = query.OrderBy(x => x.Progresses.Where(x => x.UserId == CurrentUser.Id).First().CompletionRate);
-        //}
-        
+        IQueryable<Comic> query = (await Repository.WithDetailsAsync(x => x.Progresses.Where(p => p.UserId == CurrentUser.Id)))
+            .WhereIf(!input.Title.IsNullOrWhiteSpace(), x => x.Title.Contains(input.Title))
+            .WhereIf(input.LibraryId != null, x => x.LibraryId == input.LibraryId);
         return query;
     }
     
     protected override IQueryable<Comic> ApplySorting(IQueryable<Comic> query, ComicGetListInput input)
     {
-        if (!input.Sorting.IsNullOrWhiteSpace())
+        if (input.Sorting.IsNullOrWhiteSpace())
         {
-            if (input.Sorting.Contains(nameof(ComicDto.Progress), StringComparison.OrdinalIgnoreCase))
-            {
-                if (CurrentUser.Id.HasValue)
-                {
-                    return query.OrderBy(x => x.Progresses.First(p => p.UserId == CurrentUser.Id).CompletionRate);
-                }
-            }
+            return base.ApplySorting(query, input);
         }
         
+        if (input.Sorting.Contains(nameof(ComicDto.Progress), StringComparison.OrdinalIgnoreCase))
+        {
+            if (!CurrentUser.Id.HasValue)
+            {
+                return base.ApplySorting(query, input);
+            }
+            
+            bool isDesc = input.Sorting.EndsWith(" desc", StringComparison.OrdinalIgnoreCase);
+            query = isDesc
+                ? query.OrderByDescending(x => x.Progresses.First(p => p.UserId == CurrentUser.Id).CompletionRate)
+                : query.OrderBy(x => x.Progresses.First(p => p.UserId == CurrentUser.Id).CompletionRate);
+            
+            return query;
+        }
         
         return base.ApplySorting(query, input);
     }

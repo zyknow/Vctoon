@@ -20,5 +20,5 @@ public class ContentProgress : Entity<Guid>
     
     public Guid UserId { get; set; }
     public Guid? ComicId { get; set; }
-    public double CompletionRate { get; set; }
+    public double? CompletionRate { get; set; }
 }

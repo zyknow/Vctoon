@@ -1,51 +1,71 @@
 ﻿@page "/library/{libraryId:guid}"
 @using Vctoon.Comics
 @using Vctoon.Comics.Dtos
-@inherits SelectResourceViewBase<ComicDto>
+@inherits ResourceViewBase<ComicDto>
 @inject IComicAppService ComicAppService
 @inject ILibraryAppService LibraryAppService
 @attribute [Authorize(VctoonPermissions.Library.Default)]
 
 @if (_library != null)
 {
-    <ResourceView>
-        <Toolbar>
-            <LibraryToolbar Library="_library" Selected="SelectedResources" Total="Total"
-                            OnStateChange="StateHasChanged" OnSortByChanged="@OnSortByChanged">
-            </LibraryToolbar>
-        </Toolbar>
-        <Content>
-            <div class="flex flex-wrap gap-4">
-                @if (!Resources.IsNullOrEmpty())
-                {
-                    @* TODO: virtualize ? *@
-                    @foreach (var comic in Resources)
+    <CascadingValue Value="@Info">
+        
+        <ResourceView>
+            <Toolbar>
+                <LibraryToolbar Library="_library">
+                </LibraryToolbar>
+            </Toolbar>
+            <Content>
+                <div class="flex flex-wrap gap-4">
+                    @if (!Info.Resources.IsNullOrEmpty())
                     {
-                        <div @onclick="args => { if (args.ShiftKey) OnResourceShiftClick(comic); }">
-                            
-                            <ResourceImage OnTitleClick="@(() => NavigationToComic(comic))"
-                                           EditEnabled
-                                           HoverEnabled
-                                           DynamicHeightWidthEnabled
-                                           SelectEnabled
-                                           MenuEnabled
-                                           PlayEnabled
-                                           ImageUrl="@ImageUrlProvider.GetCoverUrl(comic.CoverPath)"
-                                           Title="@comic.Title"
-                                           SubTitle="@DateTimeFormatService.FormatCreateDate(comic.CreationTime)"
-                                           Progress="@((int) comic.Progress)"
-                                           IsSelectedMode="@(!SelectedResources.IsNullOrEmpty())"
-                                           IsChecked="@SelectedResources.Contains(comic)"
-                                           OnIsCheckedChanged="@(b => ResourceImageCheckChanged(comic, b))">
-                            </ResourceImage>
-                        </div>
+                        @* TODO: virtualize ? *@
+                        @foreach (var comic in Info.Resources)
+                        {
+                            <div @onclick="args => { if (args.ShiftKey) OnResourceShiftClick(comic); }">
+                                
+                                <ResourceImage OnTitleClick="@(() => NavigationToComic(comic))"
+                                               EditEnabled
+                                               HoverEnabled
+                                               DynamicHeightWidthEnabled
+                                               SelectEnabled
+                                               MenuEnabled
+                                               PlayEnabled
+                                               ImageUrl="@ImageUrlProvider.GetCoverUrl(comic.CoverPath)"
+                                               Title="@comic.Title"
+                                               SubTitle="@DateTimeFormatService.FormatCreateDate(comic.CreationTime)"
+                                               Progress="@((int?)comic.Progress)"
+                                               IsSelectedMode="@(!Info.SelectedResources.IsNullOrEmpty())"
+                                               IsChecked="@Info.SelectedResources.Contains(comic)"
+                                               OnIsCheckedChanged="@(b => ResourceImageCheckChanged(comic, b))">
+                                    
+                                    <SubTitleTemplate>
+                                        <div class="text-info">
+                                            @if (Info.Soft.Field == nameof(ComicDto.LastModificationTime))
+                                            {
+                                                if (comic.LastModificationTime.HasValue)
+                                                {
+                                                    @DateTimeFormatService.FormatModifyDate(comic.LastModificationTime.Value)
+                                                }
+                                            }
+                                            else
+                                            {
+                                                @DateTimeFormatService.FormatCreateDate(comic.CreationTime)
+                                            }
+                                        </div>
+                                        
+                                    </SubTitleTemplate>
+                                    
+                                </ResourceImage>
+                            </div>
+                        }
                     }
-                }
+                    
+                </div>
                 
-            </div>
-            
-        </Content>
-    </ResourceView>
+            </Content>
+        </ResourceView>
+    </CascadingValue>
 }
 
 @code {
@@ -57,13 +77,6 @@
     void NavigationToComic(ComicDto comic)
     {
         NavigationManager.NavigateTo($"/library/{LibraryId}/comic/{comic.Id}");
-    }
-    
-    async Task OnSortByChanged(string sortBy)
-    {
-        CurrentResourceSortBy = sortBy;
-        Resources.Clear();
-        await LoadResourceAsync(true);
     }
     
     
@@ -99,11 +112,10 @@
         var res = await ComicAppService.GetListAsync(new ComicGetListInput
         {
             LibraryId = LibraryId,
-            MaxResultCount = 50,
-            SkipCount = Resources.Count,
-            Sorting = CurrentResourceSortBy
+            MaxResultCount = Info.LoadResourceCount,
+            SkipCount = Info.Resources.Count,
+            Sorting = Info.Soft.ToString()
         });
-        
         return (res.Items.ToList(), res.TotalCount);
     }
     

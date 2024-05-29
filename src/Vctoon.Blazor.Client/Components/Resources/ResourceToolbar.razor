@@ -87,16 +87,6 @@
                     {
                         @FilterTemplate
                     }
-                    else
-                    {
-                        @if (!SoftNames.IsNullOrEmpty())
-                        {
-                            <div class="flex flex-row">
-                                <ResourceToolbarSoftor SoftNames="@SoftNames" OnSortByChanged="@OnSortByChanged"></ResourceToolbarSoftor>
-                            </div>
-                        }
-                    }
-                    
                 </div>
             }
         </div>
@@ -121,35 +111,23 @@
     [Parameter] public virtual RenderFragment? ToolbarMenuTemplate { get; set; }
     [Parameter] public virtual RenderFragment? ActionbarCenterTemplate { get; set; }
     [Parameter] public virtual RenderFragment? FilterTemplate { get; set; }
-    [Parameter] public virtual List<string> SoftNames { get; set; } = [];
-    [Parameter] public virtual Type? SoftType { get; set; }
-    [Parameter] public virtual Type? FilterType { get; set; }
     
     [Parameter] public EventCallback<string> OnSortByChanged { get; set; }
     
     
     readonly Dictionary<LibraryResourceDisplayMode, Icon> _displayModeIcons = new()
     {
-        {LibraryResourceDisplayMode.Grid, new Icons.Regular.Size24.Grid()},
-        {LibraryResourceDisplayMode.List, new Icons.Filled.Size24.AppsList()},
-        {LibraryResourceDisplayMode.Table, new Icons.Filled.Size24.GroupList()}
+        { LibraryResourceDisplayMode.Grid, new Icons.Regular.Size24.Grid() },
+        { LibraryResourceDisplayMode.List, new Icons.Filled.Size24.AppsList() },
+        { LibraryResourceDisplayMode.Table, new Icons.Filled.Size24.GroupList() }
     };
     
     bool _openDisplayModeSelectMenu;
     
     List<PropertyInfo> _sortProperties;
     
-    string[] _ignoreSortByNames = ["Id", "CreatorId", "LastModifierId"];
-    
     protected override Task OnInitializedAsync()
     {
-        if (SoftType != null)
-        {
-            SoftNames = SoftType.GetProperties().Select(p => p.Name).ToList();
-            
-            SoftNames = SoftNames.Where(x => !_ignoreSortByNames.Contains(x)).ToList();
-        }
-        
         return base.OnInitializedAsync();
     }
     

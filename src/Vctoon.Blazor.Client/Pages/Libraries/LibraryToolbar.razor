@@ -1,10 +1,10 @@
-﻿@using System.Collections
-@using Vctoon.Comics.Dtos
+﻿@using Vctoon.Comics.Dtos
+@using Vctoon.Localization.Comics
 @inherits VctoonComponentBase
 @if (Library != null)
 {
-    <ResourceToolbar OnSortByChanged="@OnSortByChanged" SoftType="@typeof(ComicDto)" Total="@Total" ClearSelected="ClearSelected"
-                     SelectedCount="@(Selected?.Count ?? 0)">
+    <ResourceToolbar Total="@Info.Total" ClearSelected="ClearSelected"
+                     SelectedCount="@(Info.SelectedResources?.Count ?? 0)">
         
         <ToolbarTitleTemplate>
             <FluentBreadcrumbItem class="font-bold" Href="@(@$"/library/{Library.Id}")">
@@ -14,7 +14,7 @@
         
         <ToolbarMenuTemplate>
             <div class="z-30 mt-1">
-                <FluentIcon @onclick="() => _showActionMenu = !_showActionMenu" id="@_titleMenuId"
+                <FluentIcon @onclick="() => _showActionMenu = !_showActionMenu" id="@TitleMenuId"
                             Value="@(new Icons.Filled.Size16.MoreVertical())">
                 </FluentIcon>
             </div>
@@ -27,30 +27,52 @@
             <FluentIcon Value="@(new Icons.Filled.Size20.MoreHorizontal())"></FluentIcon>
         </ActionbarCenterTemplate>
         
+        
+        <FilterTemplate>
+            <div class="flex flex-row">
+                <ResourceToolbarSoftor ResourceType="typeof(ComicResource)" @bind-SelectedSortField="@Info.Soft.Field"
+                                       @bind-SortBy="@Info.Soft.SoftBy" SoftFields="@_sortFields"
+                                       OnClickMenuItem="@(() => Info.LoadResourceAsync(true))">
+                </ResourceToolbarSoftor>
+            </div>
+        </FilterTemplate>
+        
     </ResourceToolbar>
 }
-<LibraryActionMenu @bind-Open="_showActionMenu" Anchor="@_titleMenuId" Library="Library"></LibraryActionMenu>
+<LibraryActionMenu @bind-Open="_showActionMenu" Anchor="@TitleMenuId" Library="Library"></LibraryActionMenu>
 
 @code {
     [Parameter] public LibraryDto Library { get; set; }
     
-    [Parameter] public long Total { get; set; }
-    
-    [Parameter] public IList Selected { get; set; }
-    
-    [Parameter] public Action OnStateChange { get; set; }
-    
-    [Parameter] public EventCallback<string> OnSortByChanged { get; set; }
+    [CascadingParameter] public ResourceViewInfo<ComicDto>? Info { get; set; }
     
     bool _showActionMenu;
     
-    string _titleMenuId => @$"{Library?.Id}_btn";
+    string TitleMenuId => @$"{Library?.Id}_btn";
+    
+    string[] _ignoreSortFields =
+    [
+        nameof(ComicDto.LastModifierId),
+        nameof(ComicDto.CreatorId),
+        nameof(ComicDto.Id),
+        nameof(ComicDto.CoverPath),
+        nameof(ComicDto.LibraryId)
+    ];
+    
+    string[] _sortFields;
+    
+    string _selectSortField;
+    
+    protected override void OnInitialized()
+    {
+        _sortFields = typeof(ComicDto).GetProperties().Select(p => p.Name).Where(p => !_ignoreSortFields.Contains(p)).ToArray();
+        base.OnInitialized();
+    }
     
     void ClearSelected()
     {
-        Selected.Clear();
-        StateHasChanged();
-        OnStateChange?.Invoke();
+        Info.SelectedResources.Clear();
+        Info.StateHasChanged();
     }
     
 }

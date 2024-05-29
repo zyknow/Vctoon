@@ -18,12 +18,17 @@ public class VctoonApplicationAutoMapperProfile : Profile
         
         CreateMap<Library, LibraryDto>()
             .ForMember(x => x.Paths, opt =>
-                opt.MapFrom(x => x.Paths.Select(x => x.Path)
+                opt.MapFrom(x => x.Paths.Select(p => p.Path)
                 ))
             ;
         
         CreateMap<LibraryCreateUpdateDto, Library>(MemberList.Source).Ignore(x => x.Paths);
-        CreateMap<Comic, ComicDto>();
+        CreateMap<Comic, ComicDto>()
+            .ForMember(
+                dest => dest.Progress,
+                opt => opt.MapFrom(src =>
+                    !src.Progresses.IsNullOrEmpty() ? src.Progresses.First().CompletionRate : null)
+            );
         CreateMap<ComicCreateUpdateDto, Comic>(MemberList.Source);
         CreateMap<Tag, TagDto>();
         CreateMap<TagCreateUpdateDto, Tag>(MemberList.Source);

@@ -11,5 +11,5 @@ public class ComicDto : AuditedEntityDto<Guid>
     
     public Guid LibraryId { get; set; }
     
-    public double Progress { get; set; }
+    public double? Progress { get; set; }
 }
