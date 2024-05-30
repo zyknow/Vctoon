@@ -43,15 +43,6 @@ public static class LibraryDbContextModelBuilderExtensions
         });
         
         
-        builder.Entity<TagGroup>(b =>
-        {
-            b.ToTable(VctoonConsts.DbTablePrefix + "TagGroups", VctoonConsts.DbSchema);
-            b.ConfigureByConvention();
-            
-            /* Configure more properties here */
-        });
-        
-        
         builder.Entity<Tag>(b =>
         {
             b.ToTable(VctoonConsts.DbTablePrefix + "Tags", VctoonConsts.DbSchema);
@@ -59,10 +50,6 @@ public static class LibraryDbContextModelBuilderExtensions
             
             b.HasMany<Comic>().WithMany(x => x.Tags)
                 .UsingEntity(j => j.ToTable(VctoonDbContext.EfCoreShadowTableName.ComicTags));
-            b.HasMany<ImageFile>().WithMany(x => x.Tags)
-                .UsingEntity(j => j.ToTable(VctoonDbContext.EfCoreShadowTableName.ImageFileTags));
-            b.HasMany<TagGroup>().WithMany(x => x.Tags)
-                .UsingEntity(j => j.ToTable(VctoonDbContext.EfCoreShadowTableName.TagGroupTags));
             /* Configure more properties here */
         });
         

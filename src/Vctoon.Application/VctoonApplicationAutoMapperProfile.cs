@@ -32,8 +32,6 @@ public class VctoonApplicationAutoMapperProfile : Profile
         CreateMap<ComicCreateUpdateDto, Comic>(MemberList.Source);
         CreateMap<Tag, TagDto>();
         CreateMap<TagCreateUpdateDto, Tag>(MemberList.Source);
-        CreateMap<TagGroup, TagGroupDto>();
-        CreateMap<TagGroupCreateUpdateDto, TagGroup>(MemberList.Source);
         CreateMap<ImageFile, ImageFileDto>();
         CreateMap<ImageFileCreateUpdateDto, ImageFile>(MemberList.Source);
     }

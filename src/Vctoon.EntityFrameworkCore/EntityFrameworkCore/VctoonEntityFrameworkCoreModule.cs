@@ -47,7 +47,6 @@ public class VctoonEntityFrameworkCoreModule : AbpModule
             options.AddRepository<Library, LibraryRepository>();
             options.AddRepository<Comic, ComicRepository>();
             options.AddRepository<Tag, TagRepository>();
-            options.AddRepository<TagGroup, TagGroupRepository>();
             options.AddRepository<ImageFile, ImageFileRepository>();
             options.AddRepository<ArchiveInfo, ArchiveInfoRepository>();
             options.AddRepository<ArchiveInfoPath, ArchiveInfoPathRepository>();

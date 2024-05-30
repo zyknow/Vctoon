@@ -91,7 +91,6 @@ public class VctoonDbContext(DbContextOptions<VctoonDbContext> options) :
     public DbSet<Library> Libraries { get; set; }
     public DbSet<Comic> Comics { get; set; }
     public DbSet<Tag> Tags { get; set; }
-    public DbSet<TagGroup> TagGroups { get; set; }
     public DbSet<ImageFile> ImageFiles { get; set; }
     public DbSet<ArchiveInfo> ArchiveInfos { get; set; }
     public DbSet<ArchiveInfoPath> ArchiveInfoPaths { get; set; }
