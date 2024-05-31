@@ -22,11 +22,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Remove="Identities\ILibraryPermissionAppService.cs"/>
-        <Compile Remove="Identities\Dtos\LibraryPermissionDto.cs"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <Folder Include="Identities\Dtos\"/>
     </ItemGroup>
 
