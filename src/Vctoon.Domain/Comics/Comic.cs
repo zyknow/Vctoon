@@ -1,10 +1,11 @@
 ﻿using Vctoon.Libraries;
-using Volo.Abp.Domain.Entities.Auditing;
 
 namespace Vctoon.Comics;
 
 public class Comic : AuditedEntity<Guid>
 {
+    private readonly Guid _libraryCollectionId;
+    
     protected Comic()
     {
     }
@@ -28,6 +29,14 @@ public class Comic : AuditedEntity<Guid>
     public Guid LibraryId { get; set; }
     
     public List<Tag> Tags { get; set; } = new();
+    
+    public List<ComicCollection> ComicCollections { get; set; } = new();
+    
+    public List<Artist> Artists { get; set; } = new();
+    
+    public List<Star> Stars { get; set; } = new();
+    
+    public List<Comment> Comments { get; set; } = new();
     
     public List<ImageFile> Images { get; set; } = new();
     

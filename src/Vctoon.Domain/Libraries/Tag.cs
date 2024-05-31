@@ -1,5 +1,3 @@
-using Volo.Abp.Domain.Entities.Auditing;
-
 namespace Vctoon.Libraries;
 
 public class Tag : AuditedEntity<Guid>
