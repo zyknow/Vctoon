@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Vctoon.Comics;
+using Vctoon.Identities;
 using Vctoon.Libraries;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
@@ -52,6 +53,8 @@ public class VctoonEntityFrameworkCoreModule : AbpModule
             options.AddRepository<ArchiveInfoPath, ArchiveInfoPathRepository>();
             options.AddRepository<LibraryPath, LibraryPathRepository>();
             options.AddRepository<ContentProgress, ContentProgressRepository>();
+            options.AddRepository<IdentityUserLibraryPermissionGrant, IdentityUserLibraryPermissionGrantRepository>();
+            options.AddRepository<LibraryPermission, LibraryPermissionRepository>();
         });
         
         Configure<AbpDbContextOptions>(options =>

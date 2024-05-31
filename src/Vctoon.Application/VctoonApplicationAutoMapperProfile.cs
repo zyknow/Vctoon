@@ -1,6 +1,8 @@
 using AutoMapper;
 using Vctoon.Comics;
 using Vctoon.Comics.Dtos;
+using Vctoon.Identities;
+using Vctoon.Identities.Dtos;
 using Vctoon.Libraries;
 using Vctoon.Libraries.Dtos;
 using Volo.Abp.AutoMapper;
@@ -34,5 +36,9 @@ public class VctoonApplicationAutoMapperProfile : Profile
         CreateMap<TagCreateUpdateDto, Tag>(MemberList.Source);
         CreateMap<ImageFile, ImageFileDto>();
         CreateMap<ImageFileCreateUpdateDto, ImageFile>(MemberList.Source);
+        CreateMap<IdentityUserLibraryPermissionGrant, IdentityUserLibraryPermissionGrantDto>();
+        CreateMap<IdentityUserLibraryPermissionGrantCreateUpdateDto, IdentityUserLibraryPermissionGrant>(MemberList.Source);
+        CreateMap<LibraryPermission, LibraryPermissionDto>();
+        CreateMap<LibraryPermissionCreateUpdateDto, LibraryPermission>(MemberList.Source);
     }
 }

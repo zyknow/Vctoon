@@ -21,4 +21,13 @@
         <PackageReference Include="Volo.Abp.SettingManagement.Application.Contracts" Version="$(AbpVersion)"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <Compile Remove="Identities\ILibraryPermissionAppService.cs"/>
+        <Compile Remove="Identities\Dtos\LibraryPermissionDto.cs"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Identities\Dtos\"/>
+    </ItemGroup>
+
 </Project>

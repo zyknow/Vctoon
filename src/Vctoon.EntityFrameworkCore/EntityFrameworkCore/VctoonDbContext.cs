@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Vctoon.Comics;
+using Vctoon.Identities;
 using Vctoon.Libraries;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
@@ -20,11 +21,20 @@ namespace Vctoon.EntityFrameworkCore;
 [ReplaceDbContext(typeof(IIdentityDbContext))]
 [ReplaceDbContext(typeof(ITenantManagementDbContext))]
 [ConnectionStringName("Default")]
-public class VctoonDbContext(DbContextOptions<VctoonDbContext> options) :
-    AbpDbContext<VctoonDbContext>(options),
+public class VctoonDbContext :
+    AbpDbContext<VctoonDbContext>,
     IIdentityDbContext,
     ITenantManagementDbContext
 {
+    public VctoonDbContext(DbContextOptions<VctoonDbContext> options)
+        : base(options)
+    {
+    }
+    
+    public DbSet<IdentityUserLibraryPermissionGrant> IdentityUserLibraryPermissionGrants { get; set; }
+    public DbSet<LibraryPermission> LibraryPermissions { get; set; }
+    
+    
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -42,6 +52,7 @@ public class VctoonDbContext(DbContextOptions<VctoonDbContext> options) :
         
         builder.ConfigureComics();
         builder.ConfigureLibraries();
+        builder.ConfigureIdentityUserLibraryPermissions();
         
         /* Configure your own tables/entities inside here */
         

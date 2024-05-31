@@ -32,6 +32,15 @@ public class VctoonPermissionDefinitionProvider : PermissionDefinitionProvider
         tagGroupPermission.AddChild(VctoonPermissions.TagGroup.Create, L("Permission:Create"));
         tagGroupPermission.AddChild(VctoonPermissions.TagGroup.Update, L("Permission:Update"));
         tagGroupPermission.AddChild(VctoonPermissions.TagGroup.Delete, L("Permission:Delete"));
+        
+        PermissionDefinition identityUserLibraryPermissionGrantPermission = myGroup.AddPermission(
+            VctoonPermissions.IdentityUserLibraryPermissionGrant.Default, L("Permission:IdentityUserLibraryPermissionGrant"));
+        identityUserLibraryPermissionGrantPermission.AddChild(VctoonPermissions.IdentityUserLibraryPermissionGrant.Create,
+            L("Permission:Create"));
+        identityUserLibraryPermissionGrantPermission.AddChild(VctoonPermissions.IdentityUserLibraryPermissionGrant.Update,
+            L("Permission:Update"));
+        identityUserLibraryPermissionGrantPermission.AddChild(VctoonPermissions.IdentityUserLibraryPermissionGrant.Delete,
+            L("Permission:Delete"));
     }
     
     private static LocalizableString L(string name)

@@ -28,38 +28,6 @@ namespace Vctoon.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "_TagGroups",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    CreatorId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    LastModificationTime = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    LastModifierId = table.Column<Guid>(type: "TEXT", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK__TagGroups", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "_Tags",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    CreatorId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    LastModificationTime = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    LastModifierId = table.Column<Guid>(type: "TEXT", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK__Tags", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AbpAuditLogs",
                 columns: table => new
                 {
@@ -440,6 +408,42 @@ namespace Vctoon.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ComicCollection",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Title = table.Column<string>(type: "TEXT", nullable: false),
+                    LibraryId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ComicCollection", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ImageFileFavorCollection",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Title = table.Column<string>(type: "TEXT", nullable: false),
+                    IsPublic = table.Column<bool>(type: "INTEGER", nullable: false),
+                    FavorId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ImageFileFavorCollection", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OpenIddictApplications",
                 columns: table => new
                 {
@@ -544,30 +548,6 @@ namespace Vctoon.Migrations
                         name: "FK__LibraryPaths__Libraries_LibraryId",
                         column: x => x.LibraryId,
                         principalTable: "_Libraries",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "_TagGroupTags",
-                columns: table => new
-                {
-                    TagGroupId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    TagsId = table.Column<Guid>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK__TagGroupTags", x => new { x.TagGroupId, x.TagsId });
-                    table.ForeignKey(
-                        name: "FK__TagGroupTags__TagGroups_TagGroupId",
-                        column: x => x.TagGroupId,
-                        principalTable: "_TagGroups",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK__TagGroupTags__Tags_TagsId",
-                        column: x => x.TagsId,
-                        principalTable: "_Tags",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -690,6 +670,29 @@ namespace Vctoon.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "_IdentityUserLibraryPermissionGrants",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    IsAdmin = table.Column<bool>(type: "INTEGER", nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK__IdentityUserLibraryPermissionGrants", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK__IdentityUserLibraryPermissionGrants_AbpUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AbpUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AbpUserClaims",
                 columns: table => new
                 {
@@ -805,6 +808,28 @@ namespace Vctoon.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "_Tags",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    ImageFileFavorCollectionId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK__Tags", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK__Tags_ImageFileFavorCollection_ImageFileFavorCollectionId",
+                        column: x => x.ImageFileFavorCollectionId,
+                        principalTable: "ImageFileFavorCollection",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OpenIddictAuthorizations",
                 columns: table => new
                 {
@@ -837,37 +862,13 @@ namespace Vctoon.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "_ComicTags",
-                columns: table => new
-                {
-                    ComicId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    TagsId = table.Column<Guid>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK__ComicTags", x => new { x.ComicId, x.TagsId });
-                    table.ForeignKey(
-                        name: "FK__ComicTags__Comics_ComicId",
-                        column: x => x.ComicId,
-                        principalTable: "_Comics",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK__ComicTags__Tags_TagsId",
-                        column: x => x.TagsId,
-                        principalTable: "_Tags",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "_ContentProgresses",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     UserId = table.Column<Guid>(type: "TEXT", nullable: false),
                     ComicId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    CompletionRate = table.Column<double>(type: "REAL", nullable: false)
+                    CompletionRate = table.Column<double>(type: "REAL", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -884,6 +885,101 @@ namespace Vctoon.Migrations
                         principalTable: "_Comics",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Artist",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Description = table.Column<string>(type: "TEXT", nullable: false),
+                    ComicId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Artist", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Artist__Comics_ComicId",
+                        column: x => x.ComicId,
+                        principalTable: "_Comics",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ComicComicCollection",
+                columns: table => new
+                {
+                    ComicCollectionsId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ComicsId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ComicComicCollection", x => new { x.ComicCollectionsId, x.ComicsId });
+                    table.ForeignKey(
+                        name: "FK_ComicComicCollection_ComicCollection_ComicCollectionsId",
+                        column: x => x.ComicCollectionsId,
+                        principalTable: "ComicCollection",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ComicComicCollection__Comics_ComicsId",
+                        column: x => x.ComicsId,
+                        principalTable: "_Comics",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Comment",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Content = table.Column<string>(type: "TEXT", nullable: false),
+                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ComicId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Comment", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Comment__Comics_ComicId",
+                        column: x => x.ComicId,
+                        principalTable: "_Comics",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Star",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ComicId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    ImageFileFavorId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    Rating = table.Column<double>(type: "REAL", nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Star", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Star__Comics_ComicId",
+                        column: x => x.ComicId,
+                        principalTable: "_Comics",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -927,6 +1023,64 @@ namespace Vctoon.Migrations
                         name: "FK_AbpEntityPropertyChanges_AbpEntityChanges_EntityChangeId",
                         column: x => x.EntityChangeId,
                         principalTable: "AbpEntityChanges",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "_LibraryPermissions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    LibraryId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    IdentityUserLibraryPermissionGrantId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    CanDownload = table.Column<bool>(type: "INTEGER", nullable: false),
+                    CanComment = table.Column<bool>(type: "INTEGER", nullable: false),
+                    CanStar = table.Column<bool>(type: "INTEGER", nullable: false),
+                    CanView = table.Column<bool>(type: "INTEGER", nullable: false),
+                    CanShare = table.Column<bool>(type: "INTEGER", nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK__LibraryPermissions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK__LibraryPermissions__IdentityUserLibraryPermissionGrants_IdentityUserLibraryPermissionGrantId",
+                        column: x => x.IdentityUserLibraryPermissionGrantId,
+                        principalTable: "_IdentityUserLibraryPermissionGrants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK__LibraryPermissions__Libraries_LibraryId",
+                        column: x => x.LibraryId,
+                        principalTable: "_Libraries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "_ComicTags",
+                columns: table => new
+                {
+                    ComicId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    TagsId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK__ComicTags", x => new { x.ComicId, x.TagsId });
+                    table.ForeignKey(
+                        name: "FK__ComicTags__Comics_ComicId",
+                        column: x => x.ComicId,
+                        principalTable: "_Comics",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK__ComicTags__Tags_TagsId",
+                        column: x => x.TagsId,
+                        principalTable: "_Tags",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -1030,25 +1184,25 @@ namespace Vctoon.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "_ImageFileTags",
+                name: "ImageFileImageFileFavorCollection",
                 columns: table => new
                 {
-                    ImageFileId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    TagsId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    ImageFileFavorsId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ImageFilesId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK__ImageFileTags", x => new { x.ImageFileId, x.TagsId });
+                    table.PrimaryKey("PK_ImageFileImageFileFavorCollection", x => new { x.ImageFileFavorsId, x.ImageFilesId });
                     table.ForeignKey(
-                        name: "FK__ImageFileTags__ImageFiles_ImageFileId",
-                        column: x => x.ImageFileId,
-                        principalTable: "_ImageFiles",
+                        name: "FK_ImageFileImageFileFavorCollection_ImageFileFavorCollection_ImageFileFavorsId",
+                        column: x => x.ImageFileFavorsId,
+                        principalTable: "ImageFileFavorCollection",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK__ImageFileTags__Tags_TagsId",
-                        column: x => x.TagsId,
-                        principalTable: "_Tags",
+                        name: "FK_ImageFileImageFileFavorCollection__ImageFiles_ImageFilesId",
+                        column: x => x.ImageFilesId,
+                        principalTable: "_ImageFiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -1084,6 +1238,11 @@ namespace Vctoon.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX__IdentityUserLibraryPermissionGrants_UserId",
+                table: "_IdentityUserLibraryPermissionGrants",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX__ImageFiles_ArchiveInfoPathId",
                 table: "_ImageFiles",
                 column: "ArchiveInfoPathId");
@@ -1099,19 +1258,24 @@ namespace Vctoon.Migrations
                 column: "LibraryPathId");
 
             migrationBuilder.CreateIndex(
-                name: "IX__ImageFileTags_TagsId",
-                table: "_ImageFileTags",
-                column: "TagsId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX__LibraryPaths_LibraryId",
                 table: "_LibraryPaths",
                 column: "LibraryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX__TagGroupTags_TagsId",
-                table: "_TagGroupTags",
-                column: "TagsId");
+                name: "IX__LibraryPermissions_IdentityUserLibraryPermissionGrantId",
+                table: "_LibraryPermissions",
+                column: "IdentityUserLibraryPermissionGrantId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX__LibraryPermissions_LibraryId",
+                table: "_LibraryPermissions",
+                column: "LibraryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX__Tags_ImageFileFavorCollectionId",
+                table: "_Tags",
+                column: "ImageFileFavorCollectionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AbpAuditLogActions_AuditLogId",
@@ -1313,6 +1477,26 @@ namespace Vctoon.Migrations
                 column: "UserName");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Artist_ComicId",
+                table: "Artist",
+                column: "ComicId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ComicComicCollection_ComicsId",
+                table: "ComicComicCollection",
+                column: "ComicsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comment_ComicId",
+                table: "Comment",
+                column: "ComicId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ImageFileImageFileFavorCollection_ImageFilesId",
+                table: "ImageFileImageFileFavorCollection",
+                column: "ImageFilesId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictApplications_ClientId",
                 table: "OpenIddictApplications",
                 column: "ClientId");
@@ -1341,6 +1525,11 @@ namespace Vctoon.Migrations
                 name: "IX_OpenIddictTokens_ReferenceId",
                 table: "OpenIddictTokens",
                 column: "ReferenceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Star_ComicId",
+                table: "Star",
+                column: "ComicId");
         }
 
         /// <inheritdoc />
@@ -1353,10 +1542,7 @@ namespace Vctoon.Migrations
                 name: "_ContentProgresses");
 
             migrationBuilder.DropTable(
-                name: "_ImageFileTags");
-
-            migrationBuilder.DropTable(
-                name: "_TagGroupTags");
+                name: "_LibraryPermissions");
 
             migrationBuilder.DropTable(
                 name: "AbpAuditLogActions");
@@ -1428,19 +1614,31 @@ namespace Vctoon.Migrations
                 name: "AbpUserTokens");
 
             migrationBuilder.DropTable(
+                name: "Artist");
+
+            migrationBuilder.DropTable(
+                name: "ComicComicCollection");
+
+            migrationBuilder.DropTable(
+                name: "Comment");
+
+            migrationBuilder.DropTable(
+                name: "ImageFileImageFileFavorCollection");
+
+            migrationBuilder.DropTable(
                 name: "OpenIddictScopes");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictTokens");
 
             migrationBuilder.DropTable(
-                name: "_ImageFiles");
-
-            migrationBuilder.DropTable(
-                name: "_TagGroups");
+                name: "Star");
 
             migrationBuilder.DropTable(
                 name: "_Tags");
+
+            migrationBuilder.DropTable(
+                name: "_IdentityUserLibraryPermissionGrants");
 
             migrationBuilder.DropTable(
                 name: "AbpEntityChanges");
@@ -1455,19 +1653,28 @@ namespace Vctoon.Migrations
                 name: "AbpRoles");
 
             migrationBuilder.DropTable(
-                name: "AbpUsers");
+                name: "ComicCollection");
+
+            migrationBuilder.DropTable(
+                name: "_ImageFiles");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictAuthorizations");
+
+            migrationBuilder.DropTable(
+                name: "ImageFileFavorCollection");
+
+            migrationBuilder.DropTable(
+                name: "AbpUsers");
+
+            migrationBuilder.DropTable(
+                name: "AbpAuditLogs");
 
             migrationBuilder.DropTable(
                 name: "_ArchiveInfoPaths");
 
             migrationBuilder.DropTable(
                 name: "_Comics");
-
-            migrationBuilder.DropTable(
-                name: "AbpAuditLogs");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictApplications");

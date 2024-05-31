@@ -1,5 +1,6 @@
 ﻿using Localization.Resources.AbpUi;
 using Vctoon.Localization.Comics;
+using Vctoon.Localization.Identities;
 using Vctoon.Localization.Libraries;
 using Vctoon.Localization.Vctoon;
 using Volo.Abp.AuditLogging;
@@ -55,10 +56,17 @@ public class VctoonDomainSharedModule : AbpModule
                 .AddVirtualJson("/Localization/Comics");
             
             options.Resources
+                .Add<IdentityUserLibraryPermissionResource>("en")
+                .AddBaseTypes(typeof(AbpValidationResource))
+                .AddBaseTypes(typeof(AbpUiResource))
+                .AddVirtualJson("/Localization/Identities");
+            
+            options.Resources
                 .Add<VctoonResource>("en")
                 .AddBaseTypes(typeof(AbpValidationResource))
                 .AddBaseTypes(typeof(LibraryResource))
                 .AddBaseTypes(typeof(ComicResource))
+                .AddBaseTypes(typeof(IdentityUserLibraryPermissionResource))
                 .AddVirtualJson("/Localization/Vctoon");
             
             options.DefaultResourceType = typeof(VctoonResource);
