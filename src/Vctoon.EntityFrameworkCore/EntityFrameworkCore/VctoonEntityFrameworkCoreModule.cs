@@ -54,6 +54,7 @@ public class VctoonEntityFrameworkCoreModule : AbpModule
             options.AddRepository<LibraryPath, LibraryPathRepository>();
             options.AddRepository<ContentProgress, ContentProgressRepository>();
             options.AddRepository<LibraryPermission, LibraryPermissionRepository>();
+            options.AddRepository<IdentityUserExtra, IdentityUserExtraRepository>();
         });
         
         Configure<AbpDbContextOptions>(options =>

@@ -7,6 +7,7 @@ using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.EntityFrameworkCore;
+using Volo.Abp.EntityFrameworkCore.Modeling;
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
 using Volo.Abp.Identity;
 using Volo.Abp.Identity.EntityFrameworkCore;
@@ -31,7 +32,18 @@ public class VctoonDbContext :
     {
     }
     
+    // Vctoon
+    public DbSet<Library> Libraries { get; set; }
+    public DbSet<Comic> Comics { get; set; }
+    public DbSet<Tag> Tags { get; set; }
+    public DbSet<ImageFile> ImageFiles { get; set; }
+    public DbSet<ArchiveInfo> ArchiveInfos { get; set; }
+    public DbSet<ArchiveInfoPath> ArchiveInfoPaths { get; set; }
+    public DbSet<LibraryPath> LibraryPaths { get; set; }
+    public DbSet<ContentProgress> ContentProgresses { get; set; }
+    
     public DbSet<LibraryPermission> LibraryPermissions { get; set; }
+    public DbSet<IdentityUserExtra> IdentityUserExtras { get; set; }
     
     
     protected override void OnModelCreating(ModelBuilder builder)
@@ -61,8 +73,29 @@ public class VctoonDbContext :
         //    b.ConfigureByConvention(); //auto configure for the base class props
         //    //...
         //});
+        
+        
+        builder.Entity<LibraryPermission>(b =>
+        {
+            b.ToTable(VctoonConsts.DbTablePrefix + "LibraryPermissions", VctoonConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            
+            /* Configure more properties here */
+        });
+        
+        
+        builder.Entity<IdentityUserExtra>(b =>
+        {
+            b.ToTable(VctoonConsts.DbTablePrefix + "IdentityUserExtras", VctoonConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            
+            /* Configure more properties here */
+        });
     }
     
+    /* Add DbSet properties for your Aggregate Roots / Entities here. */
     
     public class EfCoreShadowTableName
     {
@@ -70,6 +103,7 @@ public class VctoonDbContext :
         public const string ImageFileTags = $"{VctoonConsts.DbTablePrefix}ImageFileTags";
         public const string ComicTags = $"{VctoonConsts.DbTablePrefix}ComicTags";
     }
+    
     
     #region Entities from the modules
     
@@ -97,17 +131,5 @@ public class VctoonDbContext :
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
     
-    // Vctoon
-    public DbSet<Library> Libraries { get; set; }
-    public DbSet<Comic> Comics { get; set; }
-    public DbSet<Tag> Tags { get; set; }
-    public DbSet<ImageFile> ImageFiles { get; set; }
-    public DbSet<ArchiveInfo> ArchiveInfos { get; set; }
-    public DbSet<ArchiveInfoPath> ArchiveInfoPaths { get; set; }
-    public DbSet<LibraryPath> LibraryPaths { get; set; }
-    public DbSet<ContentProgress> ContentProgresses { get; set; }
-    
     #endregion
-    
-    /* Add DbSet properties for your Aggregate Roots / Entities here. */
 }

@@ -1,16 +1,11 @@
 {
   "culture": "zh-Hans",
   "texts": {
-    "IdentityUserLibraryPermissionGrants": "IdentityUserLibraryPermissionGrants",
-    "IdentityUserLibraryPermissionGrantsUserId": "IdentityUserLibraryPermissionGrantsUserId",
-    "IdentityUserLibraryPermissionGrantsIsAdmin": "IdentityUserLibraryPermissionGrantsIsAdmin",
-    "IdentityUserLibraryPermissionGrantsLibraryPermissions": "IdentityUserLibraryPermissionGrantsLibraryPermissions",
-    "CreateIdentityUserLibraryPermissionGrants": "CreateIdentityUserLibraryPermissionGrants",
-    "EditIdentityUserLibraryPermissionGrants": "EditIdentityUserLibraryPermissionGrants",
-    "IdentityUserLibraryPermissionGrantsDeletionConfirmationMessage": "Are you sure to delete the identityUserLibraryPermissionGrants {0}?",
-    "Permission:IdentityUserLibraryPermissionGrant": "IdentityUserLibraryPermissionGrant",
-    "Permission:Create": "Create",
-    "Permission:Update": "Update",
-    "Permission:Delete": "Delete"
+    "Permission:IdentityUserExtra": "IdentityUserExtra",
+    "IdentityUserExtra": "IdentityUserExtra",
+    "IdentityUserExtraUserId": "IdentityUserExtraUserId",
+    "IdentityUserExtraUser": "IdentityUserExtraUser",
+    "IdentityUserExtraLibraryPermissions": "IdentityUserExtraLibraryPermissions",
+    "CreateIdentityUserExtra": "CreateIdentityUserExtra"
   }
 }

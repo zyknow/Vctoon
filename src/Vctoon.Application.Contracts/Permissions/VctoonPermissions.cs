@@ -47,4 +47,12 @@ public static class VctoonPermissions
         public const string Create = Default + ".Create";
         public const string Delete = Default + ".Delete";
     }
+    
+    public class IdentityUserExtra
+    {
+        public const string Default = GroupName + ".IdentityUserExtra";
+        public const string Update = Default + ".Update";
+        public const string Create = Default + ".Create";
+        public const string Delete = Default + ".Delete";
+    }
 }
