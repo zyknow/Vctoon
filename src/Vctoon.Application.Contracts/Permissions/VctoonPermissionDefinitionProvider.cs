@@ -12,7 +12,6 @@ public class VctoonPermissionDefinitionProvider : PermissionDefinitionProvider
         //Define your own permissions here. Example:
         //myGroup.AddPermission(VctoonPermissions.MyPermission1, L("Permission:MyPermission1"));
         
-        
         var libraryPermission = myGroup.AddPermission(VctoonPermissions.Library.Default, L("Permission:Library"));
         libraryPermission.AddChild(VctoonPermissions.Library.Create, L("Permission:Create"));
         libraryPermission.AddChild(VctoonPermissions.Library.Update, L("Permission:Update"));
@@ -28,10 +27,6 @@ public class VctoonPermissionDefinitionProvider : PermissionDefinitionProvider
         tagPermission.AddChild(VctoonPermissions.Tag.Update, L("Permission:Update"));
         tagPermission.AddChild(VctoonPermissions.Tag.Delete, L("Permission:Delete"));
         
-        var tagGroupPermission = myGroup.AddPermission(VctoonPermissions.TagGroup.Default, L("Permission:TagGroup"));
-        tagGroupPermission.AddChild(VctoonPermissions.TagGroup.Create, L("Permission:Create"));
-        tagGroupPermission.AddChild(VctoonPermissions.TagGroup.Update, L("Permission:Update"));
-        tagGroupPermission.AddChild(VctoonPermissions.TagGroup.Delete, L("Permission:Delete"));
         
         PermissionDefinition identityUserLibraryPermissionGrantPermission = myGroup.AddPermission(
             VctoonPermissions.IdentityUserLibraryPermissionGrant.Default, L("Permission:IdentityUserLibraryPermissionGrant"));
