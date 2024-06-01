@@ -20,7 +20,6 @@
                     {
                         @ToolbarMenuTemplate
                     }
-                    
                 </div>
                 <div class="mt-1.5">
                     <FluentBadge Appearance="Appearance.Accent">
@@ -114,21 +113,14 @@
     
     [Parameter] public EventCallback<string> OnSortByChanged { get; set; }
     
-    
     readonly Dictionary<LibraryResourceDisplayMode, Icon> _displayModeIcons = new()
     {
-        { LibraryResourceDisplayMode.Grid, new Icons.Regular.Size24.Grid() },
-        { LibraryResourceDisplayMode.List, new Icons.Filled.Size24.AppsList() },
-        { LibraryResourceDisplayMode.Table, new Icons.Filled.Size24.GroupList() }
+        {LibraryResourceDisplayMode.Grid, new Icons.Regular.Size24.Grid()},
+        {LibraryResourceDisplayMode.List, new Icons.Filled.Size24.AppsList()},
+        {LibraryResourceDisplayMode.Table, new Icons.Filled.Size24.GroupList()}
     };
     
     bool _openDisplayModeSelectMenu;
     
     List<PropertyInfo> _sortProperties;
-    
-    protected override Task OnInitializedAsync()
-    {
-        return base.OnInitializedAsync();
-    }
-    
 }
