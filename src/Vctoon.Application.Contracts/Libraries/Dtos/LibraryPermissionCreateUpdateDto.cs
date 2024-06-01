@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Vctoon.Identities.Dtos;
+namespace Vctoon.Libraries.Dtos;
 
 [Serializable]
 public class LibraryPermissionCreateUpdateDto
@@ -9,7 +9,7 @@ public class LibraryPermissionCreateUpdateDto
     public Guid LibraryId { get; set; }
     
     [DisplayName("LibraryPermissionIdentityUserLibraryPermissionGrantId")]
-    public Guid IdentityUserLibraryPermissionGrantId { get; set; }
+    public Guid IdentityUserExtraId { get; set; }
     
     [DisplayName("LibraryPermissionCanDownload")]
     public bool CanDownload { get; set; }

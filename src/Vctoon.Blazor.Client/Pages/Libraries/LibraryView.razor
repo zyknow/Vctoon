@@ -1,4 +1,5 @@
 ﻿@page "/library/{libraryId:guid}"
+@using Vctoon.Blazor.Client.Messages
 @using Vctoon.Comics
 @using Vctoon.Comics.Dtos
 @inherits ResourceViewBase<ComicDto>
@@ -34,7 +35,7 @@
                                                ImageUrl="@ImageUrlProvider.GetCoverUrl(comic.CoverPath)"
                                                Title="@comic.Title"
                                                SubTitle="@DateTimeFormatService.FormatCreateDate(comic.CreationTime)"
-                                               Progress="@((int?)comic.Progress)"
+                                               Progress="@((int?) comic.Progress)"
                                                IsSelectedMode="@(!Info.SelectedResources.IsNullOrEmpty())"
                                                IsChecked="@Info.SelectedResources.Contains(comic)"
                                                OnIsCheckedChanged="@(b => ResourceImageCheckChanged(comic, b))">

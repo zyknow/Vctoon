@@ -1,3 +1,5 @@
+using Vctoon.Libraries;
+
 namespace Vctoon.Identities;
 
 public static class LibraryPermissionEfCoreQueryableExtensions

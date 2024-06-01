@@ -31,7 +31,6 @@ public class VctoonDbContext :
     {
     }
     
-    public DbSet<IdentityUserLibraryPermissionGrant> IdentityUserLibraryPermissionGrants { get; set; }
     public DbSet<LibraryPermission> LibraryPermissions { get; set; }
     
     

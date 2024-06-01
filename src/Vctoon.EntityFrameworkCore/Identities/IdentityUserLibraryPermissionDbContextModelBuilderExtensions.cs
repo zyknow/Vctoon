@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Vctoon.Libraries;
 using Volo.Abp;
 using Volo.Abp.EntityFrameworkCore.Modeling;
 using Volo.Abp.Identity;
@@ -18,25 +17,15 @@ public static class IdentityUserLibraryPermissionDbContextModelBuilderExtensions
             return;
         }
         
-        builder.Entity<IdentityUserLibraryPermissionGrant>(b =>
+        builder.Entity<IdentityUserExtra>(b =>
         {
-            b.ToTable(VctoonConsts.DbTablePrefix + "IdentityUserLibraryPermissionGrants", VctoonConsts.DbSchema);
+            b.ToTable(VctoonConsts.DbTablePrefix + "IdentityUserExtras", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
             
-            b.HasMany(x => x.LibraryPermissions).WithOne().HasForeignKey(x => x.IdentityUserLibraryPermissionGrantId)
+            b.HasMany(x => x.LibraryPermissions).WithOne().HasForeignKey(x => x.IdentityUserExtraId)
                 .OnDelete(DeleteBehavior.Cascade);
             
             b.HasOne<IdentityUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
-            
-            /* Configure more properties here */
-        });
-        
-        builder.Entity<LibraryPermission>(b =>
-        {
-            b.ToTable(VctoonConsts.DbTablePrefix + "LibraryPermissions", VctoonConsts.DbSchema);
-            b.ConfigureByConvention();
-            
-            b.HasOne<Library>().WithMany().HasForeignKey(x => x.LibraryId).OnDelete(DeleteBehavior.Cascade);
             
             /* Configure more properties here */
         });

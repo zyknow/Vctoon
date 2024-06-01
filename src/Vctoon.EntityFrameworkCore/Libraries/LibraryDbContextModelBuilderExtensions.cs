@@ -92,5 +92,15 @@ public static class LibraryDbContextModelBuilderExtensions
             
             /* Configure more properties here */
         });
+        
+        builder.Entity<LibraryPermission>(b =>
+        {
+            b.ToTable(VctoonConsts.DbTablePrefix + "LibraryPermissions", VctoonConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.HasOne<Library>().WithMany().HasForeignKey(x => x.LibraryId).OnDelete(DeleteBehavior.Cascade);
+            
+            /* Configure more properties here */
+        });
     }
 }

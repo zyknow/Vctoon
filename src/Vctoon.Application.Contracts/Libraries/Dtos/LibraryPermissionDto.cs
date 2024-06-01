@@ -1,13 +1,13 @@
 using Volo.Abp.Application.Dtos;
 
-namespace Vctoon.Identities.Dtos;
+namespace Vctoon.Libraries.Dtos;
 
 [Serializable]
 public class LibraryPermissionDto : AuditedEntityDto<Guid>
 {
     public Guid LibraryId { get; set; }
     
-    public Guid IdentityUserLibraryPermissionGrantId { get; set; }
+    public Guid IdentityUserExtraId { get; set; }
     
     public bool CanDownload { get; set; }
     

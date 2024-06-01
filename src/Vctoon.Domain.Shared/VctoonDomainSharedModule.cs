@@ -56,7 +56,7 @@ public class VctoonDomainSharedModule : AbpModule
                 .AddVirtualJson("/Localization/Comics");
             
             options.Resources
-                .Add<IdentityUserLibraryPermissionResource>("en")
+                .Add<IdentityUserExtraResource>("en")
                 .AddBaseTypes(typeof(AbpValidationResource))
                 .AddBaseTypes(typeof(AbpUiResource))
                 .AddVirtualJson("/Localization/Identities");
@@ -66,7 +66,7 @@ public class VctoonDomainSharedModule : AbpModule
                 .AddBaseTypes(typeof(AbpValidationResource))
                 .AddBaseTypes(typeof(LibraryResource))
                 .AddBaseTypes(typeof(ComicResource))
-                .AddBaseTypes(typeof(IdentityUserLibraryPermissionResource))
+                .AddBaseTypes(typeof(IdentityUserExtraResource))
                 .AddVirtualJson("/Localization/Vctoon");
             
             options.DefaultResourceType = typeof(VctoonResource);

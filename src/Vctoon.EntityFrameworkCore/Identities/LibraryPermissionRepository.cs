@@ -1,4 +1,5 @@
 using Vctoon.EntityFrameworkCore;
+using Vctoon.Libraries;
 using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -13,6 +14,6 @@ public class LibraryPermissionRepository : EfCoreRepository<VctoonDbContext, Lib
     
     public override async Task<IQueryable<LibraryPermission>> WithDetailsAsync()
     {
-        return (await GetQueryableAsync()).IncludeDetails();
+        return LibraryPermissionEfCoreQueryableExtensions.IncludeDetails(await GetQueryableAsync());
     }
 }

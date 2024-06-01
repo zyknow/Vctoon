@@ -1,6 +1,6 @@
 using Volo.Abp.Domain.Repositories;
 
-namespace Vctoon.Identities;
+namespace Vctoon.Libraries;
 
 public interface ILibraryPermissionRepository : IRepository<LibraryPermission, Guid>
 {
