@@ -6,4 +6,6 @@ namespace Vctoon.Libraries.Dtos;
 public class TagDto : EntityDto<Guid>
 {
     public string Name { get; set; }
+
+    public int? ResourceCount { get; set; } = null;
 }

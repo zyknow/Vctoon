@@ -1,0 +1,42 @@
+﻿@inject ITagAppService TagAppService
+@inject IToastService ToastService
+<CreateEditTagBase Tag="@Tag" OnCreateOrUpdate="OnCreateAsync">
+
+    <Header>
+        @if (!CreatedTags.IsNullOrEmpty())
+        {
+            <FluentCard>
+                <div class="flex flex-wrap gap-1.5">
+
+                    @foreach (var tag in CreatedTags)
+                    {
+                        <LibraryTagItem Name="@tag.Name"></LibraryTagItem>
+                    }
+                </div>
+
+            </FluentCard>
+        }
+    </Header>
+
+</CreateEditTagBase>
+
+@code {
+    [Parameter] public TagCreateUpdateDto Tag { get; set; } = new();
+
+    List<TagDto> CreatedTags { get; set; } = [];
+
+    public async Task OnCreateAsync()
+    {
+        try
+        {
+            var createdTag = await TagAppService.CreateAsync(Tag);
+            CreatedTags.Add(createdTag);
+            Tag.Name = "";
+        }
+        catch (Exception e)
+        {
+            ToastService.ShowError(e.Message);
+        }
+    }
+
+}

@@ -47,8 +47,8 @@ public static class LibraryDbContextModelBuilderExtensions
         {
             b.ToTable(VctoonConsts.DbTablePrefix + "Tags", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
-            
-            b.HasMany<Comic>().WithMany(x => x.Tags)
+
+            b.HasMany(x => x.Comics).WithMany(x => x.Tags)
                 .UsingEntity(j => j.ToTable(VctoonDbContext.EfCoreShadowTableName.ComicTags));
             /* Configure more properties here */
         });

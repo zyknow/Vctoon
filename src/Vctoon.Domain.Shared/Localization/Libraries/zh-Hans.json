@@ -15,6 +15,10 @@
     "LibraryScanCompletedMessage": "扫描库 '{0}' 完成",
     "LibraryDeletionConfirmationMessage": "Are you sure to delete the library {0}?",
     "SuccessfullyDeleted": "Successfully deleted",
-    "TableFilter": "TableFilter"
+    "TableFilter": "TableFilter",
+    "NewTag": "新标签",
+    "EditTag": "编辑标签",
+    "DeleteTag": "删除标签",
+    "Tags:Name": "标签名称"
   }
 }

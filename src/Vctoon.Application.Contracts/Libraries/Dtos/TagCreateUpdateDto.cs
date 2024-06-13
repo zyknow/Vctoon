@@ -1,7 +1,9 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Vctoon.Libraries.Dtos;
 
 [Serializable]
 public class TagCreateUpdateDto
 {
-    public string Name { get; set; }
+    [Required] [MinLength(1)] public string Name { get; set; }
 }

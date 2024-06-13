@@ -1,0 +1,55 @@
+﻿@inherits VctoonComponentBase
+@inject IStringLocalizer<LibraryResource> LL
+<div>
+
+    @if (Header != null)
+    {
+        @Header
+    }
+
+    <EditForm Model="@Tag" OnValidSubmit="@HandleValidSubmit">
+        <div class="flex flex-col">
+            <div class="flex flex-col space-y-2 w-full">
+                <AbpDataAnnotationsValidator/>
+                <div>
+                </div>
+                <div>
+                    <FluentTextField Class="w-full" Label="@LL["Tags:Name"]" @bind-Value="@Tag.Name"/>
+                    <FluentValidationMessage For="@(() => Tag.Name)"/>
+                </div>
+
+            </div>
+        </div>
+        <FluentDialogFooter>
+            <FluentButton Loading="@_submitLoading" Type="ButtonType.Submit" Appearance="Appearance.Accent">
+                @L["Submit"]
+            </FluentButton>
+        </FluentDialogFooter>
+
+    </EditForm>
+</div>
+
+@code {
+
+    [Parameter] public TagCreateUpdateDto Tag { get; set; }
+
+    [Parameter] public EventCallback OnCreateOrUpdate { get; set; }
+
+    [Parameter] public RenderFragment Header { get; set; }
+
+    bool _submitLoading = false;
+
+    async Task HandleValidSubmit()
+    {
+        _submitLoading = true;
+        try
+        {
+            await OnCreateOrUpdate.InvokeAsync();
+        }
+        finally
+        {
+            _submitLoading = false;
+        }
+    }
+
+}
