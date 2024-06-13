@@ -21,6 +21,7 @@ using Volo.Abp.AspNetCore.SignalR;
 using Volo.Abp.Autofac;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.BlobStoring.FileSystem;
+using Volo.Abp.Data;
 using Volo.Abp.Modularity;
 using Volo.Abp.OpenIddict;
 using Volo.Abp.Security.Claims;
@@ -91,6 +92,12 @@ public class VctoonHttpApiHostModule : AbpModule
         ConfigureSwaggerServices(context, configuration);
         ConfigureBlobStoring();
         // ConfigureHangfire(context, configuration);
+
+        Configure<AbpDataFilterOptions>(options =>
+        {
+            // close soft delete
+            options.DefaultStates[typeof(ISoftDelete)] = new DataFilterState(false);
+        });
     }
 
     private void ConfigureHangfire(ServiceConfigurationContext context, IConfiguration configuration)
