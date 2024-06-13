@@ -1,0 +1,27 @@
+﻿@using Vctoon.Identities
+@using Vctoon.Identities.Dtos
+@using Volo.Abp.ObjectMapping
+@inherits VctoonComponentBase
+@inject IObjectMapper ObjectMapper
+@inject IIdentityUserExtraAppService IdentityUserExtraAppService
+<CreateEditUserBase User="@_user" OnCreateOrUpdate="CreateUserAsync">
+</CreateEditUserBase>
+
+@code
+{
+    [Parameter] public EventCallback OnSucceeded { get; set; }
+
+    IdentityUserExtraCreateOrUpdateModel _user = new()
+    {
+        LockoutEnabled = true,
+        IsActive = true,
+        LibraryPermissions = []
+    };
+
+    async Task CreateUserAsync()
+    {
+        var input = ObjectMapper.Map<IdentityUserExtraCreateOrUpdateModel, IdentityUserExtraCreateDto>(_user);
+        await IdentityUserExtraAppService.CreateUserExtraAsync(input);
+        await OnSucceeded.InvokeAsync();
+    }
+}

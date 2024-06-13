@@ -1,0 +1,175 @@
+﻿@using Vctoon.Identities
+@using Volo.Abp.Identity.Localization
+@inherits VctoonComponentBase
+@inject IStringLocalizer<IdentityResource> IL
+@inject IStringLocalizer<LibraryResource> LL
+@inject IIdentityUserExtraAppService IdentityUserExtraAppService
+@inject IToastService ToastService
+@inject UserStore UserStore
+<div>
+    <EditForm Model="@User" OnValidSubmit="@HandleValidSubmit">
+        <FluentTabs>
+            <FluentTab Label="@IL["Users"]">
+                <div class="flex flex-col">
+                    <div class="flex flex-col space-y-2 w-full">
+                        <AbpDataAnnotationsValidator/>
+                        <div>
+                        </div>
+                        <div>
+                            <FluentTextField Class="w-full" Label="@IL["DisplayName:UserName"]" @bind-Value="@User.UserName"/>
+                            <FluentValidationMessage For="@(() => User.UserName)"/>
+                        </div>
+                        <div class="flex flex-row justify-between">
+                            <div>
+                                <FluentTextField Label="@IL["DisplayName:Name"]" @bind-Value="@User.Name"/>
+                                <FluentValidationMessage For="@(() => User.Name)"/>
+                            </div>
+
+                            <div>
+                                <FluentTextField Label="@IL["DisplayName:Surname"]" @bind-Value="@User.Surname"/>
+                                <FluentValidationMessage For="@(() => User.Surname)"/>
+                            </div>
+                        </div>
+
+
+                        <div>
+                            <FluentTextField Class="w-full" Label="@IL["DisplayName:Password"]" @bind-Value="@User.Password" TextFieldType="TextFieldType.Password"/>
+                            <FluentValidationMessage For="@(() => User.Password)"/>
+                        </div>
+
+                        <div>
+                            <FluentTextField Class="w-full" Label="@IL["DisplayName:Email"]" @bind-Value="@User.Email"/>
+                            <FluentValidationMessage For="@(() => User.Email)"/>
+                        </div>
+
+                        <div>
+                            <FluentTextField Class="w-full" Label="@IL["DisplayName:PhoneNumber"]" @bind-Value="@User.PhoneNumber"/>
+                            <FluentValidationMessage For="@(() => User.PhoneNumber)"/>
+
+                        </div>
+
+                        <div class="flex flex-wrap space-x-4">
+                            <FluentCheckbox Label="@IL["DisplayName:LockoutEnabled"]" @bind-Value="@User.LockoutEnabled"/>
+                            <FluentCheckbox Label="@IL["DisplayName:IsActive"]" @bind-Value="@User.IsActive"/>
+                        </div>
+
+                        <FluentCheckbox Label="@IL["DisplayName:IsAdmin"]" @bind-Value="@User.IsAdmin"/>
+                    </div>
+
+
+                </div>
+            </FluentTab>
+
+            <FluentTab Disabled="@User.IsAdmin" Label="@IL["LibraryPermissions"]">
+                <div class="flex flex-col space-y-2">
+                    <div class="flex flex-row justify-between">
+                        <div></div>
+                        <FluentCheckbox Label="@IL["SelectAllLibrary"]" CheckStateChanged="b => SelectAllPermission(b)"/>
+                    </div>
+                    @foreach (var permission in User.LibraryPermissions)
+                    {
+                        <FluentCard>
+                            <div class="flex flex-col space-y-2">
+                                <div class="flex flex-row justify-between">
+                                    <span class="text-3xl">@UserStore.Libraries.First(x => x.Id == permission.LibraryId).Name</span>
+                                    <FluentCheckbox
+                                        Label="@IL["SelectAllLibrary"]"
+                                        CheckStateChanged="b => SelectAllPermission(b, permission)"/>
+                                </div>
+                                <div class="flex flex-wrap gap-3">
+                                    <FluentCheckbox Label="@IL["Permission:CanView"]" @bind-value="@permission.CanView"/>
+                                    <FluentCheckbox Label="@IL["Permission:CanComment"]" @bind-value="@permission.CanComment"/>
+                                    <FluentCheckbox Label="@IL["Permission:CanDownload"]" @bind-value="@permission.CanDownload"/>
+                                    <FluentCheckbox Label="@IL["Permission:CanShare"]" @bind-value="@permission.CanShare"/>
+                                    <FluentCheckbox Label="@IL["Permission:CanStar"]" @bind-value="@permission.CanStar"/>
+                                </div>
+                            </div>
+                        </FluentCard>
+                    }
+                </div>
+            </FluentTab>
+
+        </FluentTabs>
+
+
+        <FluentDialogFooter >
+            <FluentButton Loading="@_submitLoading" Type="ButtonType.Submit" Appearance="Appearance.Accent">
+                @L["Submit"]
+            </FluentButton>
+        </FluentDialogFooter>
+
+    </EditForm>
+</div>
+
+
+@code {
+
+
+    [Parameter] public IdentityUserExtraCreateOrUpdateModel User { get; set; }
+
+    [Parameter] public EventCallback OnCreateOrUpdate { get; set; }
+
+    bool _submitLoading = false;
+
+    async Task HandleValidSubmit(EditContext context)
+    {
+        _submitLoading = true;
+        try
+        {
+            await OnCreateOrUpdate.InvokeAsync();
+        }
+        catch (Exception e)
+        {
+            ToastService.ShowError(e.Message);
+        }
+
+        _submitLoading = false;
+    }
+
+    void SelectAllPermission(bool? selected, LibraryPermissionDto? permission = null)
+    {
+        if (permission != null)
+        {
+            permission.CanComment = selected ?? false;
+            permission.CanDownload = selected ?? false;
+            permission.CanShare = selected ?? false;
+            permission.CanStar = selected ?? false;
+            permission.CanView = selected ?? false;
+        }
+        else
+        {
+            foreach (var p in User.LibraryPermissions)
+            {
+                p.CanComment = selected ?? false;
+                p.CanDownload = selected ?? false;
+                p.CanShare = selected ?? false;
+                p.CanStar = selected ?? false;
+                p.CanView = selected ?? false;
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await UserStore.LoadLibrariesAsync();
+            var libraries = UserStore.Libraries;
+
+            if (User.LibraryPermissions.IsNullOrEmpty())
+                User.LibraryPermissions = libraries.Select(x => new LibraryPermissionDto
+                {
+                    LibraryId = x.Id,
+                    CanComment = true,
+                    CanDownload = true,
+                    CanShare = false,
+                    CanStar = true,
+                    CanView = true
+                }).ToList();
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+
+}

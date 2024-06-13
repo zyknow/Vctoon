@@ -15,20 +15,20 @@
                     @bind-Expanded="LibrariesExpanded">
 
         <TitleTemplate>
-            
+
             <div class="flex flex-row justify-between items-center">
                 <span>@L["Menu:Library"]</span>
-                
+
                 <div @onclick="() => NavigationToCreateOrUpdateLibrary()" @onclick:stopPropagation>
                     <FluentButton IconStart="@(new Icons.Regular.Size16.Add())"
                                   BackgroundColor="transparent"
                                   Appearance="Appearance.Stealth"/>
                 </div>
             </div>
-            
-            
+
+
         </TitleTemplate>
-        
+
         <ChildContent>
             @foreach (var libraryInfo in Libraries)
             {
@@ -37,22 +37,22 @@
                                @onmouseenter="@(() => libraryInfo.ShowMenuIconBtn = true)"
                                @onmouseleave="() => libraryInfo.ShowMenuIconBtn = libraryInfo.MenuOpen">
                     <div class="flex flex-row items-center hidden">
-                        
+
                         <span class="flex-1 ">@libraryInfo.Info.Name</span>
-                        
-                        
+
+
                         <div class="flex items-center" style="@(@$"{(libraryInfo.ShowMenuIconBtn ? "" : "display:none")}")"
                              @onclick="() => libraryInfo.MenuOpen = !libraryInfo.MenuOpen" @onclick:preventDefault>
                             <FluentIcon id="@(@$"{libraryInfo.Info.Name}_libraryBtn")"
                                         Value="@(new Icons.Filled.Size16.MoreVertical())">
                             </FluentIcon>
                         </div>
-                        
+
                     </div>
                 </FluentNavLink>
             }
         </ChildContent>
-        
+
     </FluentNavGroup>
 
     <FluentNavLink ActiveClass="@_activeClass" Icon="@(new Icons.Regular.Size16.Tag())"
@@ -103,17 +103,17 @@
                 var info = new NavMenuLibraryInfo(userStoreLibrary);
                 Libraries.Add(info);
             }
-            
+
             StateHasChanged();
         }
     }
-    
+
     void NavigationToCreateOrUpdateLibrary()
     {
         NavigationManager.NavigateTo(@"/library/create");
     }
-    
-    
+
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -127,22 +127,28 @@
                     UpdateUserLibraryChanged();
                 }
             };
-            
-            UserStore.Libraries.CollectionChanged += (sender, args) => { UpdateUserLibraryChanged(); };
+
+            UserStore.PropertyChanged += (sender, args) =>
+            {
+                if (args.PropertyName == nameof(States.UserStore.Libraries))
+                {
+                    UpdateUserLibraryChanged();
+                }
+            };
+            _isAdmin = CurrentUser.IsAdmin();
         }
-        
-        
+
         await base.OnAfterRenderAsync(firstRender);
     }
-    
-    
+
+
     class NavMenuLibraryInfo(LibraryDto info)
     {
         public LibraryDto Info { get; set; } = info;
         public bool ShowMenuIconBtn { get; set; }
-        
+
         bool _menuOpen;
-        
+
         public bool MenuOpen
         {
             get => _menuOpen;
@@ -154,6 +160,6 @@
             }
         }
     }
-    
-    
+
+
 }

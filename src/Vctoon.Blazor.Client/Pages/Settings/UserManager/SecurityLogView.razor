@@ -1,0 +1,82 @@
+﻿@page "/security-log"
+@using Vctoon.Blazor.Client.Extensions
+@using Vctoon.Extensions
+@using Vctoon.Identities
+@using Vctoon.Identities.Dtos
+@using Volo.Abp.Identity.Localization
+@inherits VctoonComponentBase
+@inject IStringLocalizer<IdentityResource> IL
+@attribute [Authorize]
+@inject IIdentitySecurityLogAppService IdentitySecurityLogAppService
+<div class="flex flex-col space-y-6 p-2">
+    <div class="flex flex-row space-x-2 items-center">
+        <h3 class="mt-2">@L["Menu:SecurityLogs"]</h3>
+        <FluentButton Appearance="Appearance.Lightweight" IconEnd="@(new Icons.Filled.Size16.ArrowClockwise())"
+                      OnClick="() => _dataGrid.RefreshDataAsync()">
+        </FluentButton>
+    </div>
+
+    <div class="space-y-4">
+
+        @* <FluentCard> *@
+        @*     <div class="flex flex-row space-x-2 w-full justify-between"> *@
+        @*         <div class="flex flex-row items-center space-x-2"> *@
+        @*             <FluentTextField @bind-Value="@_filter.Identity"></FluentTextField> *@
+        @*             <FluentButton OnClick="@(() => _dataGrid.RefreshDataAsync())" Appearance="Appearance.Accent" IconStart="@(new Icons.Filled.Size24.Search())">@L["Search"]</FluentButton> *@
+        @*         </div> *@
+        @*     </div> *@
+        @* </FluentCard> *@
+
+        <FluentCard>
+            <FluentDataGrid ItemsProvider="@_dataGridProvider" ResizableColumns="true" Pagination="@_pagination" @ref="_dataGrid">
+                <PropertyColumn Title="@IL["SecurityLogs:ApplicationName"]" Property="@(c => c.ApplicationName)" Sortable="true"
+                                Align="Align.Start"/>
+                <PropertyColumn Title="@IL["SecurityLogs:Identity"]" Property="@(c => c.Identity)" Sortable="true"
+                                Align="Align.Start"/>
+                <PropertyColumn Title="@IL["SecurityLogs:Action"]" Property="@(c => c.Action)" Sortable="true"
+                                Align="Align.Start"/>
+                <PropertyColumn Title="@IL["SecurityLogs:UserName"]" Property="@(c => c.UserName)" Sortable="true"
+                                Align="Align.Start"/>
+                <PropertyColumn Title="@IL["SecurityLogs:ClientIpAddress"]" Property="@(c => c.ClientIpAddress)" Sortable="true"
+                                Align="Align.Start"/>
+                <PropertyColumn Title="@IL["SecurityLogs:Browser"]" Property="@(c => c.BrowserInfo)" Sortable="true"
+                                Align="Align.Start"/>
+                <PropertyColumn Title="@IL["CreationTime"]" Property="@(c => c.CreationTime)" Sortable="true"
+                                Align="Align.Start"/>
+            </FluentDataGrid>
+            <FluentPaginator State="@_pagination"/>
+        </FluentCard>
+
+
+    </div>
+</div>
+
+@code {
+
+    FluentDataGrid<IdentitySecurityLogDto> _dataGrid;
+    GridItemsProvider<IdentitySecurityLogDto> _dataGridProvider = default!;
+
+    readonly GetIdentitySecurityLogListInput _filter = new();
+
+    readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
+
+
+    protected override void OnInitialized()
+    {
+        _dataGridProvider = async req =>
+        {
+            _filter.SkipCount = req.StartIndex;
+            _filter.MaxResultCount = req.Count.Value;
+
+            _filter.Sorting = req.GetSorting();
+            var result = CurrentUser.IsAdmin() ? await IdentitySecurityLogAppService.GetListAsync(_filter) : await IdentitySecurityLogAppService.GetCurrentUserListAsync(_filter);
+
+
+            return GridItemsProviderResult.From(
+                result.Items.ToList(),
+                (int)result.TotalCount);
+        };
+        base.OnInitialized();
+    }
+
+}
