@@ -6,7 +6,9 @@ public static class VctoonDomainErrorCodes
     internal const string VctoonPrefix = "Vctoon:";
     internal const string LibraryPrefix = "Library:";
     public const string DataNotFound = VctoonPrefix + nameof(DataNotFound);
-    
-    
+
+
     public const string NameIsAlreadyExists = VctoonPrefix + nameof(NameIsAlreadyExists);
+
+    public const string AdminCanNotChangePermission = VctoonPrefix + nameof(AdminCanNotChangePermission);
 }

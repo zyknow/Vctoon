@@ -1,7 +1,5 @@
 ﻿@inherits VctoonComponentBase
 @inject AppStore AppStore
-@* @typeparam TResource *@
-@inject IBlazorHttpRequestAccessor BlazorHttpRequestAccessor
 <div style="@(DynamicHeightWidthEnabled ? @$"width: {ImageWidth}px;" : "")">
     <div @onmouseenter="@(() => _isHover = true)" @onmouseleave="@(() => _isHover = false)"
          @onclick="() => { if (IsSelectedMode) OnIsCheckedChanged.InvokeAsync(!IsChecked); }"
@@ -21,8 +19,8 @@
                 <div class="bg-black z-10 absolute top-0 left-0 bg-opacity-40 p-2 w-full h-full">
                 </div>
             }
-            
-            
+
+
             if (ShowEdit)
             {
                 <div class="absolute bottom-0 left-0 p-2 z-20 hover:scale-120 cursor-pointer">
@@ -31,7 +29,7 @@
                     </FluentIcon>
                 </div>
             }
-            
+
             if (ShowMenu)
             {
                 <div class="absolute bottom-0 right-0 p-2 z-20 hover:scale-120 cursor-pointer">
@@ -41,7 +39,7 @@
                     </FluentIcon>
                 </div>
             }
-            
+
             if (ShowPlay)
             {
                 <div class="absolute bottom-0 right-0  z-19   w-full h-full flex items-center justify-center">
@@ -53,15 +51,15 @@
                 </div>
             }
         }
-        
-        
+
+
         @if ((ShowSelectedCheckBox || IsSelectedMode) && SelectEnabled)
         {
             <div class="absolute top-0 left-0 z-20 p-2 hover:scale-120 z-30" @onclick="() => { }" @onclick:stopPropagation>
                 <FluentCheckbox Embedded Value="@IsChecked" ValueChanged="@(b => OnIsCheckedChanged.InvokeAsync(b))"></FluentCheckbox>
             </div>
         }
-        
+
         @if (Progress >= 100)
         {
             <div class="absolute top-0 right-0 z-20 bg-black bg-opacity-100 w-10 h-10 rounded-lb-5">
@@ -70,13 +68,13 @@
                 <FluentIcon Color="Color.Success" Value="@(new Icons.Filled.Size20.CheckmarkCircle())"></FluentIcon>
             </div>
         }
-        
+
     </div>
     @if (TitleTemplate != null || SubTitleTemplate != null || !Title.IsNullOrEmpty() || !SubTitle.IsNullOrEmpty())
     {
         <div class="flex flex-col mt-2 space-y-1">
             <div id="@_titleTooltipId">
-                
+
                 @if (TitleTemplate != null)
                 {
                     @TitleTemplate
@@ -89,7 +87,7 @@
                     </div>
                 }
             </div>
-            
+
             @if (ShowTitleTooltipEnabled)
             {
                 <FluentTooltip Anchor="@_titleTooltipId">
@@ -98,8 +96,8 @@
                     </div>
                 </FluentTooltip>
             }
-            
-            
+
+
             @if (SubTitleTemplate != null)
             {
                 @SubTitleTemplate
@@ -112,7 +110,7 @@
             }
         </div>
     }
-    
+
 </div>
 
 @code {
@@ -120,40 +118,40 @@
     [Parameter] public string Title { get; set; }
     [Parameter] public int? Progress { get; set; }
     [Parameter] public string ImageUrl { get; set; }
-    
+
     [Parameter] public EventCallback OnPlayClick { get; set; }
     [Parameter] public EventCallback OnTitleClick { get; set; }
-    
+
     [Parameter] public virtual bool IsChecked { get; set; }
     [Parameter] public virtual bool IsSelectedMode { get; set; }
     [Parameter] public virtual EventCallback<bool> OnIsCheckedChanged { get; set; }
-    
+
     [Parameter] public virtual RenderFragment? TitleTemplate { get; set; }
     [Parameter] public virtual RenderFragment? SubTitleTemplate { get; set; }
-    
+
     [Parameter] public bool HoverEnabled { get; set; }
     [Parameter] public bool MenuEnabled { get; set; }
     [Parameter] public bool EditEnabled { get; set; }
     [Parameter] public bool PlayEnabled { get; set; }
     [Parameter] public bool SelectEnabled { get; set; }
     [Parameter] public bool DynamicHeightWidthEnabled { get; set; }
-    
+
     [Parameter] public bool ShowTitleTooltipEnabled { get; set; }
-    
-    
+
+
     bool IsHover => _isHover && HoverEnabled;
-    
+
     bool _isHover;
-    
+
     bool ShowSelectedCheckBox => IsHover || IsSelectedMode;
-    
+
     bool ShowMenu => MenuEnabled && IsHover && !IsSelectedMode;
     bool ShowEdit => EditEnabled && IsHover && !IsSelectedMode;
     bool ShowPlay => PlayEnabled && IsHover && !IsSelectedMode;
-    
+
     double ImageWidth => 100 * AppStore.ImageScale;
-    
+
     double ImageHeight => ImageWidth * 4 / 3;
-    
+
     string _titleTooltipId = $"titleTooltip_{Guid.NewGuid()}";
 }

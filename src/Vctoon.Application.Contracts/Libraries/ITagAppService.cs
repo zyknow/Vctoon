@@ -11,4 +11,5 @@ public interface ITagAppService :
         TagCreateUpdateDto,
         TagCreateUpdateDto>
 {
+    Task<List<TagDto>> GetAllTagAsync(bool withResourceCount = false);
 }

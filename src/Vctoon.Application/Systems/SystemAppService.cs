@@ -1,8 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Vctoon.Services;
+using Volo.Abp.Identity;
 
 namespace Vctoon.Systems;
 
-public class SystemAppService : VctoonAppService, ISystemAppService
+public class SystemAppService(
+    ILibraryPermissionChecker libraryPermissionChecker,
+    IIdentityUserRepository identityUserRepository,
+    IdentityUserManager identityUserManager)
+    : VctoonAppService(libraryPermissionChecker), ISystemAppService
 {
     [Authorize(Policy = VctoonPermissions.Library.Create)]
     public async Task<List<string>> GetSystemPathsAsync(string? path = null)

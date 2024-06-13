@@ -79,29 +79,33 @@
     {
         NavigationManager.NavigateTo($"/library/{LibraryId}/comic/{comic.Id}");
     }
-    
-    
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+
+    protected override async Task OnParametersSetAsync()
     {
-        if (firstRender)
-        {
-            _library = await LibraryAppService.GetAsync(LibraryId);
-            
-            WeakReferenceMessenger.Default.Register<LibraryScanCompletedMessage>(this, async (r, m) =>
-            {
-                if (m.Value == LibraryId)
-                {
-                    // TODO: check sorting
-                    await LoadResourceAsync(true);
-                }
-            });
-            
-            await LoadResourceAsync();
-        }
-        
-        await base.OnAfterRenderAsync(firstRender);
+        await InitLibraryInfoAsync();
+        await base.OnParametersSetAsync();
     }
-    
+
+    async Task InitLibraryInfoAsync()
+    {
+        WeakReferenceMessenger.Default.Unregister<LibraryScanCompletedMessage>(this);
+
+        Reset();
+
+        _library = await LibraryAppService.GetAsync(LibraryId);
+        WeakReferenceMessenger.Default.Register<LibraryScanCompletedMessage>(this, async (r, m) =>
+        {
+            if (m.Value == LibraryId)
+            {
+// TODO: check sorting
+                await LoadResourceAsync(true);
+            }
+        });
+
+        await LoadResourceAsync();
+    }
+
+
     public override ValueTask DisposeAsync()
     {
         WeakReferenceMessenger.Default.Unregister<LibraryScanCompletedMessage>(this);

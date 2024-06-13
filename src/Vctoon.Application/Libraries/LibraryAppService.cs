@@ -1,102 +1,93 @@
-﻿using Vctoon.Libraries.Dtos;
+﻿using Microsoft.AspNetCore.Authorization;
+using Vctoon.Extensions;
+using Vctoon.Libraries.Dtos;
 using Vctoon.Localization.Libraries;
 using Vctoon.Services;
-using Volo.Abp;
-using Volo.Abp.Application.Dtos;
 using Volo.Abp.BackgroundJobs;
 
 namespace Vctoon.Libraries;
 
-public class LibraryAppService : CrudAppService<Library, LibraryDto, Guid, LibraryGetListInput, LibraryCreateUpdateDto,
-        LibraryCreateUpdateDto>,
+[Authorize]
+public class LibraryAppService : VctoonAppService,
     ILibraryAppService
 {
-    private readonly IBackgroundJobManager _backgroundJobManager;
     private readonly LibraryManager _libraryManager;
+    private readonly ILibraryPermissionRepository _libraryPermissionRepository;
     private readonly LibraryScanner _libraryScanner;
-    
+    private readonly ILibraryRepository _repository;
+
     public LibraryAppService(
         ILibraryRepository repository,
         LibraryScanner libraryScanner,
-        ILibraryPathRepository libraryPathRepository,
-        LibraryManager libraryManager, IBackgroundJobManager backgroundJobManager) : base(repository)
+        LibraryManager libraryManager, IBackgroundJobManager backgroundJobManager,
+        ILibraryPermissionRepository libraryPermissionRepository,
+        ILibraryPermissionChecker libraryPermissionChecker) : base(
+        libraryPermissionChecker)
     {
+        _repository = repository;
         _libraryScanner = libraryScanner;
         _libraryManager = libraryManager;
-        _backgroundJobManager = backgroundJobManager;
+        _libraryPermissionRepository = libraryPermissionRepository;
         LocalizationResource = typeof(LibraryResource);
     }
-    
-    protected override string GetPolicyName { get; set; } = VctoonPermissions.Library.Default;
-    protected override string GetListPolicyName { get; set; } = VctoonPermissions.Library.Default;
-    protected override string CreatePolicyName { get; set; } = VctoonPermissions.Library.Create;
-    protected override string UpdatePolicyName { get; set; } = VctoonPermissions.Library.Update;
-    protected override string DeletePolicyName { get; set; } = VctoonPermissions.Library.Delete;
-    protected string ScanPolicyName => CreatePolicyName;
-    
-    [RemoteService(false)]
-    public override Task<PagedResultDto<LibraryDto>> GetListAsync(LibraryGetListInput input)
-    {
-        return base.GetListAsync(input);
-    }
-    
-    
+
+    [Authorize(VctoonPermissions.Library.Default)]
     public async Task<List<LibraryDto>> GetCurrentUserLibraryListAsync()
     {
-        await CheckGetListPolicyAsync();
-        
-        List<Library> libraries = await Repository.GetListAsync();
-        
+        bool isAdmin = CurrentUser.IsAdmin();
+
+        IEnumerable<Guid> libraryIds = isAdmin
+            ? []
+            : (await _libraryPermissionRepository.GetListAsync(x => x.UserId == CurrentUser.Id && x.CanView))
+            .Select(x => x.LibraryId);
+
+        List<Library> libraries =
+            isAdmin ? await _repository.GetListAsync() : await _repository.GetListAsync(x => libraryIds.Contains(x.Id));
+
         List<LibraryDto>? dtos = ObjectMapper.Map<List<Library>, List<LibraryDto>>(libraries);
         return dtos;
     }
-    
-    public override async Task<LibraryDto> CreateAsync(LibraryCreateUpdateDto input)
+
+    [Authorize(VctoonPermissions.Library.Create)]
+    public async Task<LibraryDto> CreateAsync(LibraryCreateUpdateDto input)
     {
-        await CheckCreatePolicyAsync();
-        
         Library? entity = await _libraryManager.CreateLibraryAsync(input.Name, input.Paths);
-        return await MapToGetOutputDtoAsync(entity);
+        return ObjectMapper.Map<Library, LibraryDto>(entity);
     }
-    
-    public override async Task<LibraryDto> UpdateAsync(Guid id, LibraryCreateUpdateDto input)
+
+    [Authorize(VctoonPermissions.Library.Update)]
+    public async Task<LibraryDto> UpdateAsync(Guid id, LibraryCreateUpdateDto input)
     {
-        await CheckCreatePolicyAsync();
-        
         var library =
-            await AsyncExecuter.FirstOrDefaultAsync((await Repository.WithDetailsAsync()).Where(x => x.Id == id));
-        
+            await AsyncExecuter.FirstOrDefaultAsync((await _repository.WithDetailsAsync()).Where(x => x.Id == id));
+
         library.SetName(input.Name);
-        
+
         await _libraryManager.UpdateLibraryAsync(library);
         await _libraryManager.UpdateLibraryPathsAsync(library, input.Paths);
-        
-        return await MapToGetOutputDtoAsync(library);
+
+        return ObjectMapper.Map<Library, LibraryDto>(library);
     }
-    
-    
+
+    [Authorize(VctoonPermissions.Library.Update)]
     public async Task ScanAsync(Guid libraryId)
     {
-        await CheckPolicyAsync(ScanPolicyName);
         await _libraryScanner.ScannerAsync(libraryId);
-        // await _backgroundJobManager.EnqueueAsync(new LibraryScanningArgs()
-        // {
-        //     LibraryId = libraryId
-        // },BackgroundJobPriority.High);
     }
-    
-    protected override async Task<Library> GetEntityByIdAsync(Guid id)
+
+    [Authorize(VctoonPermissions.Library.Default)]
+    public async Task<LibraryDto> GetAsync(Guid id)
     {
-        IQueryable<Library>? query = await Repository.WithDetailsAsync(x => x.Paths.Where(p => p.IsRoot));
-        
-        return await AsyncExecuter.FirstAsync(query);
+        IQueryable<Library>? query = await _repository.WithDetailsAsync(x => x.Paths.Where(p => p.IsRoot));
+
+        Library library = await AsyncExecuter.FirstAsync(query);
+
+        return ObjectMapper.Map<Library, LibraryDto>(library);
     }
-    
-    protected override async Task<IQueryable<Library>> CreateFilteredQueryAsync(LibraryGetListInput input)
+
+    [Authorize(VctoonPermissions.Library.Delete)]
+    public Task DeleteAsync(Guid id)
     {
-        // TODO: AbpHelper generated
-        return (await Repository.WithDetailsAsync(x => x.Paths.Where(x => x.IsRoot)))
-            .WhereIf(!input.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(input.Name))
-            ;
+        return _repository.DeleteAsync(id);
     }
 }

@@ -1,0 +1,151 @@
+﻿@page "/user-manager"
+@using Vctoon.Blazor.Client.Extensions
+@using Vctoon.Identities
+@using Vctoon.Identities.Dtos
+@using Volo.Abp.Identity
+@using Volo.Abp.Identity.Localization
+@inherits VctoonComponentBase
+@inject IStringLocalizer<IdentityResource> IL
+@attribute [Authorize(IdentityPermissions.Users.ManagePermissions)]
+@inject IDialogService DialogService
+@inject IIdentityUserExtraAppService IdentityUserExtraAppService
+<div class="flex flex-col space-y-6 p-2">
+    <div class="flex flex-row space-x-4 items-center">
+        <h3 class="mt-2">@L["Menu:UserManager"]</h3>
+    </div>
+
+    <div class="space-y-4">
+
+        <FluentCard>
+            <div class="flex flex-row space-x-2 w-full justify-between">
+                <div class="flex flex-row items-center space-x-2">
+                    <FluentTextField @bind-Value="@_filter.Filter"></FluentTextField>
+                    <FluentButton OnClick="@(() => _dataGrid.RefreshDataAsync())" Appearance="Appearance.Accent" IconStart="@(new Icons.Filled.Size24.Search())">@L["Search"]</FluentButton>
+                </div>
+
+                <div>
+                    <FluentButton OnClick="@(() => ShowCreateUserDialogAsync())" Appearance="Appearance.Accent" IconStart="@(new Icons.Filled.Size24.Add())">@IL["NewUser"]</FluentButton>
+                </div>
+            </div>
+        </FluentCard>
+
+        <FluentCard>
+            <FluentDataGrid ItemsProvider="@_dataGridProvider" ResizableColumns="true" Pagination="@_pagination" @ref="_dataGrid">
+                <TemplateColumn SortBy="GridSort<IdentityUserExtraDto>.ByAscending(p => p.Surname)" Title="@IL["DisplayName:UserName"]" Sortable="true" Align="Align.Start">
+                    <div class="flex flex-row items-center space-x-4">
+                        <span>@context.UserName</span>
+                        @if (context.IsAdmin)
+                        {
+                            <FluentBadge Fill="accent">
+                                @IL["DisplayName:IsAdmin"]
+                            </FluentBadge>
+                        }
+
+                        <FluentBadge Fill="success">
+                            @if (context.IsActive)
+                            {
+                                @IL["DisplayName:IsActive"]
+                            }
+                        </FluentBadge>
+                    </div>
+                </TemplateColumn>
+                <PropertyColumn Title="@IL["DisplayName:Surname"]" Property="@(c => c.Surname)" Sortable="true" Align="Align.Start"/>
+                <PropertyColumn Title="@IL["DisplayName:Name"]" Property="@(c => c.Name)" Sortable="true" Align="Align.Start"/>
+                <PropertyColumn Title="@IL["DisplayName:Email"]" Property="@(c => c.Email)" Sortable="true" Align="Align.Start"/>
+                <PropertyColumn Title="@IL["CreationTime"]" Property="@(c => c.CreationTime)" Sortable="true" Align="Align.Start"/>
+
+                <TemplateColumn Title="@L["Actions"]" Align="Align.Start" Width="100px">
+                    <div class="flex flex-row space-x-2">
+                        <FluentButton Appearance="Appearance.Lightweight" OnClick="() => ShowEditUserDialogAsync(context)">
+                            <FluentIcon Value="@(new Icons.Regular.Size20.Edit())"></FluentIcon>
+                        </FluentButton>
+                        <FluentButton Appearance="Appearance.Lightweight" OnClick="() => DeleteUserAsync(context)">
+                            <FluentIcon Color="Color.Error" Value="@(new Icons.Regular.Size20.Delete())"></FluentIcon>
+                        </FluentButton>
+                    </div>
+                </TemplateColumn>
+
+            </FluentDataGrid>
+            <FluentPaginator State="@_pagination"/>
+        </FluentCard>
+
+
+    </div>
+</div>
+
+@code {
+
+    GridItemsProvider<IdentityUserExtraDto> _dataGridProvider = default!;
+    FluentDataGrid<IdentityUserExtraDto> _dataGrid;
+
+    readonly GetIdentityUsersInput _filter = new();
+
+    readonly PaginationState _pagination = new() { ItemsPerPage = 5 };
+
+
+    IDialogReference? _currentDialog;
+
+    protected override void OnInitialized()
+    {
+        _dataGridProvider = async req =>
+        {
+            _filter.SkipCount = req.StartIndex;
+            _filter.MaxResultCount = req.Count.Value;
+
+            _filter.Sorting = req.GetSorting();
+            var result = await IdentityUserExtraAppService.GetUserExtraListAsync(_filter);
+
+
+            return GridItemsProviderResult.From(
+                result.Items.ToList(),
+                (int)result.TotalCount);
+        };
+        base.OnInitialized();
+    }
+
+    async Task ShowCreateUserDialogAsync()
+    {
+        DialogParameters parameters = new()
+        {
+            Title = IL["NewUser"]
+        };
+
+        _currentDialog = await DialogService.ShowDialogAsync(
+            @<div>
+                <CreateUserDialog OnSucceeded="@(() => OnCreateOrEditUserSucceededAsync())"/>
+            </div>,
+            parameters);
+    }
+
+    async Task ShowEditUserDialogAsync(IdentityUserExtraDto user)
+    {
+        DialogParameters parameters = new()
+        {
+            Title = @$"{L["Edit"]} -- {user.UserName}"
+        };
+
+        _currentDialog = await DialogService.ShowDialogAsync(
+            @<div>
+                <UpdateUserDialog UserId="user.Id" OnSucceeded="@(() => OnCreateOrEditUserSucceededAsync())"/>
+            </div>,
+            parameters);
+    }
+
+    async Task OnCreateOrEditUserSucceededAsync()
+    {
+        await _currentDialog.CloseAsync();
+        await _dataGrid.RefreshDataAsync();
+    }
+
+    async Task DeleteUserAsync(IdentityUserExtraDto user)
+    {
+        var dialogRes = await DialogService.ShowConfirmationAsync(IL["UserDeletionConfirmationMessage", user.UserName], L["Submit"], L["Cancel"], L["AreYouSure"]);
+
+        if (!(await dialogRes.Result).Cancelled)
+        {
+            await IdentityUserExtraAppService.DeleteUserExtraAsync(user.Id);
+            await _dataGrid.RefreshDataAsync();
+        }
+    }
+
+}

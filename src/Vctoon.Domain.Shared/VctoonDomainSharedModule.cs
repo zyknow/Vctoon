@@ -1,12 +1,12 @@
 ﻿using Localization.Resources.AbpUi;
 using Vctoon.Localization.Comics;
-using Vctoon.Localization.Identities;
 using Vctoon.Localization.Libraries;
 using Vctoon.Localization.Vctoon;
 using Volo.Abp.AuditLogging;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
+using Volo.Abp.Identity.Localization;
 using Volo.Abp.Localization;
 using Volo.Abp.Localization.ExceptionHandling;
 using Volo.Abp.Modularity;
@@ -36,11 +36,11 @@ public class VctoonDomainSharedModule : AbpModule
         VctoonGlobalFeatureConfigurator.Configure();
         VctoonModuleExtensionConfigurator.Configure();
     }
-    
+
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         Configure<AbpVirtualFileSystemOptions>(options => { options.FileSets.AddEmbedded<VctoonDomainSharedModule>(); });
-        
+
         Configure<AbpLocalizationOptions>(options =>
         {
             options.Resources
@@ -48,30 +48,27 @@ public class VctoonDomainSharedModule : AbpModule
                 .AddBaseTypes(typeof(AbpValidationResource))
                 .AddBaseTypes(typeof(AbpUiResource))
                 .AddVirtualJson("/Localization/Libraries");
-            
+
             options.Resources
                 .Add<ComicResource>("en")
                 .AddBaseTypes(typeof(AbpValidationResource))
                 .AddBaseTypes(typeof(AbpUiResource))
                 .AddVirtualJson("/Localization/Comics");
-            
+
             options.Resources
-                .Add<IdentityUserExtraResource>("en")
-                .AddBaseTypes(typeof(AbpValidationResource))
-                .AddBaseTypes(typeof(AbpUiResource))
+                .Get<IdentityResource>()
                 .AddVirtualJson("/Localization/Identities");
-            
+
             options.Resources
                 .Add<VctoonResource>("en")
                 .AddBaseTypes(typeof(AbpValidationResource))
                 .AddBaseTypes(typeof(LibraryResource))
                 .AddBaseTypes(typeof(ComicResource))
-                .AddBaseTypes(typeof(IdentityUserExtraResource))
                 .AddVirtualJson("/Localization/Vctoon");
-            
+
             options.DefaultResourceType = typeof(VctoonResource);
         });
-        
+
         Configure<AbpExceptionLocalizationOptions>(options => { options.MapCodeNamespace($"Vctoon", typeof(VctoonResource)); });
     }
 }

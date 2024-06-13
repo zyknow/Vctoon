@@ -1,4 +1,5 @@
-﻿@inherits VctoonComponentBase
+﻿@using Vctoon.Extensions
+@inherits VctoonComponentBase
 @inject NavigationManager NavigationManager
 @inject ILibraryAppService LibraryAppService
 @inject IDialogService DialogService
@@ -6,12 +7,13 @@
 @inject UserStore UserStore
 @inject AppStore AppStore
 <FluentNavMenu CollapsedChildNavigation Expanded="@AppStore.NavMenuExpanded" class="max-h-full h-full overflow-y-auto rounded max-w-60">
-    <FluentNavLink ActiveClass="@activeClass" Icon="@(new Icons.Regular.Size24.Home())" Match="NavLinkMatch.All"
+    <FluentNavLink ActiveClass="@_activeClass" Icon="@(new Icons.Regular.Size24.Home())" Match="NavLinkMatch.All"
                    Href="/">
         @L["Menu:Home"]
     </FluentNavLink>
-    <FluentNavGroup Id="LibraryGroup" Icon="@(new Icons.Regular.Size24.Library())" @bind-Expanded="LibrariesExpanded">
-        
+    <FluentNavGroup Match="NavLinkMatch.All" Id="LibraryGroup" Icon="@(new Icons.Regular.Size24.Library())"
+                    @bind-Expanded="LibrariesExpanded">
+
         <TitleTemplate>
             
             <div class="flex flex-row justify-between items-center">
@@ -30,7 +32,7 @@
         <ChildContent>
             @foreach (var libraryInfo in Libraries)
             {
-                <FluentNavLink ActiveClass="@activeClass" Href="@(@$"/library/{libraryInfo.Info.Id}")"
+                <FluentNavLink ActiveClass="@_activeClass" Href="@(@$"/library/{libraryInfo.Info.Id}")"
                                Icon="@(new Icons.Filled.Size16.Book())"
                                @onmouseenter="@(() => libraryInfo.ShowMenuIconBtn = true)"
                                @onmouseleave="() => libraryInfo.ShowMenuIconBtn = libraryInfo.MenuOpen">
@@ -52,7 +54,28 @@
         </ChildContent>
         
     </FluentNavGroup>
-    
+
+    <FluentNavLink ActiveClass="@_activeClass" Icon="@(new Icons.Regular.Size16.Tag())"
+                   Href="/tags">
+        @L["Menu:Tags"]
+    </FluentNavLink>
+
+    <FluentNavGroup Title="@L["Menu:Settings"]" Icon="@(new Icons.Filled.Size24.Settings())" Match="NavLinkMatch.All">
+        @if (_isAdmin)
+        {
+            <FluentNavLink ActiveClass="@_activeClass" Icon="@(new Icons.Filled.Size16.Person())"
+                           Href="/user-manager">
+                @L["Menu:UserManager"]
+            </FluentNavLink>
+        }
+
+        <FluentNavLink ActiveClass="@_activeClass" Icon="@(new Icons.Regular.Size16.ShieldTask())"
+                       Href="/security-log">
+            @L["Menu:SecurityLogs"]
+        </FluentNavLink>
+
+    </FluentNavGroup>
+
 </FluentNavMenu>
 
 @foreach (var libraryInfo in Libraries)
@@ -63,11 +86,13 @@
 
 @code {
     [Parameter] public bool LibrariesExpanded { get; set; } = true;
-    
+
     List<NavMenuLibraryInfo> Libraries { get; set; } = [];
-    
-    string activeClass = "font-bold active";
-    
+
+    bool _isAdmin;
+
+    string _activeClass = "font-bold active";
+
     void UpdateUserLibraryChanged()
     {
         if (UserStore.Libraries.Count != Libraries.Count || UserStore.Libraries.Any(x => Libraries.All(y => y.Info.Id != x.Id)))

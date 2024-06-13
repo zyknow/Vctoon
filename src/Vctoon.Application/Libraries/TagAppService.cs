@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Vctoon.Libraries.Dtos;
 
 namespace Vctoon.Libraries;
 
+[Authorize]
 public class TagAppService(ITagRepository repository, TagManager tagManager)
     : CrudAppService<Tag, TagDto, Guid, TagGetListInput, TagCreateUpdateDto, TagCreateUpdateDto>(repository),
         ITagAppService
@@ -18,6 +21,20 @@ public class TagAppService(ITagRepository repository, TagManager tagManager)
         var tag = await tagManager.CreateTagAsync(input.Name);
         await Repository.InsertAsync(tag);
         return ObjectMapper.Map<Tag, TagDto>(tag);
+    }
+
+    [Route("/api/app/tag/all")]
+    public async Task<List<TagDto>> GetAllTagAsync(bool withResourceCount = false)
+    {
+        await CheckGetListPolicyAsync();
+
+        List<TagDto> tags = await AsyncExecuter.ToListAsync((await Repository.GetQueryableAsync()).Select(x => new TagDto
+        {
+            Name = x.Name,
+            Id = x.Id,
+            ResourceCount = withResourceCount ? x.Comics.Count : null
+        }));
+        return tags;
     }
 
     public override async Task<TagDto> UpdateAsync(Guid id, TagCreateUpdateDto input)

@@ -27,10 +27,7 @@ public abstract class VctoonService
     private IStringLocalizer? _localizer;
     public IAbpLazyServiceProvider LazyServiceProvider { get; set; } = default!;
 
-    [Obsolete("Use LazyServiceProvider instead.")]
-    public IServiceProvider ServiceProvider { get; set; } = default!;
-
-    public static string[] CommonPostfixes { get; set; } = {"AppService", "ApplicationService", "Service"};
+    public static string[] CommonPostfixes { get; set; } = { "AppService", "ApplicationService", "Service" };
 
     public List<string> AppliedCrossCuttingConcerns { get; } = new();
 
@@ -44,7 +41,7 @@ public abstract class VctoonService
     protected IObjectMapper ObjectMapper => LazyServiceProvider.LazyGetService<IObjectMapper>(provider =>
         ObjectMapperContext == null
             ? provider.GetRequiredService<IObjectMapper>()
-            : (IObjectMapper) provider.GetRequiredService(
+            : (IObjectMapper)provider.GetRequiredService(
                 typeof(IObjectMapper<>).MakeGenericType(ObjectMapperContext)));
 
     protected IGuidGenerator GuidGenerator =>

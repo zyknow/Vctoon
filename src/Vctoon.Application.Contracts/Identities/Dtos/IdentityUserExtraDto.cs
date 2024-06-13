@@ -1,12 +1,10 @@
-using Vctoon.Libraries.Dtos;
-using Volo.Abp.Application.Dtos;
+﻿using Vctoon.Libraries.Dtos;
+using Volo.Abp.Identity;
 
 namespace Vctoon.Identities.Dtos;
 
-[Serializable]
-public class IdentityUserExtraDto : EntityDto<Guid>
+public class IdentityUserExtraDto : IdentityUserDto
 {
-    public Guid UserId { get; set; }
-    
+    public bool IsAdmin { get; set; }
     public List<LibraryPermissionDto> LibraryPermissions { get; set; }
 }

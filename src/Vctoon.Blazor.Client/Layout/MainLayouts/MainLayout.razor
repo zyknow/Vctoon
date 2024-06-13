@@ -1,17 +1,18 @@
-﻿@using Vctoon.Blazor.Client.Services
-@inherits VctoonLayoutComponentBase
+﻿@inherits VctoonLayoutComponentBase
 @inject ICurrentUser CurrentUser
 @inject ILoginService LoginService
+@* @inject IAuthorizationService AuthorizationService *@
+@inject UserStore UserStore
 <div class="mt-2 mx-2">
     <FluentLayout>
         <FluentHeader class="rounded-2">
             <HeaderContent></HeaderContent>
-            
+
         </FluentHeader>
-        
+
         <FluentStack Orientation="Orientation.Horizontal" Class="mt-2" style="height: calc(100dvh - 65.8px);">
             <NavMenu></NavMenu>
-            
+
             <FluentBodyContent class="h-full w-full max-h-full overflow-y-auto">
                 @Body
             </FluentBodyContent>
@@ -20,11 +21,11 @@
             <FluentTooltipProvider/>
             <FluentMessageBarProvider Section="AppFluentMessageBarProvider"/>
         </FluentStack>
-        
-        
+
+
     </FluentLayout>
-    
-    
+
+
     <div id="blazor-error-ui">
         An unhandled error has occurred.
         <a href="" class="reload">Reload</a>
@@ -34,5 +35,5 @@
 
 @code
 {
-    
+
 }

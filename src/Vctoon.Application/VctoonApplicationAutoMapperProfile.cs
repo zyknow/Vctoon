@@ -1,11 +1,11 @@
 using AutoMapper;
 using Vctoon.Comics;
 using Vctoon.Comics.Dtos;
-using Vctoon.Identities;
 using Vctoon.Identities.Dtos;
 using Vctoon.Libraries;
 using Vctoon.Libraries.Dtos;
 using Volo.Abp.AutoMapper;
+using Volo.Abp.Identity;
 
 namespace Vctoon;
 
@@ -16,14 +16,14 @@ public class VctoonApplicationAutoMapperProfile : Profile
         /* You can configure your AutoMapper mapping configuration here.
          * Alternatively, you can split your mapping configurations
          * into multiple profile classes for a better organization. */
-        
-        
+
+
         CreateMap<Library, LibraryDto>()
             .ForMember(x => x.Paths, opt =>
                 opt.MapFrom(x => x.Paths.Select(p => p.Path)
                 ))
             ;
-        
+
         CreateMap<LibraryCreateUpdateDto, Library>(MemberList.Source).Ignore(x => x.Paths);
         CreateMap<Comic, ComicDto>()
             .ForMember(
@@ -38,7 +38,12 @@ public class VctoonApplicationAutoMapperProfile : Profile
         CreateMap<ImageFileCreateUpdateDto, ImageFile>(MemberList.Source);
         CreateMap<LibraryPermission, LibraryPermissionDto>();
         CreateMap<LibraryPermissionCreateUpdateDto, LibraryPermission>(MemberList.Source);
-        CreateMap<IdentityUserExtra, IdentityUserExtraDto>();
-        CreateMap<IdentityUserExtraCreateUpdateDto, IdentityUserExtra>(MemberList.Source);
+        CreateMap<LibraryPermissionCacheItem, LibraryPermissionDto>();
+
+        CreateMap<IdentityUser, IdentityUserExtraDto>();
+        CreateMap<IdentityUserExtraCreateDto, IdentityUser>(MemberList.Source);
+        CreateMap<IdentityUserExtraUpdateDto, IdentityUser>(MemberList.Source);
+
+        CreateMap<IdentitySecurityLog, IdentitySecurityLogDto>();
     }
 }

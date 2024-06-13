@@ -1,37 +1,39 @@
 namespace Vctoon.Libraries;
 
-public class LibraryPermission : AuditedEntity<Guid>
+public class LibraryPermission : IEntity
 {
     protected LibraryPermission()
     {
     }
-    
+
     public LibraryPermission(
-        Guid id,
         Guid libraryId,
-        Guid identityUserExtraId,
+        Guid userId,
         bool canDownload,
         bool canComment,
         bool canStar,
         bool canView,
-        bool canShare
-    ) : base(id)
+        bool canShare)
     {
         LibraryId = libraryId;
-        IdentityUserExtraId = identityUserExtraId;
+        UserId = userId;
         CanDownload = canDownload;
         CanComment = canComment;
         CanStar = canStar;
         CanView = canView;
         CanShare = canShare;
     }
-    
+
     public Guid LibraryId { get; set; }
-    public Guid IdentityUserExtraId { get; set; }
-    
+    public Guid UserId { get; set; }
     public bool CanDownload { get; set; }
     public bool CanComment { get; set; }
     public bool CanStar { get; set; }
     public bool CanView { get; set; }
     public bool CanShare { get; set; }
+
+    public object?[] GetKeys()
+    {
+        return new object?[] { LibraryId, UserId };
+    }
 }

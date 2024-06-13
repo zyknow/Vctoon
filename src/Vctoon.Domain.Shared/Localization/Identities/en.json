@@ -1,12 +1,5 @@
 {
   "culture": "en",
   "texts": {
-    "Permission:IdentityUserExtra": "IdentityUserExtra",
-    "IdentityUserExtra": "IdentityUserExtra",
-    "IdentityUserExtraUserId": "IdentityUserExtraUserId",
-    "IdentityUserExtraUser": "IdentityUserExtraUser",
-    "IdentityUserExtraLibraryPermissions": "IdentityUserExtraLibraryPermissions",
-    "CreateIdentityUserExtra": "CreateIdentityUserExtra",
-    "EditIdentityUserExtra": "EditIdentityUserExtra"
   }
 }

@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using OpenIddict.Validation.AspNetCore;
 using Vctoon.BlobContainers;
 using Vctoon.EntityFrameworkCore;
+using Vctoon.Permissions;
 using Volo.Abp;
 using Volo.Abp.Account;
 using Volo.Abp.Account.Web;
@@ -49,7 +50,7 @@ public class VctoonHttpApiHostModule : AbpModule
     {
         IWebHostEnvironment hostingEnvironment = context.Services.GetHostingEnvironment();
         IConfiguration configuration = context.Services.GetConfiguration();
-        
+
         PreConfigure<OpenIddictBuilder>(builder =>
         {
             builder.AddValidation(options =>
@@ -59,14 +60,14 @@ public class VctoonHttpApiHostModule : AbpModule
                 options.UseAspNetCore();
             });
         });
-        
+
         if (!hostingEnvironment.IsDevelopment())
         {
             PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
             {
                 options.AddDevelopmentEncryptionAndSigningCertificate = false;
             });
-            
+
             PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
             {
                 serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx",
@@ -74,13 +75,13 @@ public class VctoonHttpApiHostModule : AbpModule
             });
         }
     }
-    
+
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         IConfiguration configuration = context.Services.GetConfiguration();
         IWebHostEnvironment hostingEnvironment = context.Services.GetHostingEnvironment();
         IServiceCollection services = context.Services;
-        
+
         ConfigureAuthentication(context);
         ConfigureBundles();
         ConfigureUrls(configuration);
@@ -91,25 +92,25 @@ public class VctoonHttpApiHostModule : AbpModule
         ConfigureBlobStoring();
         // ConfigureHangfire(context, configuration);
     }
-    
+
     private void ConfigureHangfire(ServiceConfigurationContext context, IConfiguration configuration)
     {
         context.Services.AddHangfire(config => { config.UseSQLiteStorage(configuration.GetConnectionString("Default")); });
-        
+
         context.Services.AddHangfireServer(options =>
         {
             options.WorkerCount = 20;
             options.SchedulePollingInterval = TimeSpan.FromSeconds(1);
         });
-        
+
         context.Services.AddHangfireServer(options =>
         {
-            options.Queues = new[] {"scan-library"};
+            options.Queues = new[] { "scan-library" };
             options.WorkerCount = 1;
             options.SchedulePollingInterval = TimeSpan.FromSeconds(1);
         });
     }
-    
+
     private void ConfigureBlobStoring()
     {
         Configure<AbpBlobStoringOptions>(options =>
@@ -120,14 +121,14 @@ public class VctoonHttpApiHostModule : AbpModule
             });
         });
     }
-    
+
     private void ConfigureAuthentication(ServiceConfigurationContext context)
     {
         context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults
             .AuthenticationScheme);
         context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options => { options.IsDynamicClaimsEnabled = true; });
     }
-    
+
     private void ConfigureBundles()
     {
         Configure<AbpBundlingOptions>(options =>
@@ -138,7 +139,7 @@ public class VctoonHttpApiHostModule : AbpModule
             );
         });
     }
-    
+
     private void ConfigureUrls(IConfiguration configuration)
     {
         Configure<AppUrlOptions>(options =>
@@ -146,16 +147,16 @@ public class VctoonHttpApiHostModule : AbpModule
             options.Applications["MVC"].RootUrl = configuration["App:SelfUrl"];
             options.RedirectAllowedUrls.AddRange(configuration["App:RedirectAllowedUrls"]?.Split(',') ??
                                                  Array.Empty<string>());
-            
+
             options.Applications["Angular"].RootUrl = configuration["App:ClientUrl"];
             options.Applications["Angular"].Urls[AccountUrlNames.PasswordReset] = "account/reset-password";
         });
     }
-    
+
     private void ConfigureVirtualFileSystem(ServiceConfigurationContext context)
     {
         IWebHostEnvironment hostingEnvironment = context.Services.GetHostingEnvironment();
-        
+
         if (hostingEnvironment.IsDevelopment())
         {
             Configure<AbpVirtualFileSystemOptions>(options =>
@@ -175,7 +176,7 @@ public class VctoonHttpApiHostModule : AbpModule
             });
         }
     }
-    
+
     private void ConfigureConventionalControllers()
     {
         Configure<AbpAspNetCoreMvcOptions>(options =>
@@ -183,7 +184,7 @@ public class VctoonHttpApiHostModule : AbpModule
             options.ConventionalControllers.Create(typeof(VctoonApplicationModule).Assembly);
         });
     }
-    
+
     private static void ConfigureSwaggerServices(ServiceConfigurationContext context, IConfiguration configuration)
     {
         // context.Services.AddAbpSwaggerGen(
@@ -199,16 +200,16 @@ public class VctoonHttpApiHostModule : AbpModule
             configuration["AuthServer:Authority"]!,
             new Dictionary<string, string>
             {
-                {"Vctoon", "Vctoon API"}
+                { "Vctoon", "Vctoon API" }
             },
             options =>
             {
-                options.SwaggerDoc("v1", new OpenApiInfo {Title = "Vctoon API", Version = "v1"});
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Vctoon API", Version = "v1" });
                 options.DocInclusionPredicate((docName, description) => true);
                 options.CustomSchemaIds(type => type.FullName);
             });
     }
-    
+
     private void ConfigureCors(ServiceConfigurationContext context, IConfiguration configuration)
     {
         context.Services.AddCors(options =>
@@ -228,44 +229,49 @@ public class VctoonHttpApiHostModule : AbpModule
             });
         });
     }
-    
+
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
         IApplicationBuilder app = context.GetApplicationBuilder();
         IWebHostEnvironment env = context.GetEnvironment();
-        
+
+        IdentityUserExtraPermissionDataSender identityUserExtraPermissionDataSender =
+            context.ServiceProvider.GetRequiredService<IdentityUserExtraPermissionDataSender>();
+
+        identityUserExtraPermissionDataSender.SendAsync().GetAwaiter().GetResult();
+
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
         }
-        
+
         app.UseAbpRequestLocalization();
-        
+
         if (!env.IsDevelopment())
         {
             app.UseErrorPage();
         }
-        
-        
+
+
         // app.UseHangfireDashboard();
-        
+
         app.UseHttpsRedirection();
         app.UseCorrelationId();
-        
+
         app.UseStaticFiles();
         app.UseRouting();
         app.UseCors();
         app.UseAuthentication();
         app.UseAbpOpenIddictValidation();
-        
+
         app.UseUnitOfWork();
         app.UseDynamicClaims();
         app.UseAuthorization();
-        
+
         app.UseAntiforgery();
-        
+
         app.UseSwagger();
-        
+
         app.UseAbpSwaggerUI(options =>
         {
             options.SwaggerEndpoint("/swagger/v1/swagger.json", "Vctoon API");
@@ -273,9 +279,9 @@ public class VctoonHttpApiHostModule : AbpModule
             options.OAuthClientId(configuration["AuthServer:SwaggerClientId"]);
             options.OAuthScopes("Vctoon");
         });
-        
+
         app.UseAuditing();
-        
+
         app.UseAbpSerilogEnrichers();
         app.UseConfiguredEndpoints();
     }

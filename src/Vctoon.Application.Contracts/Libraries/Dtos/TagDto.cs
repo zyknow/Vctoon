@@ -3,7 +3,7 @@ using Volo.Abp.Application.Dtos;
 namespace Vctoon.Libraries.Dtos;
 
 [Serializable]
-public class TagDto : AuditedEntityDto<Guid>
+public class TagDto : EntityDto<Guid>
 {
     public string Name { get; set; }
 }

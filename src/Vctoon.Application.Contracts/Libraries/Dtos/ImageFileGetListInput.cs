@@ -6,16 +6,18 @@ namespace Vctoon.Libraries.Dtos;
 public class ImageFileGetListInput : PagedAndSortedResultRequestDto
 {
     public string? Name { get; set; }
-    
+
     public string? Path { get; set; }
-    
+
     public string? Extension { get; set; }
-    
+
     public long? Size { get; set; }
-    
+
     public Guid? LibraryPathId { get; set; }
-    
+
     public Guid? ArchiveInfoPathId { get; set; }
-    
+
+    public Guid? LibraryId { get; set; }
+
     public Guid? ComicId { get; set; }
 }

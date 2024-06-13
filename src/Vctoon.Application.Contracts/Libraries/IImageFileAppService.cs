@@ -1,9 +1,12 @@
 ﻿using Vctoon.Libraries.Dtos;
+using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 
 namespace Vctoon.Libraries;
 
-public interface IImageFileAppService : ICrudAppService<ImageFileDto, Guid, ImageFileGetListInput,
-    ImageFileCreateUpdateDto, ImageFileCreateUpdateDto>
+public interface IImageFileAppService : IApplicationService
 {
+    Task<PagedResultDto<ImageFileDto>> GetListAsync(ImageFileGetListInput input);
+
+    Task DeleteAsync(Guid id, bool deleteFile);
 }

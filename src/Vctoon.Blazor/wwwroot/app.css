@@ -1,20 +1,4 @@
-﻿/*h1:focus {*/
-/*    outline: none;*/
-/*}*/
-
-/*.valid.modified:not([type=checkbox]) {*/
-/*    outline: 1px solid #26b050;*/
-/*}*/
-
-/*.invalid {*/
-/*    outline: 1px solid #e50000;*/
-/*}*/
-
-/*.validation-message {*/
-/*    color: #e50000;*/
-/*}*/
-
-body {
+﻿body {
     margin: 0;
     zoom: 1;
     /*       */
@@ -29,6 +13,29 @@ body {
     ::-webkit-scrollbar-thumb {
         background: #666666;
         border-radius: 3px;
+    }
+
+    fluent-badge {
+        --badge-fill-success: var(--success);
+        --badge-color-success: #ffffff;
+        --badge-fill-neutral: var(--neutral-foreground-rest);
+        --badge-color-neutral: #ffffff;
+        --badge-fill-accent: var(--accent-fill-rest);
+        --badge-color-accent: #ffffff;
+        --badge-fill-warning: var(--warning);
+        --badge-color-warning: #ffffff;
+        --badge-fill-info: var(--info);
+        --badge-color-info: #ffffff;
+        --badge-fill-error: var(--error);
+        --badge-color-error: #ffffff;
+        --badge-fill-fill: var(--neutral-fill-rest);
+        --badge-color-fill: #ffffff;
+        --badge-fill-fillInverse: var(--neutral-fill-inverse-rest);
+        --badge-color-fillInverse: #ffffff;
+        --badge-fill-lightweight: var(--neutral-layer-1);
+        --badge-color-lightweight: #ffffff;
+        --badge-fill-disabled: var(--neutral-stroke-rest);
+        --badge-color-disabled: #ffffff;
     }
 }
 

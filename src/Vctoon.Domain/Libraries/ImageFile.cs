@@ -5,7 +5,7 @@ public class ImageFile : Entity<Guid>
     protected ImageFile()
     {
     }
-    
+
     public ImageFile(
         Guid id,
         string name,
@@ -13,6 +13,7 @@ public class ImageFile : Entity<Guid>
         string extension,
         long size,
         Guid comicId,
+        Guid libraryId,
         Guid? libraryPathId = null,
         Guid? archiveInfoPathId = null
     ) : base(id)
@@ -24,15 +25,18 @@ public class ImageFile : Entity<Guid>
         LibraryPathId = libraryPathId;
         ArchiveInfoPathId = archiveInfoPathId;
         ComicId = comicId;
+        LibraryId = libraryId;
     }
-    
+
     public string Name { get; set; }
     public string Path { get; set; }
     public string Extension { get; set; }
     public long Size { get; set; }
     public Guid? LibraryPathId { get; set; }
     public Guid? ArchiveInfoPathId { get; set; }
+
+    public Guid LibraryId { get; set; }
     public Guid ComicId { get; set; }
-    
+
     public List<ImageFileFavorCollection> ImageFileFavors { get; set; } = new();
 }
