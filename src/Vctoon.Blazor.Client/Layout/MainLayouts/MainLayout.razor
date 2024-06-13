@@ -14,10 +14,12 @@
             <NavMenu></NavMenu>
 
             <FluentBodyContent class="h-full w-full max-h-full overflow-y-auto">
-                @Body
+                <MainLayoutErrorBoundary>
+                    @Body
+                </MainLayoutErrorBoundary>
             </FluentBodyContent>
-            <FluentToastProvider/>
             <FluentDialogProvider/>
+            <FluentToastProvider/>
             <FluentTooltipProvider/>
             <FluentMessageBarProvider Section="AppFluentMessageBarProvider"/>
         </FluentStack>

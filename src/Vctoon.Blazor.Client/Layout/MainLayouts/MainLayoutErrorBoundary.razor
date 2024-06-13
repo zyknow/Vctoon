@@ -1,0 +1,30 @@
+﻿@using Volo.Abp.Http.Client
+@inherits ErrorBoundaryBase
+@inject ILoginService LoginService
+
+<div class="error-boundary">
+    @if (CurrentException is not null)
+    {
+        <div class="error-message">
+            Sorry, an error has occurred：@CurrentException.Message
+        </div>
+        <button @onclick="Recover">retry</button>
+    }
+    else
+    {
+        @ChildContent
+    }
+</div>
+
+
+@code {
+
+    protected override async Task OnErrorAsync(Exception exception)
+    {
+        if (exception is AbpRemoteCallException)
+        {
+            await LoginService.LogoutAsync();
+        }
+    }
+
+}
