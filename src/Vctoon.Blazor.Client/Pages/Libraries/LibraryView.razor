@@ -1,4 +1,5 @@
 ﻿@page "/library/{libraryId:guid}"
+@using Vctoon.Blazor.Client.Components.Paginations
 @using Vctoon.Blazor.Client.Messages
 @using Vctoon.Comics
 @using Vctoon.Comics.Dtos
@@ -6,87 +7,105 @@
 @inject IComicAppService ComicAppService
 @inject ILibraryAppService LibraryAppService
 @attribute [Authorize(VctoonPermissions.Library.Default)]
-
+@inject IJSRuntime JSRuntime
 @if (_library != null)
 {
     <CascadingValue Value="@Info">
-        
+
         <ResourceView>
-            <Toolbar>
+            <ToolbarTemplate>
                 <LibraryToolbar Library="_library">
                 </LibraryToolbar>
-            </Toolbar>
-            <Content>
+            </ToolbarTemplate>
+            <ContentTemplate>
                 <div class="flex flex-wrap gap-4">
-                    @if (!Info.Resources.IsNullOrEmpty())
+
+                    @* TODO: virtualize ? *@
+                    @* <Virtualize Items="Info.Resources" Context="comic" ItemSize="50" OverscanCount="5"> *@
+                    @* </Virtualize> *@
+                    @foreach (var comic in Info.Resources)
                     {
-                        @* TODO: virtualize ? *@
-                        @foreach (var comic in Info.Resources)
-                        {
-                            <div @onclick="args => { if (args.ShiftKey) OnResourceShiftClick(comic); }">
-                                
-                                <ResourceImage OnTitleClick="@(() => NavigationToComic(comic))"
-                                               EditEnabled
-                                               HoverEnabled
-                                               DynamicHeightWidthEnabled
-                                               SelectEnabled
-                                               MenuEnabled
-                                               PlayEnabled
-                                               ImageUrl="@ImageUrlProvider.GetCoverUrl(comic.CoverPath)"
-                                               Title="@comic.Title"
-                                               SubTitle="@DateTimeFormatService.FormatCreateDate(comic.CreationTime)"
-                                               Progress="@((int?) comic.Progress)"
-                                               IsSelectedMode="@(!Info.SelectedResources.IsNullOrEmpty())"
-                                               IsChecked="@Info.SelectedResources.Contains(comic)"
-                                               OnIsCheckedChanged="@(b => ResourceImageCheckChanged(comic, b))">
-                                    
-                                    <SubTitleTemplate>
-                                        <div class="text-info">
-                                            @if (Info.Soft.Field == nameof(ComicDto.LastModificationTime))
+                        <div @onclick="args => { if (args.ShiftKey) OnResourceShiftClick(comic); }">
+
+                            <ResourceImage OnTitleClick="@(() => NavigationManager.NavigateTo($"/library/{LibraryId}/comic/{comic.Id}"))"
+                                           EditEnabled
+                                           HoverEnabled
+                                           DynamicHeightWidthEnabled
+                                           SelectEnabled
+                                           MenuEnabled
+                                           PlayEnabled
+                                           ImageUrl="@ImageUrlProvider.GetCoverUrl(comic.CoverPath)"
+                                           Title="@comic.Title"
+                                           SubTitle="@DateTimeFormatService.FormatCreateDate(comic.CreationTime)"
+                                           Progress="@((int?)comic.Progress)"
+                                           IsSelectedMode="@(!Info.SelectedResources.IsNullOrEmpty())"
+                                           IsChecked="@Info.SelectedResources.Contains(comic)"
+                                           OnIsCheckedChanged="@(b => ResourceImageCheckChanged(comic, b))"
+                                           OnPlayClick="@(() => NavigationManager.NavigateTo($"/comic-browse/{comic.Id}"))">
+
+                                <SubTitleTemplate>
+                                    <div class="text-info">
+                                        @if (Info.Soft.Field == nameof(ComicDto.LastModificationTime))
+                                        {
+                                            if (comic.LastModificationTime.HasValue)
                                             {
-                                                if (comic.LastModificationTime.HasValue)
-                                                {
-                                                    @DateTimeFormatService.FormatModifyDate(comic.LastModificationTime.Value)
-                                                }
+                                                @DateTimeFormatService.FormatModifyDate(comic.LastModificationTime.Value)
                                             }
-                                            else
-                                            {
-                                                @DateTimeFormatService.FormatCreateDate(comic.CreationTime)
-                                            }
-                                        </div>
-                                        
-                                    </SubTitleTemplate>
-                                    
-                                </ResourceImage>
-                            </div>
-                        }
+                                        }
+                                        else
+                                        {
+                                            @DateTimeFormatService.FormatCreateDate(comic.CreationTime)
+                                        }
+                                    </div>
+
+                                </SubTitleTemplate>
+
+                            </ResourceImage>
+                        </div>
                     }
-                    
                 </div>
-                
-            </Content>
+
+            </ContentTemplate>
+
+            <BottomTemplate>
+                <div class="flex justify-end">
+                    @if (Page >= 1)
+                    {
+                        <Pagination BoundaryCount="3"
+                                    MiddleCount="3"
+                                    Count="@((int)Info.Total / Info.LoadResourceCount + 1)"
+                                    ShowSelectPageSize
+                                    Selected="@Page"
+                                    SelectedChanged="s => OnPaginationDataChanged(s, PageSize)"
+                                    SelectPageSize="@PageSize"
+                                    SelectPageSizeChanged="s => OnPaginationDataChanged(1, s)">
+                        </Pagination>
+                    }
+                </div>
+            </BottomTemplate>
         </ResourceView>
     </CascadingValue>
 }
 
 @code {
     [Parameter] public virtual Guid LibraryId { get; set; }
-    
+
     LibraryDto _library;
-    
-    
-    void NavigationToComic(ComicDto comic)
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        NavigationManager.NavigateTo($"/library/{LibraryId}/comic/{comic.Id}");
+        if (firstRender)
+        {
+            await RegisterEvent();
+
+            await NavigationToPageAsync(Page, PageSize);
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
-    protected override async Task OnParametersSetAsync()
-    {
-        await InitLibraryInfoAsync();
-        await base.OnParametersSetAsync();
-    }
-
-    async Task InitLibraryInfoAsync()
+    async Task RegisterEvent()
     {
         WeakReferenceMessenger.Default.Unregister<LibraryScanCompletedMessage>(this);
 
@@ -97,31 +116,31 @@
         {
             if (m.Value == LibraryId)
             {
-// TODO: check sorting
-                await LoadResourceAsync(true);
+                // TODO: check sorting
+                await NavigationToPageAsync(1);
             }
         });
-
-        await LoadResourceAsync();
     }
 
+
+    protected override async Task<(List<ComicDto> Items, long TotalCount)> GetResourceListAsync()
+    {
+        var skipCount = Page * Info.LoadResourceCount - Info.LoadResourceCount;
+        var input = new ComicGetListInput
+        {
+            LibraryId = LibraryId,
+            MaxResultCount = Info.LoadResourceCount,
+            SkipCount = skipCount,
+            Sorting = Info.Soft.ToString()
+        };
+        var res = await ComicAppService.GetListAsync(input);
+        return (res.Items.ToList(), res.TotalCount);
+    }
 
     public override ValueTask DisposeAsync()
     {
         WeakReferenceMessenger.Default.Unregister<LibraryScanCompletedMessage>(this);
         return base.DisposeAsync();
     }
-    
-    protected override async Task<(List<ComicDto> Items, long TotalCount)> GetResourceListAsync()
-    {
-        var res = await ComicAppService.GetListAsync(new ComicGetListInput
-        {
-            LibraryId = LibraryId,
-            MaxResultCount = Info.LoadResourceCount,
-            SkipCount = Info.Resources.Count,
-            Sorting = Info.Soft.ToString()
-        });
-        return (res.Items.ToList(), res.TotalCount);
-    }
-    
+
 }

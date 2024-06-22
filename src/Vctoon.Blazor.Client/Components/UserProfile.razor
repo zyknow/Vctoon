@@ -2,36 +2,39 @@
 @inject ICurrentUser CurrentUser
 @inject NavigationManager NavigationManager
 @inject ILoginService LoginService
-<FluentProfileMenu Initials="@CurrentUser.Name?.FirstOrDefault().ToString()" class="min-w-80">
-    <HeaderTemplate>
-        <div class="flex flex-row justify-between">
-            <FluentLabel Typo="@Typography.H3">Vctoon</FluentLabel>
-            <FluentButton Appearance="Appearance.Stealth" OnClick="@Logout">@L["AccountLogout"]</FluentButton>
-        </div>
-    </HeaderTemplate>
-    <ChildContent>
-        <FluentPersona ImageSize="50px"
-                       Initials="@CurrentUser.Name?.FirstOrDefault().ToString()"
-                       StatusSize="PresenceBadgeSize.Small">
-            <ChildContent>
-                <FluentLabel Typo="@Typography.Header">@CurrentUser.Name</FluentLabel>
-                <FluentLabel>@CurrentUser.Email</FluentLabel>
-            </ChildContent>
-            
-        </FluentPersona>
-        
-    </ChildContent>
-    <FooterTemplate>
-        <FluentStack>
-            <FluentSpacer/>
-            <FluentAnchor Appearance="@Appearance.Hypertext"
-                          Href="https://microsoft.com"
-                          Target="_blank">
-                @L["AccountSettings"]
-            </FluentAnchor>
-        </FluentStack>
-    </FooterTemplate>
-</FluentProfileMenu>
+
+<div class="border-2 border-lightweight border-solid border-rounded-5">
+    <FluentProfileMenu FullName="@CurrentUser.Name">
+        <HeaderTemplate>
+            <div class="flex flex-row justify-between w-80 h-full">
+                <FluentLabel Typo="@Typography.H4">Vctoon</FluentLabel>
+                <FluentButton Appearance="Appearance.Stealth" OnClick="@LogoutAsync">@L["AccountLogout"]</FluentButton>
+            </div>
+        </HeaderTemplate>
+        <ChildContent>
+            <FluentPersona ImageSize="50px"
+                           Initials="@(CurrentUser.Name?.FirstOrDefault().ToString()?.ToUpper() ?? "")"
+                           StatusSize="PresenceBadgeSize.Small">
+                <ChildContent>
+                    <FluentLabel Typo="@Typography.Header">@CurrentUser.Name</FluentLabel>
+                    <FluentLabel>@CurrentUser.Email</FluentLabel>
+                </ChildContent>
+
+            </FluentPersona>
+
+        </ChildContent>
+        <FooterTemplate>
+            <FluentStack>
+                <FluentSpacer/>
+                <FluentAnchor Appearance="@Appearance.Hypertext"
+                              Href="https://microsoft.com"
+                              Target="_blank">
+                    @L["AccountSettings"]
+                </FluentAnchor>
+            </FluentStack>
+        </FooterTemplate>
+    </FluentProfileMenu>
+</div>
 
 @code {
 
@@ -39,5 +42,5 @@
     {
         await LoginService.LogoutAsync();
     }
-    
+
 }

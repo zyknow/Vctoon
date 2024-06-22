@@ -1,8 +1,8 @@
-﻿@page "/library/create"
-@attribute [Authorize(Policy = VctoonPermissions.Library.Create)]
+﻿@attribute [Authorize(Policy = VctoonPermissions.Library.Create)]
 
-<CreateEditLibraryBase></CreateEditLibraryBase>
+<CreateEditLibraryBase OnCreatedOrUpdated="OnSucceeded"></CreateEditLibraryBase>
 
 @code {
-    
+
+    [Parameter] public EventCallback OnSucceeded { get; set; }
 }

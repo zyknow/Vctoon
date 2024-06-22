@@ -9,14 +9,13 @@
 @if (_comic != null)
 {
     <CascadingValue Value="@Info">
-        
+
         <ResourceView>
-            
-            <Toolbar>
+            <ToolbarTemplate>
                 <ComicToolbar Comic="@_comic" Library="@_library">
                 </ComicToolbar>
-            </Toolbar>
-            <Content>
+            </ToolbarTemplate>
+            <ContentTemplate>
                 <div class="flex flex-col">
                     <div class="flex flex-wrap md:space-x-6 w-full">
                         <div class="max-w-80">
@@ -32,7 +31,7 @@
                             <div class="flex flex-col space-y-1">
                                 <div>
                                     @DateTimeFormatService.FormatCreateDate(_comic.CreationTime)
-                                    
+
                                 </div>
                                 @if (_comic.LastModificationTime.HasValue)
                                 {
@@ -42,7 +41,7 @@
                                 }
                             </div>
                         </div>
-                        
+
                         <div>
                             @foreach (var tag in tags)
                             {
@@ -50,7 +49,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="flex flex-wrap gap-4">
                     @foreach (var image in Info.Resources)
                     {
@@ -68,40 +67,40 @@
                         </div>
                     }
                 </div>
-            </Content>
-            
+            </ContentTemplate>
+
         </ResourceView>
     </CascadingValue>
 }
 
 
 @code {
-    
+
     [Parameter] public virtual Guid LibraryId { get; set; }
     [Parameter] public virtual Guid ComicId { get; set; }
-    
+
     LibraryDto _library;
     ComicDto _comic;
-    
+
     List<TagDto> tags = [];
-    
+
     readonly int _imageCoverWidth = 480;
-    
-    
+
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             _library = await LibraryAppService.GetAsync(LibraryId);
             _comic = await ComicAppService.GetAsync(ComicId);
-            
-            await LoadResourceAsync();
+
+            await NavigationToPageAsync(Page, PageSize);
         }
-        
+
         await base.OnAfterRenderAsync(firstRender);
     }
-    
-    
+
+
     protected override async Task<(List<ImageFileDto> Items, long TotalCount)> GetResourceListAsync()
     {
         var res = await ImageFileAppService.GetListAsync(new ImageFileGetListInput()
@@ -110,8 +109,8 @@
             MaxResultCount = 50,
             SkipCount = Info.Resources.Count
         });
-        
+
         return (res.Items.ToList(), res.TotalCount);
     }
-    
+
 }

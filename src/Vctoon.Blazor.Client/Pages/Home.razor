@@ -7,10 +7,32 @@
 <PageTitle>Home</PageTitle>
 
 <div class="h-full flex items-center justify-center">
+
+
+    <div class="custom"></div>
+
+    <div class="rounded-full rounded overflow-hidden w-10 h-10 text-accent bg-accent">
+        <input type="checkbox" class="w-full h-full "/>
+    </div>
+
+    <FluentCheckbox class="check-box-control-border-none"></FluentCheckbox>
+
     <span class="text-7xl text-green-700 font-bold">Welcome To Vctoon.</span>
 </div>
 
 @code {
-    
-    
+
+
 }
+
+<style scoped>
+    .custom {
+        background-color: red;
+        width: 200px;
+        height: 200px;
+    }
+
+    fluent-checkbox::part(control) {
+        border: none;
+    }
+</style>

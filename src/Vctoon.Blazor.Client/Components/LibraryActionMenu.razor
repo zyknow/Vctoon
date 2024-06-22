@@ -1,15 +1,17 @@
-﻿@inherits VctoonComponentBase
+﻿@using Vctoon.Blazor.Client.Pages.Libraries
+@inherits VctoonComponentBase
 @inject IStringLocalizer<VctoonResource> L
 @inject UserStore UserStore
 @inject ILibraryAppService LibraryAppService
 @inject IDialogService DialogService
 @inject NavigationManager NavigationManager
+@inject IStringLocalizer<LibraryResource> LL
 <FluentMenu Anchor="@(Anchor ?? @$"{Library.Name}_libraryBtn")" Open="@Open" VerticalThreshold="170" OpenChanged="@OpenChanged">
     <FluentMenuItem @onclick="() => ScanLibrary(Library)">
         @L["ScanLibrary"]
     </FluentMenuItem>
 
-    <FluentMenuItem @onclick="() => NavigationToEditLibrary()">
+    <FluentMenuItem @onclick="() => ShowEditLibraryDialog()">
         @L["Edit"]
     </FluentMenuItem>
 
@@ -19,15 +21,15 @@
 </FluentMenu>
 
 @code {
-    
+
     [Parameter] public LibraryDto Library { get; set; }
-    
+
     [Parameter] public bool Open { get; set; }
-    
+
     [Parameter] public string? Anchor { get; set; }
-    
+
     [Parameter] public EventCallback<bool> OpenChanged { get; set; }
-    
+
     void ShowDeleteLibraryDialog(LibraryDto library)
     {
         var msg = L["AreYouSureToDeleteLibrary", library.Name];
@@ -35,23 +37,33 @@
         {
             if (res.Cancelled)
                 return;
-            
+
             await LibraryAppService.DeleteAsync(library.Id);
             await UserStore.LoadLibrariesAsync();
             NavigationManager.NavigateTo(@$"/", replace: true);
         }, msg, L["Submit"], L["Cancel"], L["AreYouSure"]);
     }
-    
-    void NavigationToEditLibrary()
+
+    async void ShowEditLibraryDialog()
     {
-        var url = NavigationManager.GetUriWithQueryParameters("/library/edit", new Dictionary<string, object>
+        DialogParameters parameters = new()
         {
-            { "libraryId", Library.Id }
-        });
-        NavigationManager.NavigateTo(@$"/library/edit/{Library.Id}", true);
+            Title = LL["EditLibrary"]
+        };
+
+        IDialogReference dialog = null;
+
+        dialog = await DialogService.ShowDialogAsync(
+                @
+            < div >
+            <EditLibrary LibraryId = "@Library.Id" OnSucceeded = "() => dialog!.CloseAsync()" / >
+            </div >,
+        parameters);
+
+        await dialog.Result;
     }
-    
-    
+
+
     async Task ScanLibrary(LibraryDto library)
     {
         await LibraryAppService.ScanAsync(library.Id);

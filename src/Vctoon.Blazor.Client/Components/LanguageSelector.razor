@@ -6,76 +6,80 @@
 <FluentSelect Label="@Label" style="width:100%" TOption="LanguageInfo" OptionText="@(p => p.DisplayName)" Items="@_languages" Width="120px" SelectedOptionChanged="@OnSelectedOptionChanged" SelectedOption="@_selectedLanguage"></FluentSelect>
 
 @code {
-    
+
     [Parameter] public string Label { get; set; }
-    
+
     IReadOnlyList<LanguageInfo> _languages = [];
-    
+
     LanguageInfo? _selectedLanguage;
-    
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
-        
+
         if (firstRender)
         {
             var selectedLanguageName = AppStore.CurrentCulture;
-            
+
             _languages = await LanguageProvider.GetLanguagesAsync();
             if (!_languages.Any())
             {
                 return;
             }
-            
+
             if (!selectedLanguageName.IsNullOrWhiteSpace())
             {
                 _selectedLanguage = _languages.FirstOrDefault(l => l.CultureName == selectedLanguageName);
             }
-            
+
             if (_selectedLanguage == null)
             {
                 _selectedLanguage = _languages.FirstOrDefault(l => l.CultureName == CultureInfo.CurrentUICulture.Name);
             }
-            
+
             if (_selectedLanguage == null)
             {
                 _selectedLanguage = _languages.FirstOrDefault();
             }
-            
+
             CultureInfo.CurrentCulture = new CultureInfo(_selectedLanguage.CultureName);
             CultureInfo.CurrentUICulture = new CultureInfo(_selectedLanguage.UiCultureName);
-            
+
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CurrentCulture;
             CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CurrentUICulture;
-            
+
             StateHasChanged();
         }
     }
-    
+
     void OnSelectedOptionChanged(LanguageInfo value)
     {
         _selectedLanguage = value;
         ChangeLanguage(value);
         Console.WriteLine(value.DisplayName);
     }
-    
+
     private async void ChangeLanguage(LanguageInfo language)
     {
         AppStore.CurrentCulture = language.CultureName;
-        
+
         CultureInfo.CurrentCulture = new CultureInfo(_selectedLanguage.CultureName);
         CultureInfo.CurrentUICulture = new CultureInfo(_selectedLanguage.UiCultureName);
-        
+
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CurrentCulture;
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CurrentUICulture;
-        
-        
+
+
         var relativeUrl = NavigationManager.Uri.RemovePreFix(NavigationManager.BaseUri).EnsureStartsWith('/').EnsureStartsWith('~');
-        
+
+        // TODO: changed to use the new way of changing the language
+        // wait to save the culture
+        await Task.Delay(50);
+
         NavigationManager.NavigateTo(
             $"Abp/Languages/Switch?culture={language.CultureName}&uiCulture={language.UiCultureName}&returnUrl={relativeUrl}",
             forceLoad: true
         );
     }
-    
+
 }

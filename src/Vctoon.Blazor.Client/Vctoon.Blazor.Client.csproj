@@ -28,7 +28,7 @@
 
     <ItemGroup>
         <AdditionalFiles Include="Components\LanguageSelector.razor" />
-        <AdditionalFiles Include="Components\Themes\ThemeSettingPanel.razor" />
+        <AdditionalFiles Include="Components\Settings\ThemeSettingPanel.razor"/>
         <AdditionalFiles Include="Layout\MainLayouts\MainLayout.razor"/>
         <AdditionalFiles Include="Pages\Home.razor" />
     </ItemGroup>

@@ -14,6 +14,15 @@ public abstract class ResourceViewBase<TResource> : VctoonComponentBase
         Info.StateHasChanged += StateHasChanged;
     }
 
+    [SupplyParameterFromQuery] public int Page { get; set; }
+
+    [SupplyParameterFromQuery]
+    public int PageSize
+    {
+        get => Info.LoadResourceCount;
+        set => Info.LoadResourceCount = value;
+    }
+
     [Inject] public NavigationManager NavigationManager { get; set; }
 
     [Inject] public IImageUrlProvider ImageUrlProvider { get; set; }
@@ -21,6 +30,24 @@ public abstract class ResourceViewBase<TResource> : VctoonComponentBase
     [Inject] public DateTimeFormatService DateTimeFormatService { get; set; }
 
     public ResourceViewInfo<TResource> Info { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (Page <= 1)
+            {
+                Page = 1;
+            }
+
+            if (PageSize <= 0)
+            {
+                PageSize = 50;
+            }
+        }
+
+        base.OnAfterRender(firstRender);
+    }
 
     protected virtual void ResourceImageCheckChanged(TResource resource, bool isChecked)
     {
@@ -44,6 +71,12 @@ public abstract class ResourceViewBase<TResource> : VctoonComponentBase
         int firstIndex = Info.Resources.IndexOf(Info.SelectedResources.First());
         int lastIndex = Info.Resources.IndexOf(Info.SelectedResources.Last());
 
+        if (firstIndex == -1 || lastIndex == -1)
+        {
+            return;
+        }
+
+
         int start = Math.Min(firstIndex, lastIndex);
         int end = Math.Max(firstIndex, lastIndex);
 
@@ -57,51 +90,48 @@ public abstract class ResourceViewBase<TResource> : VctoonComponentBase
         StateHasChanged();
     }
 
-    protected virtual async Task LoadResourceAsync(bool reload = false)
+    protected virtual async Task LoadResourceAsync()
     {
         if (Info.IsLoading)
         {
             return;
         }
 
-        await InvokeAsync(() =>
-        {
-            Info.IsLoading = true;
-            StateHasChanged();
-        });
-
-        if (reload)
-        {
-            await InvokeAsync(async () =>
-            {
-                Info.Resources.Clear();
-                Info.Total = 0;
-                StateHasChanged();
-            });
-        }
-
+        Info.IsLoading = true;
         (List<TResource> Items, long TotalCount) listRes = await GetResourceListAsync();
+        Info.IsLoading = false;
+        Info.Total = listRes.TotalCount;
+        Info.Resources = listRes.Items;
 
-        await InvokeAsync(async () =>
-        {
-            Info.IsLoading = false;
-            Info.Total = listRes.TotalCount;
-
-            Info.Resources.AddRange(listRes.Items);
-
-            StateHasChanged();
-        });
+        StateHasChanged();
     }
 
     protected abstract Task<(List<TResource> Items, long TotalCount)> GetResourceListAsync();
 
-
     protected void Reset()
     {
-        Info.SelectedResources.Clear();
-        Info.Resources.Clear();
+        Info.SelectedResources = [];
+        Info.Resources = [];
         Info.Total = 0;
         Info.IsLoading = false;
+    }
+
+    protected virtual async Task OnPaginationDataChanged(int page, int pageSize)
+    {
+        Page = page;
+        PageSize = pageSize;
+        await NavigationToPageAsync(page, pageSize);
+    }
+
+    protected virtual async Task NavigationToPageAsync(int page, int pageSize = 50)
+    {
+        string url = NavigationManager.GetUriWithQueryParameters(new Dictionary<string, object?>
+        {
+            ["page"] = page,
+            ["pageSize"] = pageSize
+        });
+        await LoadResourceAsync();
+        NavigationManager.NavigateTo(url, replace: true);
     }
 
     public override ValueTask DisposeAsync()

@@ -1,15 +1,15 @@
-﻿@using System.ComponentModel
-@using Vctoon.Blazor.Client.Components.Themes
+﻿@using Vctoon.Blazor.Client.Components.Settings
 @inherits VctoonComponentBase
 @inject IStringLocalizer<VctoonResource> L
 @inject IDialogService DialogService
 @inject AppStore AppStore
+@inject NavigationManager NavigationManager
 
-
-<div class="flex flex-row items-center space-x-4 ">
-    <FluentButton IconStart="@(new Icons.Regular.Size28.List())"
+<div class="flex flex-row items-center space-x-4">
+    <FluentButton IconStart="@(new Icons.Filled.Size28.List())"
                   BackgroundColor="transparent"
                   Appearance="Appearance.Accent"
+                  Style="margin: 0px;padding: 0px;"
                   OnClick="@(() => AppStore.NavMenuExpanded = !AppStore.NavMenuExpanded)">
     </FluentButton>
     <span class="text-3xl select-none mb-1.3">Vctoon</span>
@@ -18,67 +18,27 @@
 <FluentSpacer/>
 
 <div class="flex flex-row space-x-5 items-center select-none">
-    
+
     <FluentIcon Id="NotificationTooltip" Value="@(new Icons.Regular.Size24.Alert())" Color="Color.Lightweight">
     </FluentIcon>
-    
+
     <FluentTooltip Anchor="NotificationTooltip"
                    Position="TooltipPosition.Bottom">
         @L["Toolbar:NotificationTooltip"]
     </FluentTooltip>
-    
-    
+
+
     <ActiveButton></ActiveButton>
-    
-    
-    <FluentIcon Id="SettingsTooltip" Color="Color.Lightweight" Value="@(new Icons.Regular.Size24.Settings())"
-                OnClick="@OpenThemeSettingPanel">
-    </FluentIcon>
-    
-    <FluentTooltip Anchor="SettingsTooltip"
-                   Position="TooltipPosition.Bottom">
-        @L["Toolbar:SettingsTooltip"]
-    </FluentTooltip>
-    
+
+
+    <AppSettingBtn></AppSettingBtn>
+
     <UserProfile></UserProfile>
-    
-    
+
+
 </div>
 
 @code {
-    
-    public DesignThemeModes ThemeMode { get; set; } = DesignThemeModes.System;
-    
-    public OfficeColor? ThemeOfficeColor { get; set; }
-    
-    
-    async Task OpenThemeSettingPanel()
-    {
-        var themeConfig = new ThemeSettingPanelContent(ThemeMode, ThemeOfficeColor);
-        
-        themeConfig.PropertyChanged += ThemeConfigOnPropertyChanged;
-        
-        DialogParameters<ThemeSettingPanelContent> parameters = new()
-        {
-            Title = L["ThemeSettings"],
-            Alignment = HorizontalAlignment.Right,
-            Content = themeConfig,
-            PrimaryActionEnabled = false
-        };
-        await DialogService.ShowPanelAsync<ThemeSettingPanel>(themeConfig, parameters);
-    }
-    
-    private void ThemeConfigOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        var config = sender as ThemeSettingPanelContent;
-        if (config == null)
-        {
-            return;
-        }
-        
-        ThemeMode = config.ThemeMode;
-        ThemeOfficeColor = config.ThemeColor;
-        StateHasChanged();
-    }
-    
+
+
 }

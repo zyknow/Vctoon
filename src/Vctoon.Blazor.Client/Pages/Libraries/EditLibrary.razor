@@ -1,8 +1,9 @@
-﻿@page "/library/edit/{libraryId:guid}"
-@attribute [Authorize(Policy = VctoonPermissions.Library.Update)]
+﻿@attribute [Authorize(Policy = VctoonPermissions.Library.Update)]
 
-<CreateEditLibraryBase LibraryId="@LibraryId"></CreateEditLibraryBase>
+<CreateEditLibraryBase LibraryId="@LibraryId" OnCreatedOrUpdated="OnSucceeded"></CreateEditLibraryBase>
 
 @code {
     [Parameter] public virtual Guid LibraryId { get; set; }
+
+    [Parameter] public EventCallback OnSucceeded { get; set; }
 }

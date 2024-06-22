@@ -1,0 +1,67 @@
+﻿@using Vctoon.Blazor.Client.Components.Settings
+@inherits VctoonLayoutComponentBase
+@attribute [Authorize]
+
+<CascadingValue Value="@LayoutInfo">
+
+
+    <div class="fixed w-screen h-screen flex flex-col justify-between">
+
+        <div class="@(HeaderClass)">
+            <FluentHeader>
+                <div class="flex flex-row justify-between w-full">
+                    <div>
+                        @LayoutInfo.Comic?.Title
+                    </div>
+                    <div>
+                        <AppSettingBtn></AppSettingBtn>
+                    </div>
+                </div>
+            </FluentHeader>
+        </div>
+
+
+        <div class="flex-1" @onclick="@(() => _layoutVisible = !_layoutVisible)">
+
+        </div>
+        <FluentDialogProvider/>
+        <FluentToastProvider/>
+        <FluentTooltipProvider/>
+        <FluentMessageBarProvider Section="AppFluentMessageBarProvider"/>
+
+        <div class="@(FooterClass)">
+            <FluentHeader>
+                <span>123456</span>
+            </FluentHeader>
+        </div>
+
+    </div>
+    <LayoutContentErrorBoundary>
+        <div class="w-full h-full">
+            @Body
+        </div>
+    </LayoutContentErrorBoundary>
+</CascadingValue>
+
+
+@code {
+
+    public ComicBrowseLayoutCascadingInfo LayoutInfo { get; set; } = new();
+
+    bool _layoutVisible = true;
+
+    string HeaderClass => (_layoutVisible ? "opacity-100 scale-100" : "opacity-0 scale-95") + "ease-in duration-300 transition-all";
+
+    string FooterClass => HeaderClass;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            LayoutInfo.StateHasChanged = StateHasChanged;
+        }
+
+        base.OnAfterRender(firstRender);
+    }
+
+}

@@ -1,0 +1,37 @@
+﻿@page "/comic-browse/{comicId:guid}"
+@using Vctoon.Blazor.Client.Layout.ComicBrowseLayouts
+@using Vctoon.Comics
+@inherits VctoonComponentBase
+@layout ComicBrowseLayout
+@inject IImageFileAppService ImageFileAppService
+@inject IImageUrlProvider ImageUrlProvider
+@inject IComicAppService ComicAppService
+@if (!LayoutInfo.ImageFiles.IsNullOrEmpty())
+{
+    @foreach (var image in LayoutInfo.ImageFiles)
+    {
+        <img loading="lazy" src="@ImageUrlProvider.GetImageUrl(image.Id)" alt=""/>
+    }
+}
+
+
+@code {
+
+    [CascadingParameter] public ComicBrowseLayoutCascadingInfo LayoutInfo { get; set; }
+
+    [Parameter] public Guid ComicId { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            LayoutInfo.Comic = await ComicAppService.GetAsync(ComicId);
+            LayoutInfo.ImageFiles = await ImageFileAppService.GetListByComicIdAsync(ComicId);
+            StateHasChanged();
+            LayoutInfo.StateHasChanged?.Invoke();
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+}

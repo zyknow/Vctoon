@@ -45,7 +45,7 @@
                 <div class="absolute bottom-0 right-0  z-19   w-full h-full flex items-center justify-center">
                     <div class="cursor-pointer hover:scale-120">
                         <FluentIcon Width="40" Color="Color.Custom" CustomColor="white"
-                                    Value="@(new Icons.Filled.Size20.PlayCircle())">
+                                    Value="@(new Icons.Filled.Size20.PlayCircle())" OnClick="@(() => OnPlayClick.InvokeAsync())">
                         </FluentIcon>
                     </div>
                 </div>
@@ -56,7 +56,9 @@
         @if ((ShowSelectedCheckBox || IsSelectedMode) && SelectEnabled)
         {
             <div class="absolute top-0 left-0 z-20 p-2 hover:scale-120 z-30" @onclick="() => { }" @onclick:stopPropagation>
-                <FluentCheckbox Embedded Value="@IsChecked" ValueChanged="@(b => OnIsCheckedChanged.InvokeAsync(b))"></FluentCheckbox>
+                <FluentCheckbox class="rounded-full border border-1.5 border-solid border-accent overflow-hidden" Embedded
+                                Value="@IsChecked" ValueChanged="@(b => OnIsCheckedChanged.InvokeAsync(b))">
+                </FluentCheckbox>
             </div>
         }
 
@@ -155,3 +157,9 @@
 
     string _titleTooltipId = $"titleTooltip_{Guid.NewGuid()}";
 }
+
+<style scoped>
+    fluent-checkbox::part(control) {
+        border: none;
+    }
+</style>

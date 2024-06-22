@@ -1,12 +1,31 @@
-﻿<div class="flex flex-col space-y-2 h-full">
-    @Toolbar
-    <div class="max-h-full flex-1 overflow-auto px-2 space-y-2">
-        @Content
+﻿@inject  IJSRuntime JSRuntime
+<div class="flex flex-col h-full">
+    @* <div class="grid grid-rows-2 h-full"> *@
+    <div>
+        @ToolbarTemplate
     </div>
+    <div class="flex-1 overflow-auto" onscroll="@OnScrollHandler">
+        <div class="px-2 pb-4 space-y-2">
+            @ContentTemplate
+        </div>
+    </div>
+
+    @if (BottomTemplate != null)
+    {
+        <div class="my-2 w-full px-2">
+            @BottomTemplate
+        </div>
+    }
 </div>
 
 @code {
-    
-    [Parameter] public virtual RenderFragment? Content { get; set; }
-    [Parameter] public virtual RenderFragment? Toolbar { get; set; }
+
+    [Parameter] public virtual RenderFragment? ContentTemplate { get; set; }
+    [Parameter] public virtual RenderFragment? ToolbarTemplate { get; set; }
+    [Parameter] public virtual RenderFragment? BottomTemplate { get; set; }
+
+    async Task OnScrollHandler()
+    {
+    }
+
 }

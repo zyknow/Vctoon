@@ -1,0 +1,51 @@
+﻿@using System.ComponentModel
+@inject IStringLocalizer<VctoonResource> L
+@inject IDialogService DialogService
+
+<FluentIcon Id="SettingsTooltip" Color="Color.Lightweight" Value="@(new Icons.Regular.Size24.Settings())"
+            OnClick="@OpenThemeSettingPanel">
+</FluentIcon>
+
+<FluentTooltip Anchor="SettingsTooltip"
+               Position="TooltipPosition.Bottom">
+    @L["Toolbar:SettingsTooltip"]
+</FluentTooltip>
+
+@code {
+
+
+    public DesignThemeModes ThemeMode { get; set; } = DesignThemeModes.System;
+
+    public OfficeColor? ThemeOfficeColor { get; set; }
+
+
+    async Task OpenThemeSettingPanel()
+    {
+        var themeConfig = new AppSettingPanelContent(ThemeMode, ThemeOfficeColor);
+
+        themeConfig.PropertyChanged += ThemeConfigOnPropertyChanged;
+
+        DialogParameters<AppSettingPanelContent> parameters = new()
+        {
+            Title = L["ThemeSettings"],
+            Alignment = HorizontalAlignment.Right,
+            Content = themeConfig,
+            PrimaryActionEnabled = false
+        };
+        await DialogService.ShowPanelAsync<AppSettingPanel>(themeConfig, parameters);
+    }
+
+    private void ThemeConfigOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        var config = sender as AppSettingPanelContent;
+        if (config == null)
+        {
+            return;
+        }
+
+        ThemeMode = config.ThemeMode;
+        ThemeOfficeColor = config.ThemeColor;
+        StateHasChanged();
+    }
+
+}

@@ -1,29 +1,30 @@
 ﻿@inject IStringLocalizer<VctoonResource> L
 @using Microsoft.FluentUI.AspNetCore.Components.Extensions
-@implements Microsoft.FluentUI.AspNetCore.Components.IDialogContentComponent<ThemeSettingPanelContent>
+@implements IDialogContentComponent<AppSettingPanelContent>
 
 <FluentDesignTheme @bind-Mode="@Content.ThemeMode"
                    @bind-OfficeColor="@Content.ThemeColor"
-                   StorageName="theme"/>
+                   StorageName="theme"
+                   OnLoaded="@OnThemeLoaded"/>
 
 <FluentDialogBody>
     <div class="flex flex-col space-y-4">
-        
+
         <div>
             <LanguageSelector Label="@L["LanguageSelector"]"></LanguageSelector>
         </div>
-        
+
         <div>
             <FluentSelect style="width:100%" Label="@L["ThemeMode"]"
                           OptionText="@(opt => L[@$"ThemeMode:{opt.ToString()}"])"
                           Items="@(Enum.GetValues<DesignThemeModes>())"
                           @bind-SelectedOption="@Content.ThemeMode"/>
         </div>
-        
+
         <div>
             <FluentRadioGroup Label="@L["ThemeColor"]" Name="Theme Colors" @bind-Value="Content.ThemeColor">
-                
-                @foreach (var color in Enum.GetValues<OfficeColor>().Select(i => (OfficeColor?) i))
+
+                @foreach (var color in Enum.GetValues<OfficeColor>().Select(i => (OfficeColor?)i))
                 {
                     <FluentRadio Value="@color">
                         <FluentIcon Value="@(new Icons.Filled.Size20.RectangleLandscape())"
@@ -33,8 +34,8 @@
                 }
             </FluentRadioGroup>
         </div>
-        
-        
+
+
     </div>
 </FluentDialogBody>
 
@@ -45,5 +46,10 @@
 
 @code
 {
-    [Parameter] public ThemeSettingPanelContent Content { get; set; }
+    [Parameter] public AppSettingPanelContent Content { get; set; }
+
+    private void OnThemeLoaded(LoadedEventArgs obj)
+    {
+        StateHasChanged();
+    }
 }
