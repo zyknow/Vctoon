@@ -1055,15 +1055,15 @@ namespace Vctoon.Migrations
                 name: "_ComicTags",
                 columns: table => new
                 {
-                    ComicId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ComicsId = table.Column<Guid>(type: "TEXT", nullable: false),
                     TagsId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK__ComicTags", x => new { x.ComicId, x.TagsId });
+                    table.PrimaryKey("PK__ComicTags", x => new { x.ComicsId, x.TagsId });
                     table.ForeignKey(
-                        name: "FK__ComicTags__Comics_ComicId",
-                        column: x => x.ComicId,
+                        name: "FK__ComicTags__Comics_ComicsId",
+                        column: x => x.ComicsId,
                         principalTable: "_Comics",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);

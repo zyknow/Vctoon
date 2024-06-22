@@ -12,7 +12,7 @@ using Volo.Abp.EntityFrameworkCore;
 namespace Vctoon.Migrations
 {
     [DbContext(typeof(VctoonDbContext))]
-    [Migration("20240606083728_Initial")]
+    [Migration("20240618062512_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -40,13 +40,13 @@ namespace Vctoon.Migrations
 
             modelBuilder.Entity("ComicTag", b =>
                 {
-                    b.Property<Guid>("ComicId")
+                    b.Property<Guid>("ComicsId")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("TagsId")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("ComicId", "TagsId");
+                    b.HasKey("ComicsId", "TagsId");
 
                     b.HasIndex("TagsId");
 
@@ -2314,7 +2314,7 @@ namespace Vctoon.Migrations
                 {
                     b.HasOne("Vctoon.Comics.Comic", null)
                         .WithMany()
-                        .HasForeignKey("ComicId")
+                        .HasForeignKey("ComicsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

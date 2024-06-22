@@ -37,13 +37,13 @@ namespace Vctoon.Migrations
 
             modelBuilder.Entity("ComicTag", b =>
                 {
-                    b.Property<Guid>("ComicId")
+                    b.Property<Guid>("ComicsId")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("TagsId")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("ComicId", "TagsId");
+                    b.HasKey("ComicsId", "TagsId");
 
                     b.HasIndex("TagsId");
 
@@ -2311,7 +2311,7 @@ namespace Vctoon.Migrations
                 {
                     b.HasOne("Vctoon.Comics.Comic", null)
                         .WithMany()
-                        .HasForeignKey("ComicId")
+                        .HasForeignKey("ComicsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
