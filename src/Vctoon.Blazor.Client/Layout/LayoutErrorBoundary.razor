@@ -1,0 +1,41 @@
+﻿@inherits ErrorBoundaryBase
+@inject ILoginService LoginService
+@if (CurrentException is not null)
+{
+    <div class="flex flex-col space-y-4">
+        <div class="font-bold text-2xl">
+            Sorry, an error has occurred：@CurrentException.Message
+        </div>
+        @if (_showStackTrace)
+        {
+            <div class="text-red-500 text-xl">
+                @CurrentException.StackTrace
+            </div>
+        }
+        <FluentButton OnClick="Recover">retry</FluentButton>
+    </div>
+}
+else
+{
+    @ChildContent
+}
+
+
+@code {
+
+    bool _showStackTrace = false;
+
+    protected override async Task OnErrorAsync(Exception exception)
+    {
+#if DEBUG
+        _showStackTrace = true;
+#else
+if (exception is AbpRemoteCallException { HttpStatusCode: (int)HttpStatusCode.Unauthorized })
+{
+await LoginService.LogoutAsync();
+}
+
+#endif
+    }
+
+}
