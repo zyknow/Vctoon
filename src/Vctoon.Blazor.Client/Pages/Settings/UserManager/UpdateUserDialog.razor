@@ -21,6 +21,7 @@
     async Task UpdateUserAsync()
     {
         var input = ObjectMapper.Map<IdentityUserExtraCreateOrUpdateModel, IdentityUserExtraUpdateDto>(_user);
+        input.RoleNames = [_user.IsAdmin ? VctoonSharedConsts.AdminUserRoleName : VctoonSharedConsts.NormalUserRoleName];
         await IdentityUserExtraAppService.UpdateUserExtraAsync(UserId, input);
         await OnSucceeded.InvokeAsync();
     }
@@ -31,7 +32,6 @@
         {
             var user = await IdentityUserExtraAppService.GetUserExtraAsync(UserId);
             _user = ObjectMapper.Map<IdentityUserExtraDto, IdentityUserExtraCreateOrUpdateModel>(user);
-
             StateHasChanged();
         }
 

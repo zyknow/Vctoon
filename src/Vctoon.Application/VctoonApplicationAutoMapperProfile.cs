@@ -40,6 +40,7 @@ public class VctoonApplicationAutoMapperProfile : Profile
         CreateMap<LibraryPermissionCreateUpdateDto, LibraryPermission>(MemberList.Source);
         CreateMap<LibraryPermissionCacheItem, LibraryPermissionDto>();
 
+        CreateMap<IdentityUserDto, IdentityUserExtraDto>();
         CreateMap<IdentityUser, IdentityUserExtraDto>();
         CreateMap<IdentityUserExtraCreateDto, IdentityUser>(MemberList.Source);
         CreateMap<IdentityUserExtraUpdateDto, IdentityUser>(MemberList.Source);

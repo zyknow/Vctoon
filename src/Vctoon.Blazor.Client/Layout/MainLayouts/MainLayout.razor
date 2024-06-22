@@ -1,31 +1,34 @@
 ﻿@inherits VctoonLayoutComponentBase
 @inject ICurrentUser CurrentUser
 @inject ILoginService LoginService
-@* @inject IAuthorizationService AuthorizationService *@
 @inject UserStore UserStore
+@attribute [Authorize]
 <div class="mt-2 mx-2">
-    <FluentLayout>
-        <FluentHeader class="rounded-2">
-            <HeaderContent></HeaderContent>
+    <LayoutErrorBoundary>
 
-        </FluentHeader>
+        <FluentLayout>
+            <FluentHeader class="rounded-2 z-20">
+                <HeaderContent></HeaderContent>
 
-        <FluentStack Orientation="Orientation.Horizontal" Class="mt-2" style="height: calc(100dvh - 65.8px);">
-            <NavMenu></NavMenu>
+            </FluentHeader>
 
-            <FluentBodyContent class="h-full w-full max-h-full overflow-y-auto">
-                <MainLayoutErrorBoundary>
-                    @Body
-                </MainLayoutErrorBoundary>
-            </FluentBodyContent>
-            <FluentDialogProvider/>
-            <FluentToastProvider/>
-            <FluentTooltipProvider/>
-            <FluentMessageBarProvider Section="AppFluentMessageBarProvider"/>
-        </FluentStack>
+            <FluentStack Orientation="Orientation.Horizontal" Class="mt-2" style="height: calc(100dvh - 65.8px);">
+                <NavMenu></NavMenu>
+
+                <FluentBodyContent class="h-full w-full max-h-full">
+                    <LayoutContentErrorBoundary>
+                        @Body
+                    </LayoutContentErrorBoundary>
+                </FluentBodyContent>
+                <FluentDialogProvider/>
+                <FluentToastProvider/>
+                <FluentTooltipProvider/>
+                <FluentMessageBarProvider Section="AppFluentMessageBarProvider"/>
+            </FluentStack>
 
 
-    </FluentLayout>
+        </FluentLayout>
+    </LayoutErrorBoundary>
 
 
     <div id="blazor-error-ui">

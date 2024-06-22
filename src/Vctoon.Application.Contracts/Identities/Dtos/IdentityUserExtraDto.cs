@@ -5,6 +5,6 @@ namespace Vctoon.Identities.Dtos;
 
 public class IdentityUserExtraDto : IdentityUserDto
 {
-    public bool IsAdmin { get; set; }
     public List<LibraryPermissionDto> LibraryPermissions { get; set; }
+    public bool IsAdmin { get; set; }
 }

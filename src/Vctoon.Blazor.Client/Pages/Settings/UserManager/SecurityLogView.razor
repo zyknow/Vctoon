@@ -18,14 +18,22 @@
 
     <div class="space-y-4">
 
-        @* <FluentCard> *@
-        @*     <div class="flex flex-row space-x-2 w-full justify-between"> *@
-        @*         <div class="flex flex-row items-center space-x-2"> *@
-        @*             <FluentTextField @bind-Value="@_filter.Identity"></FluentTextField> *@
-        @*             <FluentButton OnClick="@(() => _dataGrid.RefreshDataAsync())" Appearance="Appearance.Accent" IconStart="@(new Icons.Filled.Size24.Search())">@L["Search"]</FluentButton> *@
-        @*         </div> *@
-        @*     </div> *@
-        @* </FluentCard> *@
+        @if (CurrentUser.IsAdmin())
+        {
+            <FluentCard>
+                <div class="flex flex-row space-x-2 w-full justify-between">
+                    <div class="flex flex-row items-center space-x-2">
+                        <FluentTextField Label="@IL["SecurityLogs:Action"]" @bind-Value="@_filter.ActionName"></FluentTextField>
+                        <FluentTextField Label="@IL["SecurityLogs:UserName"]" @bind-Value="@_filter.UserName"></FluentTextField>
+                        <FluentButton OnClick="@(() => _dataGrid.RefreshDataAsync())" Appearance="Appearance.Accent"
+                                      IconStart="@(new Icons.Filled.Size24.Search())">
+                            @L["Search"]
+                        </FluentButton>
+                    </div>
+                </div>
+            </FluentCard>
+        }
+
 
         <FluentCard>
             <FluentDataGrid ItemsProvider="@_dataGridProvider" ResizableColumns="true" Pagination="@_pagination" @ref="_dataGrid">

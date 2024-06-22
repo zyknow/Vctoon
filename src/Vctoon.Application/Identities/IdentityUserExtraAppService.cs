@@ -26,6 +26,7 @@ public class IdentityUserExtraAppService(
     ILibraryPermissionChecker libraryPermissionChecker,
     ILibraryPermissionStore libraryPermissionStore,
     IIdentityUserRepository identityUserRepository,
+    IIdentityUserAppService identityUserAppService,
     ILibraryRepository libraryRepository,
     IdentityUserStore identityUserStore) : VctoonAppService(libraryPermissionChecker), IIdentityUserExtraAppService
 {
@@ -59,29 +60,21 @@ public class IdentityUserExtraAppService(
     [Authorize(IdentityPermissions.Users.Create)]
     public async Task<IdentityUserExtraDto> CreateUserExtraAsync(IdentityUserExtraCreateDto input)
     {
-        IdentityUser user = ObjectMapper.Map<IdentityUserExtraCreateDto, IdentityUser>(input);
+        bool isAdmin = input.RoleNames.Contains(VctoonSharedConsts.AdminUserRoleName);
 
-        await userManager.CreateAsync(user);
+        IdentityUserDto? user = await identityUserAppService.CreateAsync(input);
 
-        if (input.IsAdmin)
-        {
-            await userManager.AddToRoleAsync(user, VctoonSharedConsts.AdminUserRoleName);
-        }
-        else if (!input.LibraryPermissions.IsNullOrEmpty())
+        if (!isAdmin && !input.LibraryPermissions.IsNullOrEmpty())
         {
             foreach (LibraryPermissionDto permissionDto in input.LibraryPermissions)
             {
-                LibraryPermission permission = new LibraryPermission(permissionDto.LibraryId, user.Id, permissionDto.CanDownload,
+                LibraryPermission permission = new(permissionDto.LibraryId, user.Id, permissionDto.CanDownload,
                     permissionDto.CanComment, permissionDto.CanStar, permissionDto.CanView, permissionDto.CanShare);
                 await libraryPermissionStore.SetAsync(permission);
             }
-
-            await userManager.AddToRoleAsync(user, VctoonSharedConsts.NormalUserRoleName);
         }
 
-
-        IdentityUserExtraDto result = ObjectMapper.Map<IdentityUser, IdentityUserExtraDto>(user);
-        result.IsAdmin = input.IsAdmin;
+        IdentityUserExtraDto result = ObjectMapper.Map<IdentityUserDto, IdentityUserExtraDto>(user);
         result.LibraryPermissions = input.LibraryPermissions;
 
         return result;
@@ -91,39 +84,12 @@ public class IdentityUserExtraAppService(
     public async Task<IdentityUserExtraDto> UpdateUserExtraAsync(Guid userId,
         IdentityUserExtraUpdateDto input)
     {
-        IdentityUser? user = await userManager.GetByIdAsync(userId);
+        IdentityUserDto? user = await identityUserAppService.UpdateAsync(userId, input);
 
-        if (user == null)
+        bool isAdmin = input.RoleNames.Contains(VctoonSharedConsts.AdminUserRoleName);
+
+        if (!isAdmin)
         {
-            throw new UserFriendlyException("User not found");
-        }
-
-        IList<string> userRoles = await userManager.GetRolesAsync(user);
-
-
-        ObjectMapper.Map(input, user);
-
-        await userManager.UpdateAsync(user);
-
-        if (input.IsAdmin)
-        {
-            if (!userRoles.Contains(VctoonSharedConsts.AdminUserRoleName))
-            {
-                await userManager.AddToRoleAsync(user, VctoonSharedConsts.AdminUserRoleName);
-            }
-        }
-        else
-        {
-            if (userRoles.Contains(VctoonSharedConsts.AdminUserRoleName))
-            {
-                await userManager.RemoveFromRoleAsync(user, VctoonSharedConsts.AdminUserRoleName);
-            }
-
-            if (!userRoles.Contains(VctoonSharedConsts.NormalUserRoleName))
-            {
-                await userManager.AddToRoleAsync(user, VctoonSharedConsts.NormalUserRoleName);
-            }
-
             foreach (LibraryPermissionDto permissionDto in input.LibraryPermissions)
             {
                 LibraryPermission permission = new LibraryPermission(permissionDto.LibraryId, user.Id, permissionDto.CanDownload,
@@ -132,8 +98,7 @@ public class IdentityUserExtraAppService(
             }
         }
 
-        IdentityUserExtraDto result = ObjectMapper.Map<IdentityUser, IdentityUserExtraDto>(user);
-        result.IsAdmin = input.IsAdmin;
+        IdentityUserExtraDto result = ObjectMapper.Map<IdentityUserDto, IdentityUserExtraDto>(user);
         result.LibraryPermissions = input.LibraryPermissions;
 
         return result;
@@ -229,14 +194,13 @@ public class IdentityUserExtraAppService(
     [Authorize(IdentityPermissions.Users.Delete)]
     public async Task DeleteUserExtraAsync(Guid userId)
     {
-        IdentityUser? user = await identityUserRepository.GetAsync(userId);
+        IdentityUser? user = await userManager.FindByIdAsync(userId.ToString());
         if (user == null)
         {
             throw new UserFriendlyException("User not found");
         }
 
+        await identityUserAppService.DeleteAsync(userId);
         await libraryPermissionStore.RemoveUserPermissionAsync(userId);
-
-        await userManager.DeleteAsync(user);
     }
 }

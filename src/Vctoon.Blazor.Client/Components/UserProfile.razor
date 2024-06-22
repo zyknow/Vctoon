@@ -1,6 +1,4 @@
-﻿@using Vctoon.Blazor.Client.Services
-@using Volo.Abp.Users
-@inherits VctoonComponentBase
+﻿@inherits VctoonComponentBase
 @inject ICurrentUser CurrentUser
 @inject NavigationManager NavigationManager
 @inject ILoginService LoginService
@@ -36,10 +34,10 @@
 </FluentProfileMenu>
 
 @code {
-    
-    void Logout()
+
+    async Task LogoutAsync()
     {
-        LoginService.LogoutAsync();
+        await LoginService.LogoutAsync();
     }
     
 }

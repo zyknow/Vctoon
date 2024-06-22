@@ -21,6 +21,9 @@
     async Task CreateUserAsync()
     {
         var input = ObjectMapper.Map<IdentityUserExtraCreateOrUpdateModel, IdentityUserExtraCreateDto>(_user);
+
+        input.RoleNames = [_user.IsAdmin ? VctoonSharedConsts.AdminUserRoleName : VctoonSharedConsts.NormalUserRoleName];
+
         await IdentityUserExtraAppService.CreateUserExtraAsync(input);
         await OnSucceeded.InvokeAsync();
     }
