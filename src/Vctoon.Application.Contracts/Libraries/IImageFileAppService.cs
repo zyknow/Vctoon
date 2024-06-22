@@ -9,4 +9,5 @@ public interface IImageFileAppService : IApplicationService
     Task<PagedResultDto<ImageFileDto>> GetListAsync(ImageFileGetListInput input);
 
     Task DeleteAsync(Guid id, bool deleteFile);
+    Task<List<ImageFileDto>> GetListByComicIdAsync(Guid comicId);
 }

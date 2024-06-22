@@ -29,6 +29,21 @@ public class ImageFileAppService(
         return pageRes;
     }
 
+    public async Task<List<ImageFileDto>> GetListByComicIdAsync(Guid comicId)
+    {
+        List<ImageFileDto> imageFileDtos = ObjectMapper.Map<List<ImageFile>, List<ImageFileDto>>(
+            await repository.GetListAsync(x => x.ComicId == comicId));
+
+        List<Guid> libraryIds = imageFileDtos.Select(x => x.LibraryId).Distinct().ToList();
+
+        foreach (Guid libraryId in libraryIds)
+        {
+            await CheckCurrentUserLibraryPermissionAsync(libraryId, x => x.CanView);
+        }
+
+        return imageFileDtos;
+    }
+
     [Authorize(VctoonPermissions.ImageFile.Delete)]
     public async Task DeleteAsync(Guid id, bool deleteFile)
     {
