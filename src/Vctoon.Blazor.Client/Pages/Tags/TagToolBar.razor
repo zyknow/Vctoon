@@ -1,0 +1,134 @@
+﻿@inherits VctoonComponentBase
+@inject IStringLocalizer<LibraryResource> LL
+@inject IDialogService DialogService
+@inject ITagAppService TagAppService
+@if (Info != null)
+{
+    <ResourceToolbar Total="@Info.Total" ClearSelected="ClearSelected"
+                     SelectedCount="@(Info.SelectedResources?.Count ?? 0)">
+        <ToolbarTitleTemplate>
+            <div class="flex flex-row space-x-4 items-center">
+                <span class="text-3xl">@L["Menu:Tags"]</span>
+            </div>
+        </ToolbarTitleTemplate>
+
+        <ToolbarRightTemplate>
+            <div>
+            </div>
+        </ToolbarRightTemplate>
+
+        <ActionbarCenterTemplate>
+            <FluentButton Appearance="Appearance.Lightweight" OnClick="() => DeleteTagListAsync()">
+                <FluentIcon Value="@(new Icons.Filled.Size20.Delete())" Color="Color.Error"></FluentIcon>
+            </FluentButton>
+
+            @if (Info.SelectedResources.Count == 1)
+            {
+                <FluentButton Appearance="Appearance.Lightweight" OnClick="() => ShowUpdateTagDialogAsync()">
+                    <FluentIcon Value="@(new Icons.Filled.Size20.Edit())" Color="Color.Accent"></FluentIcon>
+                </FluentButton>
+            }
+
+        </ActionbarCenterTemplate>
+
+        <FilterTemplate>
+            <div class="flex flex-row justify-between">
+                <div class="flex flex-row items-center space-x-2 mt-2">
+                    <FluentTextField @bind-Value="@Filter"></FluentTextField>
+                    <FluentButton OnClick="@(() => Info.LoadResourceAsync())" Appearance="Appearance.Accent"
+                                  IconStart="@(new Icons.Filled.Size24.Search())">
+                        @L["Search"]
+                    </FluentButton>
+                </div>
+                <FluentButton OnClick="@(() => ShowCreateTagDialogAsync())" Appearance="Appearance.Accent"
+                              IconStart="@(new Icons.Filled.Size24.Add())">
+                    @LL["NewTag"]
+                </FluentButton>
+            </div>
+
+        </FilterTemplate>
+    </ResourceToolbar>
+}
+
+@code {
+
+    [CascadingParameter] public ResourceViewInfo<TagDto>? Info { get; set; }
+
+    [Parameter] public string Filter { get; set; }
+
+    [Parameter] public EventCallback<string> FilterChanged { get; set; }
+
+    void ClearSelected()
+    {
+        Info.SelectedResources.Clear();
+        Info.StateHasChanged();
+    }
+
+    async Task ShowCreateTagDialogAsync()
+    {
+        DialogParameters parameters = new()
+        {
+            Title = LL["NewTag"]
+        };
+
+        var dialog = await DialogService.ShowDialogAsync(
+                @
+            < div >
+            <CreateTagDialog / >
+            </div >,
+        parameters);
+
+        await dialog.Result;
+
+        await Info.LoadResourceAsync();
+    }
+
+
+    async Task ShowUpdateTagDialogAsync()
+    {
+        if (Info.SelectedResources.Count != 1)
+        {
+            return;
+        }
+
+        DialogParameters parameters = new()
+        {
+            Title = LL["EditTag"]
+        };
+
+        var tagId = Info.SelectedResources.First().Id;
+
+        IDialogReference dialog = null;
+
+        dialog = await DialogService.ShowDialogAsync(
+                @
+            < div >
+            <EditTagDialog TagId = "@tagId" OnSucceeded = "() => dialog!.CloseAsync()" / >
+            </div >,
+        parameters);
+
+        await dialog.Result;
+        Info.SelectedResources.Clear();
+
+        await Info.LoadResourceAsync();
+    }
+
+    async Task DeleteTagListAsync()
+    {
+        if (Info.SelectedResources.IsNullOrEmpty())
+        {
+            return;
+        }
+
+        var dialogRes = await DialogService.ShowConfirmationAsync(L["DeleteTagListMessage", Info.SelectedResources.Count], L["Submit"], L["Cancel"], L["AreYouSure"]);
+
+        var result = await dialogRes.Result;
+        if (!result.Cancelled)
+        {
+            await TagAppService.DeleteManyAsync(Info.SelectedResources.Select(x => x.Id).ToList());
+            Info.SelectedResources.Clear();
+            await Info.LoadResourceAsync();
+        }
+    }
+
+}

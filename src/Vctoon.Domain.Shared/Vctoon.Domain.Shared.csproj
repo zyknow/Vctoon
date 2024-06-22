@@ -21,8 +21,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Localization\Vctoon\*.json"/>
-        <Content Remove="Localization\Vctoon\*.json"/>
+        <EmbeddedResource Include="Localization\Ui\*.json"/>
+        <Content Remove="Localization\Ui\*.json"/>
     </ItemGroup>
 
     <ItemGroup>

@@ -14,6 +14,7 @@ using Volo.Abp.OpenIddict;
 using Volo.Abp.PermissionManagement;
 using Volo.Abp.SettingManagement;
 using Volo.Abp.TenantManagement;
+using Volo.Abp.UI;
 using Volo.Abp.Validation.Localization;
 using Volo.Abp.VirtualFileSystem;
 
@@ -27,7 +28,8 @@ namespace Vctoon;
     typeof(AbpOpenIddictDomainSharedModule),
     typeof(AbpPermissionManagementDomainSharedModule),
     typeof(AbpSettingManagementDomainSharedModule),
-    typeof(AbpTenantManagementDomainSharedModule)
+    typeof(AbpTenantManagementDomainSharedModule),
+    typeof(AbpUiModule)
 )]
 public class VctoonDomainSharedModule : AbpModule
 {
@@ -58,6 +60,10 @@ public class VctoonDomainSharedModule : AbpModule
             options.Resources
                 .Get<IdentityResource>()
                 .AddVirtualJson("/Localization/Identities");
+
+            options.Resources
+                .Get<AbpUiResource>()
+                .AddVirtualJson("/Localization/Ui");
 
             options.Resources
                 .Add<VctoonResource>("en")

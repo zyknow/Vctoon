@@ -1,87 +1,78 @@
 ﻿@page "/tags"
-@inherits VctoonComponentBase
+@using Vctoon.Extensions
+@inherits ResourceViewBase<TagDto>
 @attribute [Authorize]
 @inject ITagAppService TagAppService
 @inject UserStore UserStore
 @inject IStringLocalizer<LibraryResource> LL
 @inject IDialogService DialogService
-<div class="flex flex-col space-y-6 p-2">
-    <div class="flex flex-row space-x-4 items-center">
-        <h3 class="mt-2">@L["Menu:Tags"]</h3>
-    </div>
-
-    <div>
-        <FluentCard>
-            <div class="flex flex-row space-x-2 w-full justify-between">
-                <div class="flex flex-row items-center space-x-2">
-                    <FluentTextField @bind-Value="@_filter"></FluentTextField>
-                    <FluentButton OnClick="@(() => LoadTagsAsync())" Appearance="Appearance.Accent" IconStart="@(new Icons.Filled.Size24.Search())">@L["Search"]</FluentButton>
-
-                </div>
-
-                <div>
-                    <FluentButton OnClick="@(() => ShowCreateTagDialogAsync())" Appearance="Appearance.Accent" IconStart="@(new Icons.Filled.Size24.Add())">@LL["NewTag"]</FluentButton>
+<CascadingValue Value="@Info">
+    <ResourceView>
+        <ToolbarTemplate>
+            <TagToolBar @bind-Filter="@_filter"></TagToolBar>
+        </ToolbarTemplate>
+        <ContentTemplate>
+            <div class="space-y-4 mt-4">
+                <div class="flex flex-wrap gap-4">
+                    @if (!Info.Resources.IsNullOrEmpty())
+                    {
+                        @foreach (var tag in Info.Resources)
+                        {
+                            <div @onclick="args => { if (args.ShiftKey) OnResourceShiftClick(tag); }">
+                                <LibraryTagItem
+                                    ResourceCount="@tag.ResourceCount"
+                                    Selected="Info.SelectedResources.Contains(tag)"
+                                    EnabledSelect="@_isAdmin"
+                                    Name="@tag.Name"
+                                    OnSelectedChanged="selected => OnTagSelectedChange(selected, tag)">
+                                </LibraryTagItem>
+                            </div>
+                        }
+                    }
                 </div>
             </div>
-        </FluentCard>
-    </div>
 
-    <div class="space-y-4">
-        <div class="flex flex-wrap gap-1.5">
-            @if (!_tags.IsNullOrEmpty())
-            {
-                @foreach (var tag in _tags)
-                {
-                    <LibraryTagItem Name="@tag.Name"></LibraryTagItem>
-                }
-            }
+        </ContentTemplate>
+    </ResourceView>
+</CascadingValue>
 
-        </div>
-    </div>
-</div>
 
 @code {
-    List<TagDto> _tags;
-
-    bool _withResourceCount;
+    readonly bool _withResourceCount = true;
 
     string? _filter;
+
+    bool _isAdmin;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await LoadTagsAsync();
+            _isAdmin = CurrentUser.IsAdmin();
+            await LoadResourceAsync();
         }
 
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    async Task LoadTagsAsync()
+    protected override async Task<(List<TagDto> Items, long TotalCount)> GetResourceListAsync()
     {
-        _tags = (await TagAppService.GetAllTagAsync(_withResourceCount))
+        var tags = (await TagAppService.GetAllTagAsync(_withResourceCount))
             .WhereIf(!_filter.IsNullOrEmpty(), x => x.Name.Contains(_filter)).ToList();
-        ;
 
-        StateHasChanged();
+        return (tags, tags.Count);
     }
 
-    async Task ShowCreateTagDialogAsync()
+    void OnTagSelectedChange(bool selected, TagDto tag)
     {
-        DialogParameters parameters = new()
+        if (selected)
         {
-            Title = LL["NewTag"]
-        };
-
-        var dialog = await DialogService.ShowDialogAsync(
-            @<div>
-                <CreateTagDialog/>
-            </div>,
-            parameters);
-
-        await dialog.Result;
-
-        await LoadTagsAsync();
+            Info.SelectedResources.Add(tag);
+        }
+        else
+        {
+            Info.SelectedResources.Remove(tag);
+        }
     }
 
 }

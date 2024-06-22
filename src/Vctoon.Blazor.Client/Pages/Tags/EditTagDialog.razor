@@ -1,5 +1,46 @@
-﻿<h3>EditTagDialog</h3>
+﻿@inject ITagAppService TagAppService
+@inject IToastService ToastService
+@if (_tag != null)
+{
+    <CreateEditTagBase Tag="@_tag" OnCreateOrUpdate="OnUpdateAsync">
+    </CreateEditTagBase>
+}
+
 
 @code {
+    TagCreateUpdateDto? _tag;
+
+    [Parameter] public Guid TagId { get; set; }
+
+    [Parameter] public EventCallback OnSucceeded { get; set; }
+
+    public async Task OnUpdateAsync()
+    {
+        try
+        {
+            await TagAppService.UpdateAsync(TagId, _tag);
+            await OnSucceeded.InvokeAsync();
+        }
+        catch (Exception e)
+        {
+            ToastService.ShowError(e.Message);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var tag = await TagAppService.GetAsync(TagId);
+            _tag = new TagCreateUpdateDto
+            {
+                Name = tag.Name
+            };
+
+            StateHasChanged();
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
 
 }

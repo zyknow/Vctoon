@@ -1,10 +1,40 @@
-﻿<FluentBadge Circular="true" Appearance="Appearance.Accent">
-    <div class="p-1">
-        @Name
-    </div>
-</FluentBadge>
+﻿<div class="@_selectedClass">
+
+    <FluentCounterBadge Count="@ResourceCount" Appearance="Appearance.Accent" HorizontalPosition="80" BottomPosition="75">
+        <FluentBadge Appearance="Appearance.Neutral" Fill="highlight" BackgroundColor="var(--warning)" Color="white"
+                     OnClick="() => OnBadgeClickAsync()">
+            <div class="p-1 px-2 font-bold text-4">
+                @Name
+            </div>
+        </FluentBadge>
+    </FluentCounterBadge>
+
+</div>
 
 
 @code {
     [Parameter] public string Name { get; set; }
+
+    [Parameter] public int? ResourceCount { get; set; }
+
+    [Parameter] public string SelectedClass { get; set; } = "box-border border-3 border-solid border-accent border-rounded-2";
+
+    [Parameter] public bool Selected { get; set; }
+
+    [Parameter] public EventCallback<bool> OnSelectedChanged { get; set; }
+
+    [Parameter] public bool EnabledSelect { get; set; } = true;
+
+    string _selectedClass => Selected ? SelectedClass : "";
+
+    async Task OnBadgeClickAsync()
+    {
+        if (EnabledSelect)
+        {
+            await OnSelectedChanged.InvokeAsync(!Selected);
+            Selected = !Selected;
+            StateHasChanged();
+        }
+    }
+
 }

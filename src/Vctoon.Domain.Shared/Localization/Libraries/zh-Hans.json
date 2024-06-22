@@ -19,6 +19,7 @@
     "NewTag": "新标签",
     "EditTag": "编辑标签",
     "DeleteTag": "删除标签",
-    "Tags:Name": "标签名称"
+    "Tags:Name": "标签名称",
+    "DeleteTagListMessage": "你确定要删除已选中的 `{0}` 个标签吗?"
   }
 }

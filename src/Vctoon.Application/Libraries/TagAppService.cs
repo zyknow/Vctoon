@@ -46,6 +46,12 @@ public class TagAppService(ITagRepository repository, TagManager tagManager)
         return ObjectMapper.Map<Tag, TagDto>(tag);
     }
 
+    public async Task DeleteManyAsync(List<Guid> ids)
+    {
+        await CheckDeletePolicyAsync();
+        await Repository.DeleteManyAsync(ids);
+    }
+
     protected override async Task<IQueryable<Tag>> CreateFilteredQueryAsync(TagGetListInput input)
     {
         // TODO: AbpHelper generated
