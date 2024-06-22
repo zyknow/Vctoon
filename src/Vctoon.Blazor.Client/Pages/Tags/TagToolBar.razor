@@ -71,11 +71,9 @@
             Title = LL["NewTag"]
         };
 
-        var dialog = await DialogService.ShowDialogAsync(
-                @
-            < div >
-            <CreateTagDialog / >
-            </div >,
+        var dialog = await DialogService.ShowDialogAsync(@<div>
+            <CreateTagDialog />
+            </div>,
         parameters);
 
         await dialog.Result;
@@ -100,11 +98,8 @@
 
         IDialogReference dialog = null;
 
-        dialog = await DialogService.ShowDialogAsync(
-                @
-            < div >
-            <EditTagDialog TagId = "@tagId" OnSucceeded = "() => dialog!.CloseAsync()" / >
-            </div >,
+        dialog = await DialogService.ShowDialogAsync(@<div><EditTagDialog TagId = "@tagId" OnSucceeded = "() => dialog!.CloseAsync()" />
+            </div>,
         parameters);
 
         await dialog.Result;

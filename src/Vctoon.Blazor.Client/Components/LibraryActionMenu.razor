@@ -54,10 +54,9 @@
         IDialogReference dialog = null;
 
         dialog = await DialogService.ShowDialogAsync(
-                @
-            < div >
-            <EditLibrary LibraryId = "@Library.Id" OnSucceeded = "() => dialog!.CloseAsync()" / >
-            </div >,
+                @<div>
+            <EditLibrary LibraryId = "@Library.Id" OnSucceeded = "() => dialog!.CloseAsync()" />
+            </div>,
         parameters);
 
         await dialog.Result;
