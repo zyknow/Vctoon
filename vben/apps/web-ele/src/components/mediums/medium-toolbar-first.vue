@@ -2,7 +2,7 @@
 import { useInjectedMediumProvider } from '#/hooks/useMediumProvider'
 import { useMediumStore } from '#/store'
 
-const { title } = useInjectedMediumProvider()
+const { title, currentTab } = useInjectedMediumProvider()
 
 const mediumStore = useMediumStore()
 </script>
@@ -13,7 +13,7 @@ const mediumStore = useMediumStore()
       <div class="text-xl font-bold">{{ title }}</div>
     </slot>
     <slot name="center">
-      <el-tabs>
+      <el-tabs v-model="currentTab">
         <el-tab-pane label="Recommend" name="recommend" />
         <el-tab-pane label="Library" name="library" />
         <el-tab-pane label="Collection" name="collection" />

@@ -16,7 +16,7 @@ export const mediumProviderKey = Symbol('mediumProvider')
 
 /** 公共的分页查询类型，避免 union 导致的类型缩小问题 */
 export type PageRequest = Partial<ComicGetListInput & VideoGetListInput>
-
+export type MediumViewTab = 'collection' | 'library' | 'recommend'
 /** 对外暴露的 Provider 接口（显式使用 Ref 类型） */
 export interface MediumProvider {
   // state（都是 Ref 或 reactive 对象）
@@ -25,6 +25,7 @@ export interface MediumProvider {
   pageRequest: PageRequest // reactive 对象的静态类型即可
   selectedMediumIds: Ref<string[]>
   title: Ref<string>
+  currentTab: Ref<MediumViewTab>
   totalCount: Ref<number>
   loading: Ref<boolean>
   // actions
@@ -57,6 +58,7 @@ export function createMediumProvider(
   const totalCount = ref(0)
   const loading = ref(false)
   const hasMore = ref(true)
+  const currentTab = ref<MediumViewTab>('recommend')
 
   const loadItems = async () => {
     loading.value = true
@@ -98,6 +100,7 @@ export function createMediumProvider(
   }
 
   const model: MediumProvider = {
+    currentTab,
     loading,
     items: Items,
     loadType,
