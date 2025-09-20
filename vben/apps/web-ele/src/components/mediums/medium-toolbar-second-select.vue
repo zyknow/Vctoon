@@ -4,6 +4,7 @@ import { computed } from 'vue'
 import { MdiClose, MdiSelectAll } from '@vben/icons'
 
 import { useInjectedMediumProvider } from '#/hooks/useMediumProvider'
+import { $t } from '#/locales'
 
 const { selectedMediumIds, items } = useInjectedMediumProvider()
 
@@ -34,7 +35,9 @@ const clearSelection = () => {
       <div class="flex items-center gap-3">
         <!-- 选中数量显示 -->
         <span class="text-primary text-sm font-medium">
-          已选择 {{ selectedCount }} 项
+          {{
+            $t('page.mediums.selection.selectedCount', { count: selectedCount })
+          }}
         </span>
 
         <!-- 全选按钮 -->
@@ -44,17 +47,17 @@ const clearSelection = () => {
           :icon="MdiSelectAll"
           @click="toggleSelectAll"
         >
-          {{ isAllSelected ? '取消全选' : '全选' }}
+          {{
+            isAllSelected
+              ? $t('page.mediums.selection.deselectAll')
+              : $t('page.mediums.selection.selectAll')
+          }}
         </el-button>
       </div>
     </slot>
 
     <slot name="filter-center">
-      <div class="flex items-center gap-2">
-        <!-- 这里可以放批量操作按钮 -->
-        <el-button size="small" type="default"> 批量下载 </el-button>
-        <el-button size="small" type="default"> 批量删除 </el-button>
-      </div>
+      <div class="flex items-center gap-2"></div>
     </slot>
 
     <slot name="filter-right">
@@ -66,7 +69,7 @@ const clearSelection = () => {
           :icon="MdiClose"
           @click="clearSelection"
         >
-          取消
+          {{ $t('page.mediums.selection.cancel') }}
         </el-button>
       </div>
     </slot>

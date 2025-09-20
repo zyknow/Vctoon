@@ -219,6 +219,12 @@
       "clear": "清空排序",
       "sortByAsc": "按{field}正序排序",
       "sortByDesc": "按{field}倒序排序"
+    },
+    "selection": {
+      "selectedCount": "已选择 {count} 项",
+      "selectAll": "全选",
+      "deselectAll": "取消全选",
+      "cancel": "取消"
     }
   },
   "securityLogs": {

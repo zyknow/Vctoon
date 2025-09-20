@@ -219,6 +219,12 @@
       "clear": "Clear Sort",
       "sortByAsc": "Sort by {field} Ascending",
       "sortByDesc": "Sort by {field} Descending"
+    },
+    "selection": {
+      "selectedCount": "Selected {count} items",
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All",
+      "cancel": "Cancel"
     }
   },
   "securityLogs": {
