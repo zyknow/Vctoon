@@ -42,13 +42,29 @@ const isInSelectionMode = computed(() => {
   return selectedMediumIds.value.length > 0
 })
 
-// 选中状态变化处理
-const toggleSelection = (event: MouseEvent) => {
+// 选中状态变化处理（用于圆圈点击）
+const toggleSelectionFromIcon = (event: MouseEvent) => {
   const currentId = props.modelValue?.id
   if (!currentId) return
 
-  // 阻止事件冒泡，避免触发其他点击事件
-  event.stopPropagation()
+  // 在非选中模式下，阻止事件冒泡到卡片
+  if (!isInSelectionMode.value) {
+    event.stopPropagation()
+  }
+
+  if (event.shiftKey) {
+    // Shift + 点击：范围选择
+    handleRangeSelection(currentId)
+  } else {
+    // 普通点击：切换单个项目选中状态
+    handleSingleSelection(currentId)
+  }
+}
+
+// 选中状态变化处理（用于卡片点击）
+const toggleSelection = (event: MouseEvent) => {
+  const currentId = props.modelValue?.id
+  if (!currentId) return
 
   if (event.shiftKey) {
     // Shift + 点击：范围选择
@@ -152,8 +168,11 @@ const cover = computed(() => {
 <template>
   <div
     :style="zoomStyle"
-    class="text-foreground medium-card group relative cursor-pointer select-none rounded-xl transition-colors"
-    @click="toggleSelection"
+    class="text-foreground medium-card group relative select-none rounded-xl transition-colors"
+    :class="{
+      'cursor-pointer': isInSelectionMode,
+    }"
+    @click="isInSelectionMode ? toggleSelection($event) : null"
   >
     <!-- Cover -->
     <div
@@ -173,40 +192,46 @@ const cover = computed(() => {
 
       <!-- Hover overlay -->
       <div
+        v-if="!isInSelectionMode"
         class="pointer-events-none absolute inset-0 hidden items-center justify-center gap-3 rounded-lg bg-black/40 group-hover:flex"
       >
         <!-- 非选择模式：显示所有操作图标 -->
-        <template v-if="!isInSelectionMode">
-          <!-- left-bottom: edit icon -->
-          <div
-            class="pointer-events-auto absolute bottom-2 left-2 text-white/90"
-          >
-            <CiEditPencilLine01 class="h-5 w-5" />
-          </div>
-          <!-- right-bottom: more icon -->
-          <div
-            class="pointer-events-auto absolute bottom-2 right-2 text-white/90"
-          >
-            <CiMoreVertical class="h-5 w-5" />
-          </div>
-          <!-- center: play circle -->
-          <div class="pointer-events-auto text-white">
-            <MdiPlayCircle class="h-12 w-12 drop-shadow" />
-          </div>
-        </template>
+        <!-- left-bottom: edit icon -->
+        <div class="pointer-events-auto absolute bottom-2 left-2 text-white/90">
+          <CiEditPencilLine01
+            class="hover:text-primary cursor-pointer text-2xl"
+          />
+        </div>
+        <!-- right-bottom: more icon -->
+        <div
+          class="pointer-events-auto absolute bottom-2 right-2 text-white/90"
+        >
+          <CiMoreVertical class="hover:text-primary cursor-pointer text-2xl" />
+        </div>
+        <!-- center: play circle -->
+        <div class="pointer-events-auto text-white">
+          <MdiPlayCircle
+            class="hover:text-primary cursor-pointer text-6xl drop-shadow"
+          />
+        </div>
       </div>
 
       <!-- 选中状态圆圈 - 始终显示在左上角 -->
-      <div class="absolute left-2 top-2">
+      <div class="absolute left-2 top-2" @click="toggleSelectionFromIcon">
         <div
           v-if="isSelected"
-          class="bg-primary flex h-6 w-6 items-center justify-center rounded-full text-white"
+          class="bg-primary flex h-5 w-5 cursor-pointer items-center justify-center rounded-full text-white"
         >
-          <MdiCheckCircle class="h-4 w-4" />
+          <MdiCheckCircle class="text-xl" />
         </div>
         <div
           v-else
-          class="h-6 w-6 rounded-full border-2 border-white/80 bg-transparent opacity-0 transition-opacity group-hover:opacity-100"
+          style="border-width: 3px"
+          class="h-5 w-5 cursor-pointer rounded-full border-white/80 bg-transparent transition-opacity"
+          :class="{
+            'opacity-100': isInSelectionMode,
+            'opacity-0 group-hover:opacity-100': !isInSelectionMode,
+          }"
         ></div>
       </div>
     </div>
