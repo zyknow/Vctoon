@@ -1,0 +1,259 @@
+{
+  "home": {
+    "title": "首页"
+  },
+  "library": {
+    "title": "库",
+    "add": "添加库",
+    "create": {
+      "title": "新建库",
+      "fields": {
+        "name": "名称",
+        "mediumType": "媒体类型",
+        "paths": "路径"
+      },
+      "placeholders": {
+        "name": "请输入名称",
+        "mediumType": "请选择媒体类型",
+        "paths": "输入路径并选择或回车新增"
+      },
+      "medium": {
+        "image": "图片/漫画",
+        "video": "视频"
+      },
+      "actions": {
+        "cancel": "取消",
+        "confirm": "确定",
+        "success": "创建成功",
+        "requirePath": "请至少添加一个路径"
+      }
+    },
+    "edit": {
+      "title": "编辑库",
+      "actions": {
+        "success": "更新成功",
+        "missingId": "缺少库 ID，无法更新",
+        "fetchFailed": "获取库信息失败"
+      }
+    },
+    "actions": {
+      "edit": "编辑",
+      "scanFiles": "扫描库文件",
+      "authorizeAccess": "授权访问",
+      "scan": "扫描",
+      "delete": "删除"
+    },
+    "delete": {
+      "confirmTitle": "确认删除",
+      "confirmMessage": "确定要删除库\"{0}\"吗？此操作不可逆转。",
+      "confirmButton": "删除",
+      "cancelButton": "取消"
+    },
+    "permission": {
+      "dialogTitle": "库权限管理",
+      "libraryDescription": "为指定用户配置此库的访问权限",
+      "selectUser": "选择用户",
+      "searchUserPlaceholder": "搜索用户名或邮箱...",
+      "searchUserFailed": "搜索用户失败",
+      "pleaseSelectUser": "请选择一个用户",
+      "libraryIdRequired": "库ID不能为空",
+      "setSuccess": "权限设置成功",
+      "setFailed": "权限设置失败",
+      "inactive": "未激活",
+      "permissionSettings": "权限设置",
+      "canView": "查看权限",
+      "canViewDescription": "允许用户查看库中的内容",
+      "canDownload": "下载权限",
+      "canDownloadDescription": "允许用户下载库中的文件",
+      "canComment": "评论权限",
+      "canCommentDescription": "允许用户对内容进行评论",
+      "canShare": "分享权限",
+      "canShareDescription": "允许用户分享库中的内容",
+      "canStar": "收藏权限",
+      "canStarDescription": "允许用户收藏喜欢的内容",
+      "confirm": "确认设置"
+    }
+  },
+  "user": {
+    "title": "用户管理",
+    "search": {
+      "filter": "搜索",
+      "filterPlaceholder": "请输入用户名、邮箱或手机号进行搜索",
+      "all": "全部",
+      "enabled": "启用",
+      "disabled": "禁用",
+      "search": "搜索",
+      "reset": "重置"
+    },
+    "table": {
+      "userName": "用户名",
+      "name": "姓名",
+      "email": "邮箱",
+      "phoneNumber": "手机号",
+      "status": "状态",
+      "emailConfirmed": "邮箱确认",
+      "phoneNumberConfirmed": "手机确认",
+      "creationTime": "创建时间",
+      "actions": "操作",
+      "edit": "编辑",
+      "role": "角色",
+      "unlock": "解锁",
+      "delete": "删除"
+    },
+    "create": {
+      "title": "创建用户",
+      "fields": {
+        "userName": "用户名",
+        "name": "姓名",
+        "email": "邮箱",
+        "phoneNumber": "手机号",
+        "password": "密码",
+        "status": "状态",
+        "lockoutEnabled": "锁定启用",
+        "emailReminderEnabled": "邮箱提醒",
+        "roles": "角色"
+      },
+      "placeholders": {
+        "userName": "请输入用户名",
+        "name": "请输入姓名",
+        "email": "请输入邮箱",
+        "phoneNumber": "请输入手机号",
+        "password": "请输入密码",
+        "roles": "请选择角色"
+      },
+      "actions": {
+        "cancel": "取消",
+        "confirm": "确定"
+      },
+      "messages": {
+        "success": "创建成功",
+        "error": "创建用户失败"
+      },
+      "validation": {
+        "userNameRequired": "请输入用户名",
+        "userNameLength": "用户名长度在 3 到 50 个字符",
+        "emailRequired": "请输入邮箱",
+        "emailFormat": "请输入正确的邮箱格式",
+        "phoneRequired": "请输入手机号",
+        "phoneFormat": "请输入正确的手机号格式",
+        "passwordRequired": "请输入密码",
+        "passwordLength": "密码长度不能少于6个字符",
+        "nameRequired": "请输入姓名"
+      }
+    },
+    "edit": {
+      "title": "编辑用户",
+      "fields": {
+        "userName": "用户名",
+        "name": "姓名",
+        "email": "邮箱",
+        "phoneNumber": "手机号",
+        "password": "密码",
+        "status": "状态",
+        "lockoutEnabled": "锁定启用",
+        "emailReminderEnabled": "邮箱提醒"
+      },
+      "placeholders": {
+        "userName": "请输入用户名",
+        "name": "请输入姓名",
+        "email": "请输入邮箱",
+        "phoneNumber": "请输入手机号",
+        "password": "留空则不修改密码"
+      },
+      "actions": {
+        "cancel": "取消",
+        "confirm": "确定"
+      },
+      "messages": {
+        "success": "更新成功",
+        "error": "更新用户失败"
+      }
+    },
+    "role": {
+      "title": "角色管理",
+      "userInfo": "用户：",
+      "assignRoles": "分配角色",
+      "placeholders": {
+        "roles": "请选择角色"
+      },
+      "actions": {
+        "cancel": "取消",
+        "confirm": "确定"
+      },
+      "messages": {
+        "success": "角色更新成功",
+        "error": "更新用户角色失败"
+      }
+    },
+    "actions": {
+      "create": "新增用户",
+      "deleteConfirm": "确定要删除用户 \"{userName}\" 吗？",
+      "deleteTitle": "确认删除",
+      "deleteSuccess": "删除成功",
+      "deleteError": "删除用户失败",
+      "unlockSuccess": "解锁成功",
+      "unlockError": "解锁用户失败"
+    },
+    "status": {
+      "enabled": "启用",
+      "disabled": "禁用",
+      "yes": "是",
+      "no": "否"
+    },
+    "messages": {
+      "loadUsersError": "加载用户列表失败",
+      "loadRolesError": "加载角色列表失败",
+      "loadUserRolesError": "加载用户角色失败"
+    }
+  },
+  "mediums": {
+    "sort": {
+      "title": "标题",
+      "creationTime": "创建时间",
+      "lastModificationTime": "最近修改时间",
+      "size": "大小",
+      "ascending": "升序",
+      "descending": "降序",
+      "sortBy": "排序方式",
+      "order": "排序顺序",
+      "clear": "清空排序",
+      "sortByAsc": "按{field}正序排序",
+      "sortByDesc": "按{field}倒序排序"
+    }
+  },
+  "securityLogs": {
+    "title": "安全日志",
+    "viewMode": {
+      "all": "全部日志",
+      "current": "我的日志"
+    },
+    "search": {
+      "timeRange": "时间范围",
+      "startTime": "开始时间",
+      "endTime": "结束时间",
+      "applicationName": "应用程序",
+      "applicationNamePlaceholder": "请输入应用程序名称",
+      "userName": "用户名",
+      "userNamePlaceholder": "请输入用户名",
+      "action": "操作",
+      "actionPlaceholder": "请输入操作名称",
+      "clientIp": "客户端IP",
+      "clientIpPlaceholder": "请输入客户端IP地址",
+      "search": "搜索",
+      "reset": "重置"
+    },
+    "table": {
+      "applicationName": "应用程序",
+      "identity": "身份标识",
+      "action": "操作",
+      "userName": "用户名",
+      "clientId": "客户端ID",
+      "clientIpAddress": "客户端IP",
+      "browserInfo": "浏览器信息",
+      "creationTime": "创建时间"
+    },
+    "messages": {
+      "loadError": "加载安全日志失败"
+    }
+  }
+}

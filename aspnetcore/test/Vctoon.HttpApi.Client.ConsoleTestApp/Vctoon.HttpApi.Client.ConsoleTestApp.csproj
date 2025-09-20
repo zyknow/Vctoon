@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <AbpVersion>9.3.2</AbpVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="appsettings.json"/>
+    <Content Include="appsettings.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="appsettings.secrets.json"/>
+    <Content Include="appsettings.secrets.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Vctoon.HttpApi.Client\Vctoon.HttpApi.Client.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)"/>
+    <PackageReference Include="Volo.Abp.Http.Client.IdentityModel" Version="$(AbpVersion)"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5"/>
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="9.0.5"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="**\*.abppkg"/>
+    <None Remove="**\*.abppkg.analyze.json"/>
+    <Content Remove="$(UserProfile)\.nuget\packages\*\*\contentFiles\any\*\*.abppkg*"/>
+  </ItemGroup>
+
+</Project>

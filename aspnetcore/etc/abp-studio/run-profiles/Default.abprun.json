@@ -1,0 +1,18 @@
+﻿{
+  "applications": {
+    "Vctoon.Web": {
+      "type": "dotnet-project",
+      "launchUrl": "https://localhost:44364",
+      "path": "../../../src/Vctoon.Web/Vctoon.Web.csproj",
+      "kubernetesService": ".*-web$",
+      "healthCheckEndpoint": "/health-status",
+      "healthUiEndpoint": "/health-ui",
+      "execution": {
+        "order": 2
+      }
+    }
+  },
+  "containers": {
+    "serviceName": "Vctoon-Containers",
+  }
+}

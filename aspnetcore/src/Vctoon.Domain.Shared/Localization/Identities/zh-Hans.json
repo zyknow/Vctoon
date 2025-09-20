@@ -1,0 +1,28 @@
+{
+  "culture": "zh-Hans",
+  "texts": {
+    "DisplayName:IsAdmin": "管理员",
+    "LibraryPermissions": "库权限",
+    "SelectAllLibrary": "全选",
+    "Permission:CanView": "查看",
+    "Permission:CanComment": "评论",
+    "Permission:CanDownload": "下载",
+    "Permission:CanShare": "分享",
+    "Permission:CanStar": "评分",
+    "SecurityLogs": "安全日志",
+    "SecurityLogs:StartTime": "开始时间",
+    "SecurityLogs:EndTime": "结束时间",
+    "SecurityLogs:ApplicationName": "应用程序",
+    "SecurityLogs:ApplicationDescription": "应用程序名称",
+    "SecurityLogs:Identity": "标识",
+    "SecurityLogs:IdentityDescription": "日志来源. 例如: Identity, IdentityExternal, IdentityServer, OpenIddict",
+    "SecurityLogs:Action": "操作",
+    "SecurityLogs:ActionDescription": "例如: login_successful, login_failed, logout",
+    "SecurityLogs:UserName": "用户名",
+    "SecurityLogs:Client": "客户端",
+    "SecurityLogs:CorrelationId": "相关联Id",
+    "SecurityLogs:Date": "日期",
+    "SecurityLogs:ClientIpAddress": "IP地址",
+    "SecurityLogs:Browser": "浏览器信息"
+  }
+}

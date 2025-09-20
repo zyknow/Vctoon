@@ -1,0 +1,24 @@
+{
+  "name": "@vben/api",
+  "version": "5.5.9",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@microsoft/signalr": "catalog:",
+    "@vben/constants": "workspace:*",
+    "@vben/hooks": "workspace:*",
+    "@vben/preferences": "workspace:*",
+    "@vben/request": "workspace:*",
+    "@vben/stores": "workspace:*",
+    "@vben/types": "workspace:*",
+    "@vben/utils": "workspace:*",
+    "element-plus": "catalog:",
+    "oidc-client-ts": "catalog:"
+  }
+}

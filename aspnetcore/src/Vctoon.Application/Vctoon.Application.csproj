@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\common.props"/>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Vctoon</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Vctoon.Domain\Vctoon.Domain.csproj"/>
+    <ProjectReference Include="..\Vctoon.Application.Contracts\Vctoon.Application.Contracts.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FFMpegCore.Extensions.SkiaSharp" Version="5.0.2"/>
+    <PackageReference Include="SharpCompress" Version="0.40.0"/>
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.11"/>
+    <PackageReference Include="Volo.Abp.AspNetCore.SignalR" Version="$(AbpVersion)"/>
+    <PackageReference Include="Volo.Abp.PermissionManagement.Application" Version="$(AbpVersion)"/>
+    <PackageReference Include="Volo.Abp.FeatureManagement.Application" Version="$(AbpVersion)"/>
+    <PackageReference Include="Volo.Abp.SettingManagement.Application" Version="$(AbpVersion)"/>
+    <PackageReference Include="Volo.Abp.Account.Application" Version="$(AbpVersion)"/>
+    <PackageReference Include="Volo.Abp.Identity.Application" Version="$(AbpVersion)"/>
+    <!--    <PackageReference Include="Volo.Abp.TenantManagement.Application" Version="$(AbpVersion)" />-->
+  </ItemGroup>
+
+</Project>

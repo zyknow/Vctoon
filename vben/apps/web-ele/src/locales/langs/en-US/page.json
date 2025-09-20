@@ -1,0 +1,259 @@
+{
+  "home": {
+    "title": "Home"
+  },
+  "library": {
+    "title": "Library",
+    "add": "Add Library",
+    "create": {
+      "title": "Create Library",
+      "fields": {
+        "name": "Name",
+        "mediumType": "Media Type",
+        "paths": "Paths"
+      },
+      "placeholders": {
+        "name": "Please enter name",
+        "mediumType": "Please select media type",
+        "paths": "Enter path and select or press enter to add"
+      },
+      "medium": {
+        "image": "Image/Comic",
+        "video": "Video"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "success": "Created successfully",
+        "requirePath": "Please add at least one path"
+      }
+    },
+    "edit": {
+      "title": "Edit Library",
+      "actions": {
+        "success": "Updated successfully",
+        "missingId": "Missing library ID, unable to update",
+        "fetchFailed": "Failed to fetch library information"
+      }
+    },
+    "actions": {
+      "edit": "Edit",
+      "scanFiles": "Scan Library Files",
+      "authorizeAccess": "Authorize Access",
+      "scan": "Scan",
+      "delete": "Delete"
+    },
+    "delete": {
+      "confirmTitle": "Confirm Delete",
+      "confirmMessage": "Are you sure you want to delete library \"{0}\"? This action cannot be undone.",
+      "confirmButton": "Delete",
+      "cancelButton": "Cancel"
+    },
+    "permission": {
+      "dialogTitle": "Library Permission Management",
+      "libraryDescription": "Configure access permissions for this library for specified users",
+      "selectUser": "Select User",
+      "searchUserPlaceholder": "Search username or email...",
+      "searchUserFailed": "Failed to search users",
+      "pleaseSelectUser": "Please select a user",
+      "libraryIdRequired": "Library ID is required",
+      "setSuccess": "Permission set successfully",
+      "setFailed": "Failed to set permission",
+      "inactive": "Inactive",
+      "permissionSettings": "Permission Settings",
+      "canView": "View Permission",
+      "canViewDescription": "Allow user to view content in the library",
+      "canDownload": "Download Permission",
+      "canDownloadDescription": "Allow user to download files from the library",
+      "canComment": "Comment Permission",
+      "canCommentDescription": "Allow user to comment on content",
+      "canShare": "Share Permission",
+      "canShareDescription": "Allow user to share content from the library",
+      "canStar": "Star Permission",
+      "canStarDescription": "Allow user to star favorite content",
+      "confirm": "Confirm Settings"
+    }
+  },
+  "user": {
+    "title": "User Management",
+    "search": {
+      "filter": "Search",
+      "filterPlaceholder": "Enter username, email or phone number to search",
+      "all": "All",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "search": "Search",
+      "reset": "Reset"
+    },
+    "table": {
+      "userName": "Username",
+      "name": "Name",
+      "email": "Email",
+      "phoneNumber": "Phone Number",
+      "status": "Status",
+      "emailConfirmed": "Email Confirmed",
+      "phoneNumberConfirmed": "Phone Confirmed",
+      "creationTime": "Creation Time",
+      "actions": "Actions",
+      "edit": "Edit",
+      "role": "Role",
+      "unlock": "Unlock",
+      "delete": "Delete"
+    },
+    "create": {
+      "title": "Create User",
+      "fields": {
+        "userName": "Username",
+        "name": "Name",
+        "email": "Email",
+        "phoneNumber": "Phone Number",
+        "password": "Password",
+        "status": "Status",
+        "lockoutEnabled": "Lockout Enabled",
+        "emailReminderEnabled": "Email Reminder",
+        "roles": "Roles"
+      },
+      "placeholders": {
+        "userName": "Please enter username",
+        "name": "Please enter name",
+        "email": "Please enter email",
+        "phoneNumber": "Please enter phone number",
+        "password": "Please enter password",
+        "roles": "Please select roles"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "confirm": "Confirm"
+      },
+      "messages": {
+        "success": "User created successfully",
+        "error": "Failed to create user"
+      },
+      "validation": {
+        "userNameRequired": "Please enter username",
+        "userNameLength": "Username must be 3-50 characters",
+        "emailRequired": "Please enter email",
+        "emailFormat": "Please enter a valid email format",
+        "phoneRequired": "Please enter phone number",
+        "phoneFormat": "Please enter a valid phone number format",
+        "passwordRequired": "Please enter password",
+        "passwordLength": "Password must be at least 6 characters",
+        "nameRequired": "Please enter name"
+      }
+    },
+    "edit": {
+      "title": "Edit User",
+      "fields": {
+        "userName": "Username",
+        "name": "Name",
+        "email": "Email",
+        "phoneNumber": "Phone Number",
+        "password": "Password",
+        "status": "Status",
+        "lockoutEnabled": "Lockout Enabled",
+        "emailReminderEnabled": "Email Reminder"
+      },
+      "placeholders": {
+        "userName": "Please enter username",
+        "name": "Please enter name",
+        "email": "Please enter email",
+        "phoneNumber": "Please enter phone number",
+        "password": "Leave empty to keep current password"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "confirm": "Confirm"
+      },
+      "messages": {
+        "success": "User updated successfully",
+        "error": "Failed to update user"
+      }
+    },
+    "role": {
+      "title": "Role Management",
+      "userInfo": "User: ",
+      "assignRoles": "Assign Roles",
+      "placeholders": {
+        "roles": "Please select roles"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "confirm": "Confirm"
+      },
+      "messages": {
+        "success": "Roles updated successfully",
+        "error": "Failed to update user roles"
+      }
+    },
+    "actions": {
+      "create": "Create User",
+      "deleteConfirm": "Are you sure you want to delete user \"{userName}\"?",
+      "deleteTitle": "Confirm Delete",
+      "deleteSuccess": "User deleted successfully",
+      "deleteError": "Failed to delete user",
+      "unlockSuccess": "User unlocked successfully",
+      "unlockError": "Failed to unlock user"
+    },
+    "status": {
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "messages": {
+      "loadUsersError": "Failed to load user list",
+      "loadRolesError": "Failed to load role list",
+      "loadUserRolesError": "Failed to load user roles"
+    }
+  },
+  "mediums": {
+    "sort": {
+      "title": "Title",
+      "dateAdded": "Creation Time",
+      "dateModified": "Last Modification Time",
+      "size": "Size",
+      "ascending": "Ascending",
+      "descending": "Descending",
+      "sortBy": "Sort By",
+      "order": "Sort Order",
+      "clear": "Clear Sort",
+      "sortByAsc": "Sort by {field} Ascending",
+      "sortByDesc": "Sort by {field} Descending"
+    }
+  },
+  "securityLogs": {
+    "title": "Security Logs",
+    "viewMode": {
+      "all": "All Logs",
+      "current": "My Logs"
+    },
+    "search": {
+      "timeRange": "Time Range",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "applicationName": "Application",
+      "applicationNamePlaceholder": "Please enter application name",
+      "userName": "Username",
+      "userNamePlaceholder": "Please enter username",
+      "action": "Action",
+      "actionPlaceholder": "Please enter action name",
+      "clientIp": "Client IP",
+      "clientIpPlaceholder": "Please enter client IP address",
+      "search": "Search",
+      "reset": "Reset"
+    },
+    "table": {
+      "applicationName": "Application",
+      "identity": "Identity",
+      "action": "Action",
+      "userName": "Username",
+      "clientId": "Client ID",
+      "clientIpAddress": "Client IP",
+      "browserInfo": "Browser Info",
+      "creationTime": "Creation Time"
+    },
+    "messages": {
+      "loadError": "Failed to load security logs"
+    }
+  }
+}

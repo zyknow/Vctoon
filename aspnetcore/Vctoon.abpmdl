@@ -1,0 +1,105 @@
+{
+  "template": "app",
+  "imports": {
+    "Volo.Abp.BasicTheme": {
+      "version": "9.3.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.Account": {
+      "version": "9.3.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.OpenIddict": {
+      "version": "9.3.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.Identity": {
+      "version": "9.3.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.TenantManagement": {
+      "version": "9.3.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.SettingManagement": {
+      "version": "9.3.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.PermissionManagement": {
+      "version": "9.3.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.FeatureManagement": {
+      "version": "9.3.1",
+      "isInstalled": true
+    }
+  },
+  "folders": {
+    "items": {
+      "src": {},
+      "test": {}
+    }
+  },
+  "packages": {
+    "Vctoon.Application": {
+      "path": "src/Vctoon.Application/Vctoon.Application.abppkg",
+      "folder": "src"
+    },
+    "Vctoon.Application.Tests": {
+      "path": "test/Vctoon.Application.Tests/Vctoon.Application.Tests.abppkg",
+      "folder": "test"
+    },
+    "Vctoon.Domain.Shared": {
+      "path": "src/Vctoon.Domain.Shared/Vctoon.Domain.Shared.abppkg",
+      "folder": "src"
+    },
+    "Vctoon.Application.Contracts": {
+      "path": "src/Vctoon.Application.Contracts/Vctoon.Application.Contracts.abppkg",
+      "folder": "src"
+    },
+    "Vctoon.HttpApi": {
+      "path": "src/Vctoon.HttpApi/Vctoon.HttpApi.abppkg",
+      "folder": "src"
+    },
+    "Vctoon.HttpApi.Client": {
+      "path": "src/Vctoon.HttpApi.Client/Vctoon.HttpApi.Client.abppkg",
+      "folder": "src"
+    },
+    "Vctoon.Web": {
+      "path": "src/Vctoon.Web/Vctoon.Web.abppkg",
+      "folder": "src"
+    },
+    "Vctoon.Web.Tests": {
+      "path": "test/Vctoon.Web.Tests/Vctoon.Web.Tests.abppkg",
+      "folder": "test"
+    },
+    "Vctoon.EntityFrameworkCore.Tests": {
+      "path": "test/Vctoon.EntityFrameworkCore.Tests/Vctoon.EntityFrameworkCore.Tests.abppkg",
+      "folder": "test"
+    },
+    "Vctoon.EntityFrameworkCore": {
+      "path": "src/Vctoon.EntityFrameworkCore/Vctoon.EntityFrameworkCore.abppkg",
+      "folder": "src"
+    },
+    "Vctoon.TestBase": {
+      "path": "test/Vctoon.TestBase/Vctoon.TestBase.abppkg",
+      "folder": "test"
+    },
+    "Vctoon.Domain.Tests": {
+      "path": "test/Vctoon.Domain.Tests/Vctoon.Domain.Tests.abppkg",
+      "folder": "test"
+    },
+    "Vctoon.HttpApi.Client.ConsoleTestApp": {
+      "path": "test/Vctoon.HttpApi.Client.ConsoleTestApp/Vctoon.HttpApi.Client.ConsoleTestApp.abppkg",
+      "folder": "test"
+    },
+    "Vctoon.DbMigrator": {
+      "path": "src/Vctoon.DbMigrator/Vctoon.DbMigrator.abppkg",
+      "folder": "src"
+    },
+    "Vctoon.Domain": {
+      "path": "src/Vctoon.Domain/Vctoon.Domain.abppkg",
+      "folder": "src"
+    }
+  }
+}
