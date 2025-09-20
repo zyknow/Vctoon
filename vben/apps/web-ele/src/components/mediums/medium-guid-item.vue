@@ -47,10 +47,8 @@ const toggleSelectionFromIcon = (event: MouseEvent) => {
   const currentId = props.modelValue?.id
   if (!currentId) return
 
-  // 在非选中模式下，阻止事件冒泡到卡片
-  if (!isInSelectionMode.value) {
-    event.stopPropagation()
-  }
+  // 始终阻止事件冒泡，避免触发卡片的点击事件
+  event.stopPropagation()
 
   if (event.shiftKey) {
     // Shift + 点击：范围选择
