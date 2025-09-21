@@ -4,16 +4,17 @@ using Vctoon.Mediums.Dtos;
 using Volo.Abp;
 using Volo.Abp.Authorization;
 using Volo.Abp.BlobStoring;
+
 // for UserFriendlyException
 
 // for AbpAuthorizationException
 
 namespace Vctoon.Mediums;
 
-public class MediumAppService(
+public class MediumResourceAppService(
     IBlobContainer<CoverContainer> coverContainer,
     IIdentityUserReadingProcessRepository readingProcessRepository
-) : VctoonAppService
+) : VctoonAppService, IMediumResourceAppService
 {
 #if !DEBUG
     [Authorize]
