@@ -19,7 +19,8 @@ public abstract class MediumBaseAppService<TEntity, TGetOutputDto, TGetListOutpu
     protected override async Task<IQueryable<TEntity>> CreateFilteredQueryAsync(TGetListInput input)
     {
         // TODO: AbpHelper generated
-        var query = (await (Repository as IMediumBaseRepository<TEntity>).WithPageDetailsAsync(CurrentUser.Id.Value))
+        var query = await (Repository as IMediumBaseRepository<TEntity>).WithPageDetailsAsync(CurrentUser.Id.Value);
+        query = query
                 .WhereIf(!input.Title.IsNullOrWhiteSpace(), x => x.Title.Contains(input.Title))
                 .WhereIf(!input.Description.IsNullOrWhiteSpace(), x => x.Description.Contains(input.Description))
                 .WhereIf(input.LibraryId != null, x => x.LibraryId == input.LibraryId)

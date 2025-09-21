@@ -3,7 +3,7 @@ import type { Comic, Video } from '@vben/api'
 
 import { computed } from 'vue'
 
-import { comicApi, MediumType, videoApi } from '@vben/api'
+import { mediumResourceApi, MediumType } from '@vben/api'
 import { useAppConfig } from '@vben/hooks'
 import { CiEditPencilLine01, CiMoreVertical, MdiPlayCircle } from '@vben/icons'
 import { formatDate } from '@vben/utils'
@@ -43,11 +43,15 @@ const cover = computed(() => {
   let mediumUrl
   switch (props.mediumType) {
     case MediumType.Comic: {
-      mediumUrl = comicApi.url.cover.format({ cover: props.modelValue?.cover })
+      mediumUrl = mediumResourceApi.url.getCover.format({
+        cover: props.modelValue?.cover,
+      })
       break
     }
     case MediumType.Video: {
-      mediumUrl = videoApi.url.cover.format({ cover: props.modelValue?.cover })
+      mediumUrl = mediumResourceApi.url.getCover.format({
+        cover: props.modelValue?.cover,
+      })
       break
     }
     default: {

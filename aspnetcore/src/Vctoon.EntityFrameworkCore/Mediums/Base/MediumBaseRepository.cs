@@ -8,9 +8,14 @@ public abstract class MediumBaseRepository<TEntity>(IDbContextProvider<VctoonDbC
     public async Task<IQueryable<TEntity>> WithPageDetailsAsync(Guid? userId, bool include = true)
     {
         var query = await GetQueryableAsync();
-        query = query
-                .Include(x => x.Processes.Where(p => p.UserId == userId))
-            ;
+        query = query.AsNoTracking();
+        if (userId != null)
+        {
+            query = query
+                    .Include(x => x.Processes.Where(p => p.UserId == userId).Take(1))
+                ;
+        }
+
 
         return query;
     }
