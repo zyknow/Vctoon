@@ -28,6 +28,7 @@ export type ComicGetListInput = BasePageRequest & {
   artists?: string[]
   description?: string
   libraryId?: string
+  Progressing?: boolean
   tags?: string[]
   title?: string
 }

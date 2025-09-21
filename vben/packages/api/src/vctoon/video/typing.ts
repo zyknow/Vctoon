@@ -43,6 +43,7 @@ export type VideoGetListInput = BasePageRequest & {
   artists?: string[]
   description?: string
   libraryId?: string
+  Progressing?: boolean
   tags?: string[]
   title?: string
 }
