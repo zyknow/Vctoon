@@ -9,7 +9,7 @@ public abstract class MediumBaseRepository<TEntity>(IDbContextProvider<VctoonDbC
     {
         var query = await GetQueryableAsync();
         query = query
-                .Include(x => x.Processes.FirstOrDefault(p => p.UserId == userId))
+                .Include(x => x.Processes.Where(p => p.UserId == userId))
             ;
 
         return query;
