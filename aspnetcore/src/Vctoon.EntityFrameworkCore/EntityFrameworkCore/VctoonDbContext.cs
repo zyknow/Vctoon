@@ -16,16 +16,11 @@ namespace Vctoon.EntityFrameworkCore;
 
 [ReplaceDbContext(typeof(IIdentityDbContext))]
 [ConnectionStringName("Default")]
-public class VctoonDbContext :
-    AbpDbContext<VctoonDbContext>,
+public class VctoonDbContext(DbContextOptions<VctoonDbContext> options) :
+    AbpDbContext<VctoonDbContext>(options),
     IIdentityDbContext
 
 {
-    public VctoonDbContext(DbContextOptions<VctoonDbContext> options)
-        : base(options)
-    {
-    }
-
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

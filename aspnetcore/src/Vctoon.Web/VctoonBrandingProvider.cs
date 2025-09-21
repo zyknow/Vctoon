@@ -6,14 +6,7 @@ using Volo.Abp.Ui.Branding;
 namespace Vctoon.Web;
 
 [Dependency(ReplaceServices = true)]
-public class VctoonBrandingProvider : DefaultBrandingProvider
+public class VctoonBrandingProvider(IStringLocalizer<VctoonResource> localizer) : DefaultBrandingProvider
 {
-    private IStringLocalizer<VctoonResource> _localizer;
-
-    public VctoonBrandingProvider(IStringLocalizer<VctoonResource> localizer)
-    {
-        _localizer = localizer;
-    }
-
-    public override string AppName => _localizer["AppName"];
+    public override string AppName => localizer["AppName"];
 }

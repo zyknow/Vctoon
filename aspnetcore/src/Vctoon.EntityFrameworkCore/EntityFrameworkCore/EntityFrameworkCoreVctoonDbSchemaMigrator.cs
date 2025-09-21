@@ -4,16 +4,9 @@ using Volo.Abp.DependencyInjection;
 
 namespace Vctoon.EntityFrameworkCore;
 
-public class EntityFrameworkCoreVctoonDbSchemaMigrator
+public class EntityFrameworkCoreVctoonDbSchemaMigrator(IServiceProvider serviceProvider)
     : IVctoonDbSchemaMigrator, ITransientDependency
 {
-    private readonly IServiceProvider _serviceProvider;
-
-    public EntityFrameworkCoreVctoonDbSchemaMigrator(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
-
     public async Task MigrateAsync()
     {
         /* We intentionally resolving the VctoonDbContext
@@ -22,7 +15,7 @@ public class EntityFrameworkCoreVctoonDbSchemaMigrator
          * current scope.
          */
 
-        await _serviceProvider
+        await serviceProvider
             .GetRequiredService<VctoonDbContext>()
             .Database
             .MigrateAsync();

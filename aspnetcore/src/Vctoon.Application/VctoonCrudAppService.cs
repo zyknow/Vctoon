@@ -5,15 +5,11 @@ using Volo.Abp.Domain.Repositories;
 
 namespace Vctoon;
 
-public abstract class VctoonCrudAppService<TEntity, TEntityDto, TKey, TGetListInput, TCreateInput, TUpdateInput>
-    : VctoonCrudAppService<TEntity, TEntityDto, TEntityDto, TKey, TGetListInput, TCreateInput, TUpdateInput>
-    where TEntity : class, IEntity<TKey>
-{
-    protected VctoonCrudAppService(IRepository<TEntity, TKey> repository) :
-        base(repository)
-    {
-    }
-}
+public abstract class
+    VctoonCrudAppService<TEntity, TEntityDto, TKey, TGetListInput, TCreateInput, TUpdateInput>(
+        IRepository<TEntity, TKey> repository)
+    : VctoonCrudAppService<TEntity, TEntityDto, TEntityDto, TKey, TGetListInput, TCreateInput, TUpdateInput>(repository)
+    where TEntity : class, IEntity<TKey>;
 
 public abstract class VctoonCrudAppService<TEntity, TGetOutputDto, TGetListOutputDto, TKey, TGetListInput, TCreateInput,
     TUpdateInput>

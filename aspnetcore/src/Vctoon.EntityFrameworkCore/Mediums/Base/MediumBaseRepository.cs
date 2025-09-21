@@ -1,9 +1,6 @@
 namespace Vctoon.Mediums.Base;
 
-public abstract class MediumBaseRepository<TEntity> : EfCoreRepository<VctoonDbContext, TEntity, Guid>,
-    IMediumBaseRepository<TEntity> where TEntity : MediumBase
-{
-    protected MediumBaseRepository(IDbContextProvider<VctoonDbContext> dbContextProvider) : base(dbContextProvider)
-    {
-    }
-}
+public abstract class MediumBaseRepository<TEntity>(IDbContextProvider<VctoonDbContext> dbContextProvider)
+    : EfCoreRepository<VctoonDbContext, TEntity, Guid>(dbContextProvider),
+        IMediumBaseRepository<TEntity>
+    where TEntity : MediumBase;

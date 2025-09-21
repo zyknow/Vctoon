@@ -2,13 +2,10 @@ using System.Threading;
 
 namespace Vctoon.Libraries;
 
-public class LibraryPermissionRepository : EfCoreRepository<VctoonDbContext, LibraryPermission>,
-    ILibraryPermissionRepository
+public class LibraryPermissionRepository(IDbContextProvider<VctoonDbContext> dbContextProvider)
+    : EfCoreRepository<VctoonDbContext, LibraryPermission>(dbContextProvider),
+        ILibraryPermissionRepository
 {
-    public LibraryPermissionRepository(IDbContextProvider<VctoonDbContext> dbContextProvider) : base(dbContextProvider)
-    {
-    }
-
     public override async Task<IQueryable<LibraryPermission>> WithDetailsAsync()
     {
         return (await GetQueryableAsync()).IncludeDetails();

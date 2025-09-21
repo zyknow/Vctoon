@@ -7,14 +7,9 @@ using Volo.Abp.Identity;
 
 namespace Vctoon.Web.HealthChecks;
 
-public class VctoonDatabaseCheck : IHealthCheck, ITransientDependency
+public class VctoonDatabaseCheck(IIdentityRoleRepository identityRoleRepository) : IHealthCheck, ITransientDependency
 {
-    protected readonly IIdentityRoleRepository IdentityRoleRepository;
-
-    public VctoonDatabaseCheck(IIdentityRoleRepository identityRoleRepository)
-    {
-        IdentityRoleRepository = identityRoleRepository;
-    }
+    protected readonly IIdentityRoleRepository IdentityRoleRepository = identityRoleRepository;
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
         CancellationToken cancellationToken = default)

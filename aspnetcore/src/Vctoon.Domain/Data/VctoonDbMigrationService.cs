@@ -10,29 +10,19 @@ using Volo.Abp.MultiTenancy;
 
 namespace Vctoon.Data;
 
-public class VctoonDbMigrationService : ITransientDependency
+public class VctoonDbMigrationService(
+    IDataSeeder dataSeeder,
+    // ITenantRepository tenantRepository,
+    ICurrentTenant currentTenant,
+    IEnumerable<IVctoonDbSchemaMigrator> dbSchemaMigrators)
+    : ITransientDependency
 {
     // private readonly ITenantRepository _tenantRepository;
-    private readonly ICurrentTenant _currentTenant;
+    private readonly ICurrentTenant _currentTenant = currentTenant;
 
-    private readonly IDataSeeder _dataSeeder;
-    private readonly IEnumerable<IVctoonDbSchemaMigrator> _dbSchemaMigrators;
+    // _tenantRepository = tenantRepository;
 
-    public VctoonDbMigrationService(
-        IDataSeeder dataSeeder,
-        // ITenantRepository tenantRepository,
-        ICurrentTenant currentTenant,
-        IEnumerable<IVctoonDbSchemaMigrator> dbSchemaMigrators)
-    {
-        _dataSeeder = dataSeeder;
-        // _tenantRepository = tenantRepository;
-        _currentTenant = currentTenant;
-        _dbSchemaMigrators = dbSchemaMigrators;
-
-        Logger = NullLogger<VctoonDbMigrationService>.Instance;
-    }
-
-    public ILogger<VctoonDbMigrationService> Logger { get; set; }
+    public ILogger<VctoonDbMigrationService> Logger { get; set; } = NullLogger<VctoonDbMigrationService>.Instance;
 
     public async Task MigrateAsync()
     {
@@ -58,7 +48,7 @@ public class VctoonDbMigrationService : ITransientDependency
         Logger.LogInformation(
             $"Migrating schema for host database...");
 
-        foreach (var migrator in _dbSchemaMigrators)
+        foreach (var migrator in dbSchemaMigrators)
         {
             await migrator.MigrateAsync();
         }
@@ -68,7 +58,7 @@ public class VctoonDbMigrationService : ITransientDependency
     {
         Logger.LogInformation($"Executing host database seed...");
 
-        await _dataSeeder.SeedAsync(new DataSeedContext()
+        await dataSeeder.SeedAsync(new DataSeedContext()
             .WithProperty(IdentityDataSeedContributor.AdminEmailPropertyName,
                 VctoonConsts.AdminEmailDefaultValue)
             .WithProperty(IdentityDataSeedContributor.AdminPasswordPropertyName,

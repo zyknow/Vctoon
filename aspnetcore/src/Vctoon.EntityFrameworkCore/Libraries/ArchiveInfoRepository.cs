@@ -1,11 +1,8 @@
 namespace Vctoon.Libraries;
 
-public class ArchiveInfoRepository : EfCoreRepository<VctoonDbContext, ArchiveInfo, Guid>, IArchiveInfoRepository
+public class ArchiveInfoRepository(IDbContextProvider<VctoonDbContext> dbContextProvider)
+    : EfCoreRepository<VctoonDbContext, ArchiveInfo, Guid>(dbContextProvider), IArchiveInfoRepository
 {
-    public ArchiveInfoRepository(IDbContextProvider<VctoonDbContext> dbContextProvider) : base(dbContextProvider)
-    {
-    }
-
     public override async Task<IQueryable<ArchiveInfo>> WithDetailsAsync()
     {
         return (await GetQueryableAsync()).IncludeDetails();
