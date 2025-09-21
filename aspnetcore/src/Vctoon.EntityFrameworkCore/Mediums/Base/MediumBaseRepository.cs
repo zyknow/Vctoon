@@ -1,6 +1,4 @@
-using Vctoon.Mediums.Base;
-
-namespace Vctoon.Mediums;
+namespace Vctoon.Mediums.Base;
 
 public abstract class MediumBaseRepository<TEntity> : EfCoreRepository<VctoonDbContext, TEntity, Guid>,
     IMediumBaseRepository<TEntity> where TEntity : MediumBase

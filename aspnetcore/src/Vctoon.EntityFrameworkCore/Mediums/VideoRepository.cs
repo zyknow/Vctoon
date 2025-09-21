@@ -1,3 +1,5 @@
+using Vctoon.Mediums.Base;
+
 namespace Vctoon.Mediums;
 
 public class VideoRepository : MediumBaseRepository<Video>, IVideoRepository
