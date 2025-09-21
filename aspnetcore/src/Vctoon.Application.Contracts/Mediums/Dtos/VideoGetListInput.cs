@@ -1,7 +1,7 @@
 namespace Vctoon.Mediums.Dtos;
 
 [Serializable]
-public class VideoGetListInput : MediumGetListInputBase
+public class VideoGetListInput : MediumGetListInputBase, IMediumHasReadingProcessDto
 {
     public double? Framerate { get; set; }
 
@@ -14,4 +14,6 @@ public class VideoGetListInput : MediumGetListInputBase
     public long? Bitrate { get; set; }
 
     public string? Ratio { get; set; }
+    public double? Progress { get; set; }
+    public DateTime? LastReadTime { get; set; }
 }

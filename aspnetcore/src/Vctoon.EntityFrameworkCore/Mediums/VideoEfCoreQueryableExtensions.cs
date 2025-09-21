@@ -9,8 +9,11 @@ public static class VideoEfCoreQueryableExtensions
             return queryable;
         }
 
-        return queryable
+        queryable = queryable
             // .Include(x => x.xxx) // TODO: AbpHelper generated
             ;
+
+
+        return queryable;
     }
 }

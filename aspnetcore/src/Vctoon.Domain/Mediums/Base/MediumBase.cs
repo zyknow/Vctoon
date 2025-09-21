@@ -1,7 +1,9 @@
+using Vctoon.Identities;
+
 namespace Vctoon.Mediums.Base;
 
 [Serializable]
-public abstract class MediumBase : AuditedAggregateRoot<Guid>
+public abstract class MediumBase : AuditedAggregateRoot<Guid>, IMediumHasReadingProcess
 {
     protected MediumBase()
     {
@@ -32,6 +34,8 @@ public abstract class MediumBase : AuditedAggregateRoot<Guid>
     public virtual List<Tag> Tags { get; } = new();
 
     public virtual List<Artist> Artists { get; set; } = new();
+
+    public ICollection<IdentityUserReadingProcess> Processes { get; set; } = [];
 
     public virtual void AddTag(Tag tag)
     {

@@ -1,6 +1,6 @@
 ﻿namespace Vctoon.Mediums.Dtos.Base;
 
-public abstract class MediumDtoBase : AuditedEntityDto<Guid>
+public abstract class MediumDtoBase : AuditedEntityDto<Guid>, IMediumHasReadingProcessDto
 {
     public string Title { get; protected set; }
 
@@ -15,4 +15,7 @@ public abstract class MediumDtoBase : AuditedEntityDto<Guid>
     public virtual List<TagDto> Tags { get; } = new();
 
     public virtual List<ArtistDto> Artists { get; set; } = new();
+
+    public double? Progress { get; set; }
+    public DateTime? LastReadTime { get; set; }
 }

@@ -1,5 +1,8 @@
 # Copilot Instructions for this Repository
 
+Chat
+Use zh for responses
+
 Project stack
 - .NET 9, C# latest
 - ABP Framework 9.3.x (monolith)
@@ -123,7 +126,7 @@ Git commit instructions
   <detailed description within 100 characters>
 
   Types: feat | fix | style | perf | refactor | revert | test | docs | chore | workflow | ci | types | wip
-- Use English; keep line 3 ¡Ü 100 chars
+- Use English; keep line 3 ï¿½ï¿½ 100 chars
 
 Repository-specific guidance for Copilot
 - Prefer Razor Pages examples over MVC/Blazor

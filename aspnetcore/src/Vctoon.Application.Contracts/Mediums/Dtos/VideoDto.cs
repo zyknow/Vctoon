@@ -1,7 +1,7 @@
 namespace Vctoon.Mediums.Dtos;
 
 [Serializable]
-public class VideoDto : MediumDtoBase
+public class VideoDto : MediumDtoBase, IMediumHasReadingProcessDto
 {
     public double Framerate { get; set; }
 
@@ -18,4 +18,6 @@ public class VideoDto : MediumDtoBase
     public TimeSpan Duration { get; set; }
 
     public string Path { get; set; }
+    public double? Progress { get; set; }
+    public DateTime? LastReadTime { get; set; }
 }

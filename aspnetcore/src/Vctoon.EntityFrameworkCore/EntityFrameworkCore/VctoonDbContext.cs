@@ -1,3 +1,4 @@
+using Vctoon.Identities;
 using Vctoon.Libraries;
 using Vctoon.Mediums;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
@@ -37,6 +38,7 @@ public class VctoonDbContext(DbContextOptions<VctoonDbContext> options) :
 
         builder.ConfigureLibraries();
         builder.ConfigureMediums();
+        builder.ConfigureIdentities();
 
         /* Configure your own tables/entities inside here */
 
@@ -83,6 +85,8 @@ public class VctoonDbContext(DbContextOptions<VctoonDbContext> options) :
     public DbSet<Artist> Artists { get; set; }
 
     public DbSet<LibraryPermission> LibraryPermissions { get; set; }
+
+    public DbSet<IdentityUserReadingProcess> IdentityUserReadingProcesses { get; set; }
 
     #endregion
 
