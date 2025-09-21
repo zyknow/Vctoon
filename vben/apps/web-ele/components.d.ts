@@ -49,6 +49,7 @@ declare module 'vue' {
     MediumGuidItem: typeof import('./src/components/mediums/medium-guid-item.vue')['default']
     MediumLayoutDropdownSelect: typeof import('./src/components/mediums/medium-layout-dropdown-select.vue')['default']
     MediumListItem: typeof import('./src/components/mediums/medium-list-item.vue')['default']
+    MediumRecommendation: typeof import('./src/components/mediums/medium-recommendation.vue')['default']
     MediumRecommendationSection: typeof import('./src/components/mediums/medium-recommendation-section.vue')['default']
     MediumRecommendationSectionExample: typeof import('./src/components/mediums/medium-recommendation-section-example.vue')['default']
     MediumRecommendGroup: typeof import('./src/components/mediums/medium-recommend-group.vue')['default']
