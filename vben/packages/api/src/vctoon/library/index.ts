@@ -10,7 +10,7 @@ import { requestClient } from '../../request'
 import {
   createBaseCurdApi,
   createBaseCurdUrl,
-} from '../base/base-curd-api-definition'
+} from '../base/curd-api-definition-base'
 
 /** Library API 根路径 */
 const baseUrl = '/api/app/library'

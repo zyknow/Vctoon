@@ -8,7 +8,7 @@ import { requestClient } from '../../request'
 import {
   createBaseCurdApi,
   createBaseCurdUrl,
-} from '../base/base-curd-api-definition'
+} from '../base/curd-api-definition-base'
 
 const baseUrl = '/api/identity/roles'
 

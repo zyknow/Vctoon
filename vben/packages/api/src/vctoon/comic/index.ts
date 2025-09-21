@@ -8,7 +8,7 @@ import type {
 import {
   createBaseCurdApi,
   createBaseCurdUrl,
-} from '../base/base-curd-api-definition'
+} from '../base/curd-api-definition-base'
 
 /** Comic API 根路径 */
 const baseUrl = '/api/app/comic'
