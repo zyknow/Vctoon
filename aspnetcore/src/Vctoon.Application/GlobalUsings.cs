@@ -8,4 +8,5 @@ global using System.Threading.Tasks;
 global using Microsoft.AspNetCore.Authorization;
 global using Vctoon.Libraries;
 global using Vctoon.Services;
+global using Volo.Abp.Application.Services;
 global using Volo.Abp.DependencyInjection;

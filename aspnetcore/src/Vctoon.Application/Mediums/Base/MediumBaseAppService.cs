@@ -1,7 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-using Vctoon.BlobContainers;
 using Vctoon.Mediums.Dtos.Base;
-using Volo.Abp.BlobStoring;
 using Volo.Abp.Domain.Repositories;
 
 namespace Vctoon.Mediums.Base;
@@ -19,18 +16,6 @@ public abstract class MediumBaseAppService<TEntity, TGetOutputDto, TGetListOutpu
     where TCreateInput : MediumCreateUpdateDtoBase
     where TUpdateInput : MediumCreateUpdateDtoBase
 {
-    protected IBlobContainer<CoverContainer> CoverContainer =>
-        LazyServiceProvider.LazyGetRequiredService<IBlobContainer<CoverContainer>>();
-
-#if !DEBUG
-    [Authorize]
-#endif
-    public async Task<Stream> GetCoverAsync(string cover)
-    {
-        var stream = await CoverContainer.GetAsync(cover);
-        return stream;
-    }
-
     protected override async Task<IQueryable<TEntity>> CreateFilteredQueryAsync(TGetListInput input)
     {
         // TODO: AbpHelper generated
