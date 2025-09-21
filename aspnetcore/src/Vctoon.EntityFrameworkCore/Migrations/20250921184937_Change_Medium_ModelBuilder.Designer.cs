@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Vctoon.EntityFrameworkCore;
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace Vctoon.Migrations
 {
     [DbContext(typeof(VctoonDbContext))]
-    partial class VctoonDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250921184937_Change_Medium_ModelBuilder")]
+    partial class Change_Medium_ModelBuilder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,10 +29,10 @@ namespace Vctoon.Migrations
 
             modelBuilder.Entity("Vctoon.Identities.IdentityUserReadingProcess", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("ComicId")
+                    b.Property<Guid>("MediumId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("LastReadTime")
@@ -38,17 +41,9 @@ namespace Vctoon.Migrations
                     b.Property<double>("Progress")
                         .HasColumnType("double precision");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.HasKey("UserId", "MediumId");
 
-                    b.Property<Guid?>("VideoId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ComicId");
-
-                    b.HasIndex("VideoId");
+                    b.HasIndex("MediumId");
 
                     b.ToTable("AppIdentityUserReadingProcesses", (string)null);
                 });
@@ -2242,11 +2237,15 @@ namespace Vctoon.Migrations
                 {
                     b.HasOne("Vctoon.Mediums.Comic", null)
                         .WithMany("Processes")
-                        .HasForeignKey("ComicId");
+                        .HasForeignKey("MediumId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Vctoon.Mediums.Video", null)
                         .WithMany("Processes")
-                        .HasForeignKey("VideoId");
+                        .HasForeignKey("MediumId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Vctoon.Libraries.ArchiveInfo", b =>

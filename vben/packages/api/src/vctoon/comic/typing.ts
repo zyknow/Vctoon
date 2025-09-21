@@ -9,9 +9,10 @@ import type {
 
 export type ComicGetListOutput = MediumGetListOutputBase
 
-export type Comic = ComicGetListOutput & MediumRelations & {
-  comicImages?: ComicImage[]
-}
+export type Comic = ComicGetListOutput &
+  MediumRelations & {
+    comicImages?: ComicImage[]
+  }
 
 export type ComicCreateUpdate = MediumCreateUpdateBase
 

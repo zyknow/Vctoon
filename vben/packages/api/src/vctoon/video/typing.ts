@@ -20,7 +20,7 @@ export type VideoGetListOutput = MediumGetListOutputBase & {
 }
 
 // 详情：输出 + 关系
-export type Video = VideoGetListOutput & MediumRelations
+export type Video = MediumRelations & VideoGetListOutput
 
 // 创建/更新：基础 + 视频专有输入
 export type VideoCreateUpdate = MediumCreateUpdateBase & {

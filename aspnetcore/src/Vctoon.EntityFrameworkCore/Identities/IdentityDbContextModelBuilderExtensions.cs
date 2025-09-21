@@ -19,7 +19,6 @@ public static class IdentityDbContextModelBuilderExtensions
         {
             b.ToTable(VctoonConsts.DbTablePrefix + "IdentityUserReadingProcesses", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
-            b.HasKey(x => new { x.UserId, x.MediumId });
         });
     }
 }

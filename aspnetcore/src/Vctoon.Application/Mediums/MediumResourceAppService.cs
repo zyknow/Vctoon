@@ -47,15 +47,25 @@ public class MediumResourceAppService(
 
         // 写入/更新阅读进度（以 UserId + MediumId 作为复合键 Upsert）
         var query = await readingProcessRepository.GetQueryableAsync();
+
+        query = input.MediumType switch
+        {
+            MediumType.Comic => query.Where(x => x.ComicId == input.MediumId),
+            MediumType.Video => query.Where(x => x.VideoId == input.MediumId),
+            _ => throw new UserFriendlyException("Unsupported MediumType")
+        };
+
         var entity = await AsyncExecuter.FirstOrDefaultAsync(
-            query.Where(x => x.UserId == currentUserId && x.MediumId == input.MediumId)
+            query.Where(x => x.UserId == currentUserId)
         );
 
         if (entity == null)
         {
             entity = new IdentityUserReadingProcess(
+                GuidGenerator.Create(),
                 currentUserId,
-                input.MediumId
+                input.MediumId,
+                input.MediumType
             );
 
             await readingProcessRepository.InsertAsync(entity, true);
@@ -63,7 +73,7 @@ public class MediumResourceAppService(
         else
         {
             entity.Progress = input.Progress;
-            entity.LastReadTime = input.LastReadTime;
+            entity.LastReadTime = input.ReadingLastTime;
             await readingProcessRepository.UpdateAsync(entity, true);
         }
     }

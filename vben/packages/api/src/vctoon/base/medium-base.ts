@@ -5,36 +5,35 @@ import type { Tag } from '../tag/typing'
 
 // 列表/详情通用基础输出（含审计字段）
 export type MediumGetListOutputBase = FullAuditedEntityDto & {
-	cover?: string
-	description?: string
-	libraryId: string
-	readCount: number
-	readingLastTime?: Date
-	readingProgress?: number
-	title?: string
+  cover?: string
+  description?: string
+  libraryId: string
+  readCount: number
+  readingLastTime?: Date
+  readingProgress?: number
+  title?: string
 }
 
 // 关系型数据（标签/作者）
 export type MediumRelations = {
-	artists?: Artist[]
-	tags?: Tag[]
+  artists?: Artist[]
+  tags?: Tag[]
 }
 
 // 新增/更新通用基础输入
 export type MediumCreateUpdateBase = {
-	cover?: string
-	description?: string
-	libraryId: string
-	title?: string
+  cover?: string
+  description?: string
+  libraryId: string
+  title?: string
 }
 
 // 列表查询通用基础输入
 export type MediumGetListInputBase = BasePageRequest & {
-	artists?: string[]
-	description?: string
-	hasReadingProgress?: boolean
-	libraryId?: string
-	tags?: string[]
-	title?: string
+  artists?: string[]
+  description?: string
+  hasReadingProgress?: boolean
+  libraryId?: string
+  tags?: string[]
+  title?: string
 }
-
