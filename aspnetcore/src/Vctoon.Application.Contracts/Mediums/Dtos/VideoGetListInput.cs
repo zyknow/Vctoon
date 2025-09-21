@@ -14,6 +14,6 @@ public class VideoGetListInput : MediumGetListInputBase, IMediumHasReadingProces
     public long? Bitrate { get; set; }
 
     public string? Ratio { get; set; }
-    public double? Progress { get; set; }
-    public DateTime? LastReadTime { get; set; }
+    public double? ReadingProgress { get; set; }
+    public DateTime? ReadingLastTime { get; set; }
 }

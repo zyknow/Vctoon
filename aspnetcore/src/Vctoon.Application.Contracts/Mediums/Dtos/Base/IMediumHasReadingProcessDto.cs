@@ -2,6 +2,6 @@
 
 public interface IMediumHasReadingProcessDto
 {
-    public double? Progress { get; set; }
-    public DateTime? LastReadTime { get; set; }
+    public double? ReadingProgress { get; set; }
+    public DateTime? ReadingLastTime { get; set; }
 }

@@ -35,26 +35,26 @@ public class VctoonApplicationAutoMapperProfile : Profile
         CreateMap<IdentitySecurityLog, IdentitySecurityLogDto>();
         // Video -> DTOs，映射首个阅读进度到 Progress/LastReadTime（避免使用?.）
         CreateMap<Video, VideoDto>()
-            .ForMember(d => d.Progress,
+            .ForMember(d => d.ReadingProgress,
                 opt => opt.MapFrom(s => s.Processes.Select(p => (double?)p.Progress).FirstOrDefault()))
-            .ForMember(d => d.LastReadTime,
+            .ForMember(d => d.ReadingLastTime,
                 opt => opt.MapFrom(s => s.Processes.Select(p => p.LastReadTime).FirstOrDefault()));
         CreateMap<Video, VideoGetListOutputDto>()
-            .ForMember(d => d.Progress,
+            .ForMember(d => d.ReadingProgress,
                 opt => opt.MapFrom(s => s.Processes.Select(p => (double?)p.Progress).FirstOrDefault()))
-            .ForMember(d => d.LastReadTime,
+            .ForMember(d => d.ReadingLastTime,
                 opt => opt.MapFrom(s => s.Processes.Select(p => p.LastReadTime).FirstOrDefault()));
         CreateMap<VideoCreateUpdateDto, Video>(MemberList.Source);
         // Comic -> DTOs，映射首个阅读进度到 Progress/LastReadTime（避免使用?.）
         CreateMap<Comic, ComicDto>()
-            .ForMember(d => d.Progress,
+            .ForMember(d => d.ReadingProgress,
                 opt => opt.MapFrom(s => s.Processes.Select(p => (double?)p.Progress).FirstOrDefault()))
-            .ForMember(d => d.LastReadTime,
+            .ForMember(d => d.ReadingLastTime,
                 opt => opt.MapFrom(s => s.Processes.Select(p => p.LastReadTime).FirstOrDefault()));
         CreateMap<Comic, ComicGetListOutputDto>()
-            .ForMember(d => d.Progress,
+            .ForMember(d => d.ReadingProgress,
                 opt => opt.MapFrom(s => s.Processes.Select(p => (double?)p.Progress).FirstOrDefault()))
-            .ForMember(d => d.LastReadTime,
+            .ForMember(d => d.ReadingLastTime,
                 opt => opt.MapFrom(s => s.Processes.Select(p => p.LastReadTime).FirstOrDefault()));
         CreateMap<ComicCreateUpdateDto, Comic>(MemberList.Source);
         CreateMap<Artist, ArtistDto>();

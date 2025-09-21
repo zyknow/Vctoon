@@ -8,6 +8,8 @@ export type ComicGetListOutput = FullAuditedEntityDto & {
   description?: string
   libraryId: string
   readCount: number
+  readingLastTime: Date
+  readingProgress?: boolean
   title?: string
 }
 
@@ -27,8 +29,8 @@ export type ComicCreateUpdate = {
 export type ComicGetListInput = BasePageRequest & {
   artists?: string[]
   description?: string
+  hasReadingProgress?: boolean
   libraryId?: string
-  Progressing?: boolean
   tags?: string[]
   title?: string
 }

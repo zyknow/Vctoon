@@ -16,6 +16,6 @@ public abstract class MediumDtoBase : AuditedEntityDto<Guid>, IMediumHasReadingP
 
     public virtual List<ArtistDto> Artists { get; set; } = new();
 
-    public double? Progress { get; set; }
-    public DateTime? LastReadTime { get; set; }
+    public double? ReadingProgress { get; set; }
+    public DateTime? ReadingLastTime { get; set; }
 }

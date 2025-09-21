@@ -18,6 +18,6 @@ public class VideoGetListOutputDto : MediumGetListOutputDtoBase, IMediumHasReadi
     public TimeSpan Duration { get; set; }
 
     public string Path { get; set; }
-    public double? Progress { get; set; }
-    public DateTime? LastReadTime { get; set; }
+    public double? ReadingProgress { get; set; }
+    public DateTime? ReadingLastTime { get; set; }
 }

@@ -15,6 +15,8 @@ export type VideoGetListOutput = FullAuditedEntityDto & {
   path?: string
   ratio?: string
   readCount: number
+  readingLastTime: Date
+  readingProgress?: number
   title?: string
   width: number
 }
@@ -42,8 +44,8 @@ export type VideoCreateUpdate = {
 export type VideoGetListInput = BasePageRequest & {
   artists?: string[]
   description?: string
+  hasReadingProgress?: boolean
   libraryId?: string
-  Progressing?: boolean
   tags?: string[]
   title?: string
 }

@@ -11,6 +11,6 @@ public abstract class MediumGetListOutputDtoBase : AuditedEntityDto<Guid>, IMedi
     public int ReadCount { get; protected set; }
 
     public Guid LibraryId { get; internal set; }
-    public double? Progress { get; set; }
-    public DateTime? LastReadTime { get; set; }
+    public double? ReadingProgress { get; set; }
+    public DateTime? ReadingLastTime { get; set; }
 }
