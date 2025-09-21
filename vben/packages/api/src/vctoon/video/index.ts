@@ -16,7 +16,6 @@ const baseUrl = '/api/app/video'
 export const videoApi = {
   url: {
     ...createBaseCurdUrl(baseUrl),
-    cover: `${baseUrl}/cover?cover={cover}`,
   },
   ...createBaseCurdApi<
     string,

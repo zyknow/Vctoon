@@ -16,7 +16,6 @@ const baseUrl = '/api/app/comic'
 export const comicApi = {
   url: {
     ...createBaseCurdUrl(baseUrl),
-    cover: `${baseUrl}/cover?cover={cover}`,
   },
   ...createBaseCurdApi<
     string,
