@@ -1,39 +1,21 @@
-/** Comic 模块类型（对齐 swagger 中的 Dtos） */
+/** Comic 模块类型（复用 Medium 基础类型） */
 
-import type { Artist } from '../artist/typing'
-import type { Tag } from '../tag/typing'
+import type {
+  MediumCreateUpdateBase,
+  MediumGetListInputBase,
+  MediumGetListOutputBase,
+  MediumRelations,
+} from '../base/medium-base'
 
-export type ComicGetListOutput = FullAuditedEntityDto & {
-  cover?: string
-  description?: string
-  libraryId: string
-  readCount: number
-  readingLastTime: Date
-  readingProgress?: boolean
-  title?: string
-}
+export type ComicGetListOutput = MediumGetListOutputBase
 
-export type Comic = ComicGetListOutput & {
-  artists?: Artist[]
+export type Comic = ComicGetListOutput & MediumRelations & {
   comicImages?: ComicImage[]
-  tags?: Tag[]
 }
 
-export type ComicCreateUpdate = {
-  cover?: string
-  description?: string
-  libraryId: string
-  title?: string
-}
+export type ComicCreateUpdate = MediumCreateUpdateBase
 
-export type ComicGetListInput = BasePageRequest & {
-  artists?: string[]
-  description?: string
-  hasReadingProgress?: boolean
-  libraryId?: string
-  tags?: string[]
-  title?: string
-}
+export type ComicGetListInput = MediumGetListInputBase
 
 export type ComicImage = {
   archiveInfoPathId?: null | string

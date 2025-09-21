@@ -1,51 +1,38 @@
-/** Video 模块类型（对齐 swagger 中的 Dtos） */
+/** Video 模块类型（复用 Medium 基础类型） */
 
-import type { Artist } from '../artist/typing'
-import type { Tag } from '../tag/typing'
+import type {
+  MediumCreateUpdateBase,
+  MediumGetListInputBase,
+  MediumGetListOutputBase,
+  MediumRelations,
+} from '../base/medium-base'
 
-export type VideoGetListOutput = FullAuditedEntityDto & {
+// 输出：基础 + 视频专有字段
+export type VideoGetListOutput = MediumGetListOutputBase & {
   bitrate: number
   codec?: string
-  cover?: string
-  description?: string
   duration: string
   framerate: number
   height: number
-  libraryId: string
   path?: string
   ratio?: string
-  readCount: number
-  readingLastTime: Date
-  readingProgress?: number
-  title?: string
   width: number
 }
 
-export type Video = VideoGetListOutput & {
-  artists?: Artist[]
-  tags?: Tag[]
-}
+// 详情：输出 + 关系
+export type Video = VideoGetListOutput & MediumRelations
 
-export type VideoCreateUpdate = {
+// 创建/更新：基础 + 视频专有输入
+export type VideoCreateUpdate = MediumCreateUpdateBase & {
   bitrate: number
   codec?: string
-  cover?: string
-  description?: string
   duration: string
   framerate: number
   height: number
-  libraryId: string
   path?: string
   ratio?: string
-  title?: string
   width: number
 }
 
-export type VideoGetListInput = BasePageRequest & {
-  artists?: string[]
-  description?: string
-  hasReadingProgress?: boolean
-  libraryId?: string
-  tags?: string[]
-  title?: string
-}
+// 查询输入：复用基础
+export type VideoGetListInput = MediumGetListInputBase
