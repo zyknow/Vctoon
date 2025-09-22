@@ -9,21 +9,26 @@ export interface UseLibraryMediumProviderOptions {
   autoLoad?: boolean
 }
 
+export type LibraryMediumProvider = MediumProvider & {
+  library: Library
+}
+
 /** 基于 Library 的便捷封装 */
 export function createLibraryMediumProvider(
   library: Library,
   opts: UseLibraryMediumProviderOptions = {},
-): MediumProvider {
+): LibraryMediumProvider {
   const model = createMediumProvider({
     loadType: library.mediumType,
     title: library.name,
     pageRequest: {
       sorting: 'CreationTime DESC',
       // 需要的话在此带入 library 过滤条件：
-      // libraryId: library.id,
+      libraryId: library.id,
     },
     autoLoad: opts.autoLoad ?? true,
-  })
+  }) as LibraryMediumProvider
+  model.library = library
 
   return model
 }

@@ -2,5 +2,5 @@
 
 public interface IMediumHasReadingProcessQuery
 {
-    public bool HasReadingProgress { get; set; }
+    public bool? HasReadingProgress { get; set; }
 }

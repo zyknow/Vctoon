@@ -14,7 +14,7 @@ provideMediumProvider(state)
 <template>
   <Page auto-content-height content-class="flex flex-col overflow-hidden gap-6">
     <MediumToolbar />
-    <MediumContent />
+    <MediumContent v-show="state.currentTab.value === 'library'" />
   </Page>
 </template>
 

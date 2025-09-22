@@ -17,6 +17,8 @@ public class VideoAppService(IVideoRepository repository)
     protected override string UpdatePolicyName { get; set; } = VctoonPermissions.Video.Update;
     protected override string DeletePolicyName { get; set; } = VctoonPermissions.Video.Delete;
 
+
+    [RemoteService(false)]
     public override Task<VideoDto> CreateAsync(VideoCreateUpdateDto input)
     {
         throw new UserFriendlyException("Not supported");
@@ -25,17 +27,13 @@ public class VideoAppService(IVideoRepository repository)
     protected override async Task<IQueryable<Video>> CreateFilteredQueryAsync(VideoGetListInput input)
     {
         var query = await base.CreateFilteredQueryAsync(input);
+        if (CurrentUser.Id != null)
+        {
+            query = query.WhereIf(input.HasReadingProgress != null,
+                x => x.Processes.Any(p => p.VideoId != null && p.UserId == CurrentUser.Id && p.Progress > 0) ==
+                     input.HasReadingProgress);
+        }
 
-        // TODO: AbpHelper generated
-        return query
-                .WhereIf(input.Framerate != null, x => x.Framerate == input.Framerate)
-                .WhereIf(!input.Codec.IsNullOrWhiteSpace(), x => x.Codec.Contains(input.Codec))
-                .WhereIf(input.Width != null, x => x.Width == input.Width)
-                .WhereIf(input.Height != null, x => x.Height == input.Height)
-                .WhereIf(input.Bitrate != null, x => x.Bitrate == input.Bitrate)
-                .WhereIf(!input.Ratio.IsNullOrWhiteSpace(), x => x.Ratio.Contains(input.Ratio))
-                .WhereIf(!input.Title.IsNullOrWhiteSpace(), x => x.Title.Contains(input.Title))
-                .WhereIf(input.LibraryId != null, x => x.LibraryId == input.LibraryId)
-            ;
+        return query;
     }
 }

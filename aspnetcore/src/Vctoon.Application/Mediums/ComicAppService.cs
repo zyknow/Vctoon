@@ -24,9 +24,24 @@ public class ComicAppService(
     protected override string UpdatePolicyName { get; set; } = VctoonPermissions.Comic.Update;
     protected override string DeletePolicyName { get; set; } = VctoonPermissions.Comic.Delete;
 
+    [RemoteService(false)]
     public override Task<ComicDto> CreateAsync(ComicCreateUpdateDto input)
     {
         throw new UserFriendlyException("Not supported");
+    }
+
+
+    protected override async Task<IQueryable<Comic>> CreateFilteredQueryAsync(ComicGetListInput input)
+    {
+        var query = await base.CreateFilteredQueryAsync(input);
+        if (CurrentUser.Id != null)
+        {
+            query = query.WhereIf(input.HasReadingProgress != null,
+                x => x.Processes.Any(p => p.ComicId != null && p.UserId == CurrentUser.Id && p.Progress > 0) ==
+                     input.HasReadingProgress);
+        }
+
+        return query;
     }
 
 

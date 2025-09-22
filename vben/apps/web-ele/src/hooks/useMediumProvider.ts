@@ -1,14 +1,13 @@
 import type { Ref } from 'vue'
 
 import type {
-  Comic,
   ComicGetListInput,
-  Video,
+  MediumGetListOutput,
   VideoGetListInput,
 } from '@vben/api'
 
 // useMediumProvider.ts
-import { inject, provide, reactive, ref } from 'vue'
+import { computed, inject, provide, reactive, ref } from 'vue'
 
 import { comicApi, MediumType, videoApi } from '@vben/api'
 
@@ -20,7 +19,7 @@ export type MediumViewTab = 'collection' | 'library' | 'recommend'
 /** 对外暴露的 Provider 接口（显式使用 Ref 类型） */
 export interface MediumProvider {
   // state（都是 Ref 或 reactive 对象）
-  items: Ref<(Comic | Video)[], (Comic | Video)[]>
+  items: Ref<MediumGetListOutput[]>
   loadType: Ref<MediumType>
   pageRequest: PageRequest // reactive 对象的静态类型即可
   selectedMediumIds: Ref<string[]>
@@ -46,10 +45,10 @@ export interface UseMediumProviderOptions {
 export function createMediumProvider(
   opts: UseMediumProviderOptions = {},
 ): MediumProvider {
-  const Items = ref<(Comic | Video)[]>([])
+  const items = ref<MediumGetListOutput[]>([])
   const loadType = ref<MediumType>(opts.loadType ?? MediumType.Comic)
   const pageRequest = reactive<PageRequest>({
-    sorting: 'CreationTime DESC',
+    sorting: 'CreationTime desc',
     maxResultCount: 50,
     ...opts.pageRequest,
   })
@@ -59,19 +58,24 @@ export function createMediumProvider(
   const loading = ref(false)
   const hasMore = ref(true)
   const currentTab = ref<MediumViewTab>('recommend')
+  const pageApi = computed<typeof comicApi.getPage | typeof videoApi.getPage>(
+    () => {
+      return loadType.value === MediumType.Comic
+        ? comicApi.getPage
+        : videoApi.getPage
+    },
+  )
 
   const loadItems = async () => {
     loading.value = true
     // 初始化加载时重置分页位置
     ;(pageRequest as any).skipCount = 0
-    const pageApi =
-      loadType.value === MediumType.Comic ? comicApi.getPage : videoApi.getPage
-    const result = await pageApi(
+    const result = await pageApi.value(
       pageRequest as ComicGetListInput & VideoGetListInput,
     )
-    Items.value = result.items
+    items.value = result.items
     totalCount.value = result.totalCount
-    hasMore.value = Items.value.length < totalCount.value
+    hasMore.value = items.value.length < totalCount.value
     loading.value = false
   }
 
@@ -84,25 +88,23 @@ export function createMediumProvider(
     if (loading.value) return
     if (!hasMore.value) return
     loading.value = true
-    const pageApi =
-      loadType.value === MediumType.Comic ? comicApi.getPage : videoApi.getPage
     const currentSkip = Number((pageRequest as any).skipCount ?? 0)
     const size = Number((pageRequest as any).maxResultCount ?? 50)
     ;(pageRequest as any).skipCount = currentSkip + size
-    const result = await pageApi(
+    const result = await pageApi.value(
       pageRequest as ComicGetListInput & VideoGetListInput,
     )
     // 追加
-    Items.value = [...Items.value, ...result.items]
+    items.value = [...items.value, ...result.items]
     totalCount.value = result.totalCount
-    hasMore.value = Items.value.length < totalCount.value
+    hasMore.value = items.value.length < totalCount.value
     loading.value = false
   }
 
   const model: MediumProvider = {
     currentTab,
     loading,
-    items: Items,
+    items,
     loadType,
     pageRequest,
     selectedMediumIds,

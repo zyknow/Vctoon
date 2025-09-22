@@ -1,4 +1,5 @@
 using Vctoon.Mediums.Dtos.Base;
+using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
 
 namespace Vctoon.Mediums.Base;
@@ -18,8 +19,16 @@ public abstract class MediumBaseAppService<TEntity, TGetOutputDto, TGetListOutpu
 {
     protected override async Task<IQueryable<TEntity>> CreateFilteredQueryAsync(TGetListInput input)
     {
+        var query = await (Repository as IMediumBaseRepository<TEntity>)!.WithPageDetailsAsync(CurrentUser.Id.Value);
+
+        query = ApplyMediumAddendSorting(query, input, out var hasSorting);
+
+        if (hasSorting)
+        {
+            return query;
+        }
+
         // TODO: AbpHelper generated
-        var query = await (Repository as IMediumBaseRepository<TEntity>).WithPageDetailsAsync(CurrentUser.Id.Value);
         query = query
                 .WhereIf(!input.Title.IsNullOrWhiteSpace(), x => x.Title.Contains(input.Title))
                 .WhereIf(!input.Description.IsNullOrWhiteSpace(), x => x.Description.Contains(input.Description))
@@ -29,5 +38,50 @@ public abstract class MediumBaseAppService<TEntity, TGetOutputDto, TGetListOutpu
             ;
 
         return query;
+    }
+
+
+    protected virtual IQueryable<TEntity> ApplyMediumAddendSorting(IQueryable<TEntity> query, TGetListInput input,
+        out bool hasSorting)
+    {
+        hasSorting = false;
+        if (input.Sorting.IsNullOrWhiteSpace())
+        {
+            return query;
+        }
+
+        if (CurrentUser.Id == null)
+        {
+            return query;
+        }
+
+        var field = input.Sorting.Split(' ')[0];
+        var isAsc = !input.Sorting.EndsWith(" desc", StringComparison.OrdinalIgnoreCase);
+
+        if (field.Equals(nameof(IMediumHasReadingProcessDto.ReadingLastTime), StringComparison.OrdinalIgnoreCase))
+        {
+            hasSorting = true;
+            return isAsc
+                ? query.OrderBy(x => x.Processes.Where(p => p.UserId == CurrentUser.Id).Max(p => p.LastReadTime))
+                : query.OrderByDescending(x =>
+                    x.Processes.Where(p => p.UserId == CurrentUser.Id).Max(p => p.LastReadTime));
+        }
+        else if (field.Equals(nameof(IMediumHasReadingProcessDto.ReadingProgress), StringComparison.OrdinalIgnoreCase))
+        {
+            hasSorting = true;
+            return isAsc
+                ? query.OrderBy(x => x.Processes.Where(p => p.UserId == CurrentUser.Id).Max(p => p.Progress))
+                : query.OrderByDescending(x => x.Processes.Where(p => p.UserId == CurrentUser.Id).Max(p => p.Progress));
+        }
+        else
+        {
+            return query;
+        }
+    }
+
+    protected override async Task<TEntity> GetEntityByIdAsync(Guid id)
+    {
+        return (await Repository.WithDetailsAsync()).FirstOrDefault(x => x.Id == id) ??
+               throw new EntityNotFoundException(typeof(TEntity), (object)id);
     }
 }
