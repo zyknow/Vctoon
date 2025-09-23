@@ -6,7 +6,7 @@ defineProps<{
   hiddenSecondToolbar?: boolean
 }>()
 
-const { selectedMediumIds } = useInjectedMediumProvider()
+const { selectedMediumIds, currentTab } = useInjectedMediumProvider()
 </script>
 
 <template>
@@ -20,7 +20,9 @@ const { selectedMediumIds } = useInjectedMediumProvider()
       </template>
     </medium-toolbar-first>
     <div class="w-full" v-if="!hiddenSecondToolbar">
-      <medium-toolbar-second v-if="selectedMediumIds?.length === 0">
+      <medium-toolbar-second
+        v-if="currentTab === 'library' && selectedMediumIds?.length === 0"
+      >
         <template #filter-left>
           <slot name="filter-left"></slot>
         </template>
@@ -31,7 +33,7 @@ const { selectedMediumIds } = useInjectedMediumProvider()
           <slot name="filter-right"></slot>
         </template>
       </medium-toolbar-second>
-      <medium-toolbar-second-select v-else>
+      <medium-toolbar-second-select v-else-if="selectedMediumIds?.length > 0">
         <template #filter-left>
           <slot name="filter-left-select"></slot>
         </template>

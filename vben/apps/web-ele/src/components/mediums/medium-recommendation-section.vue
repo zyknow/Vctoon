@@ -25,7 +25,9 @@ const checkScrollState = () => {
 
   const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.value
   canScrollLeft.value = scrollLeft > 0
-  canScrollRight.value = scrollLeft < scrollWidth - clientWidth - 1
+  // 如果还有更多数据，始终可以向右滚动
+  canScrollRight.value =
+    scrollLeft < scrollWidth - clientWidth - 1 || props.data.hasMore.value
 }
 
 // 向左滚动
@@ -41,16 +43,47 @@ const scrollLeft = () => {
 // 向右滚动
 const scrollRight = () => {
   if (!scrollContainer.value) return
+
+  const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.value
   const scrollAmount = scrollContainer.value.clientWidth * 0.8
-  scrollContainer.value.scrollBy({
-    left: scrollAmount,
-    behavior: 'smooth',
-  })
+
+  // 如果已经滚动到底部但还有更多数据，触发加载更多
+  if (
+    scrollLeft >= scrollWidth - clientWidth - 1 &&
+    props.data.hasMore.value &&
+    !props.data.loading.value
+  ) {
+    props.data.loadNext()
+  } else {
+    scrollContainer.value.scrollBy({
+      left: scrollAmount,
+      behavior: 'smooth',
+    })
+  }
 }
 
 // 处理滚动事件
 const handleScroll = () => {
   checkScrollState()
+  checkNeedLoadMore()
+}
+
+// 检查是否需要加载更多
+const checkNeedLoadMore = () => {
+  if (
+    !scrollContainer.value ||
+    !props.data.hasMore.value ||
+    props.data.loading.value
+  ) {
+    return
+  }
+
+  const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.value
+  // 当滚动到距离右边界100px以内时开始加载更多
+  const threshold = 100
+  if (scrollLeft + clientWidth >= scrollWidth - threshold) {
+    props.data.loadNext()
+  }
 }
 
 // 计算是否有内容
@@ -137,7 +170,7 @@ const hasItems = computed(
 
       <!-- 右侧渐变遮罩 -->
       <div
-        v-if="canScrollRight"
+        v-if="canScrollRight && !props.data.loading.value"
         class="from-background pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l to-transparent"
       ></div>
     </div>
