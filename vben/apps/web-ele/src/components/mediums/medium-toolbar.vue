@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { useInjectedMediumProvider } from '#/hooks/useMediumProvider'
+import {
+  useInjectedMediumItemProvider,
+  useInjectedMediumProvider,
+} from '#/hooks/useMediumProvider'
 
 defineProps<{
   // 这里可以定义其他需要传递的 props
   hiddenSecondToolbar?: boolean
 }>()
 
-const { selectedMediumIds, currentTab } = useInjectedMediumProvider()
+const { currentTab } = useInjectedMediumProvider()
+const { selectedMediumIds } = useInjectedMediumItemProvider()
 </script>
 
 <template>

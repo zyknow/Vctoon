@@ -1,0 +1,18 @@
+{
+  "home": {
+    "continueWatching": "Continue Watching",
+    "newest": "Recently Added",
+    "mostViewed": "Most Viewed"
+  },
+  "library": {
+    "mediumType": {
+      "comic": "Comic",
+      "video": "Video"
+    },
+    "recommend": {
+      "continueWatching": "Continue Watching {mediumType}",
+      "newest": "Recently Added {mediumType}",
+      "mostViewed": "Most Viewed {mediumType}"
+    }
+  }
+}

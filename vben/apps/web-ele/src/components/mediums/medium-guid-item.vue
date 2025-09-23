@@ -13,7 +13,7 @@ import {
 } from '@vben/icons'
 import { formatDate } from '@vben/utils'
 
-import { useInjectedMediumProvider } from '#/hooks/useMediumProvider'
+import { useInjectedMediumItemProvider } from '#/hooks/useMediumProvider'
 import { useMediumStore } from '#/store'
 
 type Medium = Comic | Video
@@ -25,7 +25,7 @@ const props = defineProps<{
 
 const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD)
 const mediumStore = useMediumStore()
-const { selectedMediumIds, items } = useInjectedMediumProvider()
+const { selectedMediumIds, items } = useInjectedMediumItemProvider()
 
 // 通过 CSS 变量传递缩放比例
 const zoomStyle = computed(() => ({

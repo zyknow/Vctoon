@@ -3,6 +3,7 @@ import type { LibraryMediumProvider } from '#/hooks/useLibraryMediumProvider'
 import type { UseRecommendMediumProviderOptions } from '#/hooks/useRecommendProvider'
 
 import { MediumType } from '@vben/api'
+import { $t } from '@vben/locales'
 
 import { useInjectedMediumProvider } from '#/hooks/useMediumProvider'
 import { createRecommendMediumProvider } from '#/hooks/useRecommendProvider'
@@ -18,12 +19,14 @@ const commonOptions: UseRecommendMediumProviderOptions = {
 }
 
 const mediumTypeTitleMap: Record<MediumType, string> = {
-  [MediumType.Comic]: '漫画',
-  [MediumType.Video]: '动画',
+  [MediumType.Comic]: $t('page.library.mediumType.comic'),
+  [MediumType.Video]: $t('page.library.mediumType.video'),
 }
 
 const lastReading = createRecommendMediumProvider({
-  title: `继续观看的${mediumTypeTitleMap[library.mediumType]}`,
+  title: $t('page.library.recommend.continueWatching', {
+    mediumType: mediumTypeTitleMap[library.mediumType],
+  }),
   ...commonOptions,
   pageRequest: {
     ...commonOptions.pageRequest,
@@ -33,7 +36,9 @@ const lastReading = createRecommendMediumProvider({
 })
 
 const newest = createRecommendMediumProvider({
-  title: `最新添加的${mediumTypeTitleMap[library.mediumType]}`,
+  title: $t('page.library.recommend.newest', {
+    mediumType: mediumTypeTitleMap[library.mediumType],
+  }),
   ...commonOptions,
   pageRequest: {
     ...commonOptions.pageRequest,
@@ -43,7 +48,9 @@ const newest = createRecommendMediumProvider({
 })
 
 const mostViewed = createRecommendMediumProvider({
-  title: `最多观看的${mediumTypeTitleMap[library.mediumType]}`,
+  title: $t('page.library.recommend.mostViewed', {
+    mediumType: mediumTypeTitleMap[library.mediumType],
+  }),
   ...commonOptions,
   pageRequest: {
     ...commonOptions.pageRequest,

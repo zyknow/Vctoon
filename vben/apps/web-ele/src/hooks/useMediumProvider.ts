@@ -12,6 +12,12 @@ import { computed, inject, provide, reactive, ref } from 'vue'
 import { comicApi, MediumType, videoApi } from '@vben/api'
 
 export const mediumProviderKey = Symbol('mediumProvider')
+export const mediumItemProviderKey = Symbol('mediumItemProvider')
+
+export type MediumItemProvider = {
+  items: Ref<MediumGetListOutput[]>
+  selectedMediumIds: Ref<string[]>
+}
 
 /** 公共的分页查询类型，避免 union 导致的类型缩小问题 */
 export type PageRequest = Partial<ComicGetListInput & VideoGetListInput>
@@ -124,9 +130,19 @@ export function provideMediumProvider(model: MediumProvider) {
   provide(mediumProviderKey, model)
 }
 
+export function provideMediumItemProvider(model: MediumItemProvider) {
+  provide(mediumItemProviderKey, model)
+}
+
 /** 在子组件 inject */
 export function useInjectedMediumProvider(): MediumProvider {
   const model = inject<MediumProvider>(mediumProviderKey)
   if (!model) throw new Error('mediumProvider 未提供')
+  return model
+}
+
+export function useInjectedMediumItemProvider(): MediumItemProvider {
+  const model = inject<MediumItemProvider>(mediumItemProviderKey)
+  if (!model) throw new Error('mediumItemProvider 未提供')
   return model
 }

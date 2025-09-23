@@ -3,10 +3,10 @@ import { computed } from 'vue'
 
 import { MdiClose, MdiSelectAll } from '@vben/icons'
 
-import { useInjectedMediumProvider } from '#/hooks/useMediumProvider'
+import { useInjectedMediumItemProvider } from '#/hooks/useMediumProvider'
 import { $t } from '#/locales'
 
-const { selectedMediumIds, items } = useInjectedMediumProvider()
+const { selectedMediumIds, items } = useInjectedMediumItemProvider()
 
 // 计算选中数量
 const selectedCount = computed(() => selectedMediumIds.value.length)

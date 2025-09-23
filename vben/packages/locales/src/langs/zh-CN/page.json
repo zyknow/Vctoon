@@ -1,0 +1,18 @@
+{
+  "home": {
+    "continueWatching": "继续观看",
+    "newest": "最新添加",
+    "mostViewed": "最多观看"
+  },
+  "library": {
+    "mediumType": {
+      "comic": "漫画",
+      "video": "动画"
+    },
+    "recommend": {
+      "continueWatching": "继续观看的{mediumType}",
+      "newest": "最新添加的{mediumType}",
+      "mostViewed": "最多观看的{mediumType}"
+    }
+  }
+}

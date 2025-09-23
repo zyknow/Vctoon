@@ -3,7 +3,10 @@ import { libraryApi } from '@vben/api'
 import { Page } from '@vben/common-ui'
 
 import { createLibraryMediumProvider } from '#/hooks/useLibraryMediumProvider'
-import { provideMediumProvider } from '#/hooks/useMediumProvider'
+import {
+  provideMediumItemProvider,
+  provideMediumProvider,
+} from '#/hooks/useMediumProvider'
 
 import LibraryRecommend from './library-recommend.vue'
 
@@ -11,6 +14,10 @@ const libraryId = location.pathname.replace('/library/', '')
 const library = await libraryApi.getById(libraryId)
 const state = createLibraryMediumProvider(library)
 provideMediumProvider(state)
+provideMediumItemProvider({
+  items: state.items,
+  selectedMediumIds: state.selectedMediumIds,
+})
 </script>
 
 <template>

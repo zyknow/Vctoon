@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
-import { useInjectedMediumProvider } from '#/hooks/useMediumProvider'
+import {
+  useInjectedMediumItemProvider,
+  useInjectedMediumProvider,
+} from '#/hooks/useMediumProvider'
 import { useMediumStore } from '#/store'
 import { ItemDisplayMode } from '#/store/typing'
 
@@ -12,7 +15,8 @@ defineProps<{
   modelValue?: boolean
 }>()
 
-const { items, loadType } = useInjectedMediumProvider()
+const { loadType } = useInjectedMediumProvider()
+const { items } = useInjectedMediumItemProvider()
 const mediumStore = useMediumStore()
 
 const currentItemComp = computed(() =>
