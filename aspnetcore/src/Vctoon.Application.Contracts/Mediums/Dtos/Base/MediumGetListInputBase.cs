@@ -15,5 +15,5 @@ public abstract class MediumGetListInputBase : PagedAndSortedResultRequestDto, I
 
     public Guid? LibraryId { get; internal set; }
 
-    public bool? HasReadingProgress { get; set; }
+    public ReadingProgressType? ReadingProgressType { get; set; }
 }

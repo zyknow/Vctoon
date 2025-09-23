@@ -38,12 +38,23 @@ public abstract class MediumBaseAppService<TEntity, TGetOutputDto, TGetListOutpu
         if (CurrentUser.Id != null)
         {
             var userId = CurrentUser.Id.Value;
-            if (input.HasReadingProgress != null)
+            if (input.ReadingProgressType != null)
             {
                 var predicate = ProcessPredicate;
-                query = query.Where(x => x.Processes.AsQueryable()
-                    .Where(predicate)
-                    .Any(p => p.UserId == userId && p.Progress > 0 && p.Progress < 1) == input.HasReadingProgress);
+
+                query = input.ReadingProgressType switch
+                {
+                    ReadingProgressType.NotStarted => query.Where(x => x.Processes.AsQueryable()
+                        .Where(predicate)
+                        .All(p => p.UserId != userId || p.Progress == 0)),
+                    ReadingProgressType.InProgress => query.Where(x => x.Processes.AsQueryable()
+                        .Where(predicate)
+                        .Any(p => p.UserId == userId && p.Progress > 0 && p.Progress < 1)),
+                    ReadingProgressType.Completed => query.Where(x => x.Processes.AsQueryable()
+                        .Where(predicate)
+                        .Any(p => p.UserId == userId && p.Progress == 1)),
+                    _ => query
+                };
             }
         }
 
