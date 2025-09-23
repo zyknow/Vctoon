@@ -1,18 +1,14 @@
 <script setup lang="ts">
-import type { Comic, Video } from '@vben/api'
+import type { RecommendMediumProvider } from '#/hooks/useRecommendProvider'
 
 import { computed, ref } from 'vue'
 
-import { MediumType } from '@vben/api'
 import { ChevronLeft, ChevronRight } from '@vben/icons'
 
 import MediumGuidItem from './medium-guid-item.vue'
 
 interface Props {
-  title: string
-  items: (Comic | Video)[]
-  mediumType: MediumType
-  loading?: boolean
+  data: RecommendMediumProvider
 }
 
 const props = defineProps<Props>()
@@ -58,14 +54,16 @@ const handleScroll = () => {
 }
 
 // 计算是否有内容
-const hasItems = computed(() => props.items && props.items.length > 0)
+const hasItems = computed(
+  () => props.data.items && props.data.items.value.length > 0,
+)
 </script>
 
 <template>
   <div class="medium-recommendation-section">
     <!-- 标题行 -->
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="text-foreground text-xl font-bold">{{ title }}</h2>
+      <h2 class="text-foreground text-xl font-bold">{{ props.data.title }}</h2>
 
       <!-- 滚动控制按钮 -->
       <div v-if="hasItems" class="flex items-center gap-2">
@@ -97,7 +95,7 @@ const hasItems = computed(() => props.items && props.items.length > 0)
     <!-- 内容区域 -->
     <div class="relative">
       <!-- 加载状态 -->
-      <div v-if="loading" class="flex gap-6 overflow-hidden">
+      <div v-if="props.data.loading.value" class="flex gap-6 overflow-hidden">
         <div
           v-for="i in 6"
           :key="`skeleton-${i}`"
@@ -122,8 +120,12 @@ const hasItems = computed(() => props.items && props.items.length > 0)
         @scroll="handleScroll"
         @scrollend="checkScrollState"
       >
-        <div v-for="item in items" :key="item.id" class="flex-shrink-0">
-          <MediumGuidItem :model-value="item" :medium-type="mediumType" />
+        <div
+          v-for="item in props.data.items.value"
+          :key="item.id"
+          class="flex-shrink-0"
+        >
+          <MediumGuidItem :model-value="item" :medium-type="item.mediumType" />
         </div>
       </div>
 

@@ -17,21 +17,20 @@ export const mediumProviderKey = Symbol('mediumProvider')
 export type PageRequest = Partial<ComicGetListInput & VideoGetListInput>
 export type MediumViewTab = 'collection' | 'library' | 'recommend'
 /** 对外暴露的 Provider 接口（显式使用 Ref 类型） */
-export interface MediumProvider {
+export type MediumProvider = {
+  currentTab: Ref<MediumViewTab>
+  hasMore: Ref<boolean>
   // state（都是 Ref 或 reactive 对象）
   items: Ref<MediumGetListOutput[]>
+  loading: Ref<boolean>
+  loadItems(): Promise<void>
+  loadNext(): Promise<void>
   loadType: Ref<MediumType>
   pageRequest: PageRequest // reactive 对象的静态类型即可
   selectedMediumIds: Ref<string[]>
   title: Ref<string>
-  currentTab: Ref<MediumViewTab>
   totalCount: Ref<number>
-  loading: Ref<boolean>
-  // actions
-  loadItems: () => Promise<void>
-  updateSorting: (sorting: string) => Promise<void>
-  loadNext: () => Promise<void>
-  hasMore: Ref<boolean>
+  updateSorting(sorting: string): Promise<void>
 }
 
 export interface UseMediumProviderOptions {
@@ -66,17 +65,29 @@ export function createMediumProvider(
     },
   )
 
-  const loadItems = async () => {
+  const loadItems = async (loadMore?: boolean) => {
+    if (loading.value) return
+
     loading.value = true
-    // 初始化加载时重置分页位置
-    ;(pageRequest as any).skipCount = 0
-    const result = await pageApi.value(
-      pageRequest as ComicGetListInput & VideoGetListInput,
-    )
-    items.value = result.items
-    totalCount.value = result.totalCount
-    hasMore.value = items.value.length < totalCount.value
-    loading.value = false
+
+    try {
+      // 初始化加载时重置分页位置
+      pageRequest.skipCount = loadMore ? items.value.length : 0
+      const result = await pageApi.value(
+        pageRequest as ComicGetListInput & VideoGetListInput,
+      )
+      items.value = loadMore ? [...items.value, ...result.items] : result.items
+      totalCount.value = result.totalCount
+      hasMore.value = items.value.length < totalCount.value
+    } catch (error) {
+      console.error('加载媒体项失败', error)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const loadNext = async () => {
+    return await loadItems(true)
   }
 
   const updateSorting = async (sorting: string) => {
@@ -84,24 +95,8 @@ export function createMediumProvider(
     await loadItems()
   }
 
-  const loadNext = async () => {
-    if (loading.value) return
-    if (!hasMore.value) return
-    loading.value = true
-    const currentSkip = Number((pageRequest as any).skipCount ?? 0)
-    const size = Number((pageRequest as any).maxResultCount ?? 50)
-    ;(pageRequest as any).skipCount = currentSkip + size
-    const result = await pageApi.value(
-      pageRequest as ComicGetListInput & VideoGetListInput,
-    )
-    // 追加
-    items.value = [...items.value, ...result.items]
-    totalCount.value = result.totalCount
-    hasMore.value = items.value.length < totalCount.value
-    loading.value = false
-  }
-
   const model: MediumProvider = {
+    loadNext,
     currentTab,
     loading,
     items,
@@ -112,7 +107,6 @@ export function createMediumProvider(
     totalCount,
     loadItems,
     updateSorting,
-    loadNext,
     hasMore,
   }
 

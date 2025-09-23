@@ -74,6 +74,7 @@ const cover = computed(() => {
     >
       <img
         v-if="cover"
+        loading="lazy"
         :src="cover"
         alt="cover"
         class="h-24 w-16 rounded-lg object-cover"

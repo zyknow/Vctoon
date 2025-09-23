@@ -1,4 +1,4 @@
-import type { Reactive, Ref } from 'vue'
+import type { ComputedRef, Reactive, Ref } from 'vue'
 
 import type {
   ComicGetListInput,
@@ -7,29 +7,30 @@ import type {
   VideoGetListInput,
 } from '@vben/api'
 
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 
 import { comicApi, MediumType, videoApi } from '@vben/api'
 
 // useLibraryMediumProvider.ts
 
-export type UseRecommendMediumProviderOptions = ComicGetListInput &
-  VideoGetListInput & {
-    autoLoad?: boolean
-    mediumTypes: MediumType[]
-  }
+export type UseRecommendMediumProviderOptions = {
+  autoLoad?: boolean
+  mediumTypes: MediumType[]
+  pageRequest: ComicGetListInput & VideoGetListInput
+  title?: string
+}
 
 export type RecommendMediumProvider = {
-  hasMore: Ref<boolean>
-  items: Ref<MediumGetListOutput[]>
+  hasMore: ComputedRef<boolean>
+  items: ComputedRef<(MediumGetListOutput & { mediumType: MediumType })[]>
   loading: Ref<boolean>
-  loadItems: () => Promise<void>
-  loadNext: () => Promise<void>
+  loadItems(): Promise<void>
+  loadNext(): Promise<void>
   mediumPageRequests: Reactive<
     Record<MediumType, ComicGetListOutput | VideoGetListInput>
   >
   title: Ref<string>
-  totalCount: Ref<number>
+  totalCount: ComputedRef<number>
 }
 
 /** 基于 Library 的便捷封装 */
@@ -47,71 +48,82 @@ export function createRecommendMediumProvider(
     Record<MediumType, ComicGetListInput | VideoGetListInput>
   >({} as Record<MediumType, ComicGetListInput | VideoGetListInput>)
 
-  const items = ref<MediumGetListOutput[]>([])
+  const mediumPageResults = reactive<
+    Record<MediumType, PageResult<MediumGetListOutput>>
+  >({} as Record<MediumType, PageResult<MediumGetListOutput>>)
+
+  const mediumItems = reactive<Record<MediumType, MediumGetListOutput[]>>(
+    {} as Record<MediumType, MediumGetListOutput[]>,
+  )
+
+  const items = computed(() => {
+    return mediumTypes.flatMap((type) => mediumItems[type] || [])
+  })
   const title = ref(opts.title ?? '')
-  const totalCount = ref(0)
+  const totalCount = computed(() => {
+    return mediumTypes.reduce((sum, type) => {
+      return sum + (mediumPageResults[type]?.totalCount ?? 0)
+    }, 0)
+  })
   const loading = ref(false)
-  const hasMore = ref(true)
+  const hasMore = computed(() => {
+    return items.value.length < totalCount.value
+  })
 
   mediumTypes.forEach((type) => {
     mediumPageRequests[type] = {
       sorting: 'CreationTime DESC',
       maxResultCount: 10,
-      ...opts,
+      ...opts.pageRequest,
     }
   })
 
-  const loadItems = async () => {
+  const loadItems = async (loadMore?: boolean) => {
     if (loading.value) return
 
     loading.value = true
+
     try {
-      const allResults = await Promise.all(
-        mediumTypes.map((type) => mediumApis[type](mediumPageRequests[type])),
+      await Promise.all(
+        mediumTypes.map(async (type) => {
+          const pageApi = mediumApis[type]
+          const pageRequest = mediumPageRequests[type]
+          const result = await pageApi(
+            pageRequest as ComicGetListInput & VideoGetListInput,
+          )
+          mediumPageResults[type] = result
+          pageRequest.skipCount = loadMore
+            ? (mediumItems[type]?.length ?? 0)
+            : 0
+
+          result.items.forEach((item) => {
+            ;(item as any).mediumType = type
+          })
+
+          mediumItems[type] = loadMore
+            ? [...(mediumItems[type] || []), ...result.items]
+            : result.items || []
+        }),
       )
-      const combinedItems: MediumGetListOutput[] = []
-      let combinedTotalCount = 0
-      allResults.forEach((res) => {
-        combinedItems.push(...res.items)
-        combinedTotalCount += res.totalCount
-      })
-      items.value = combinedItems
-      totalCount.value = combinedTotalCount
-      hasMore.value = combinedItems.length < combinedTotalCount
+    } catch (error) {
+      console.error('加载推荐内容失败', error)
     } finally {
       loading.value = false
     }
   }
   const loadNext = async () => {
-    if (loading.value || !hasMore.value) return
+    return await loadItems(true)
+  }
 
-    loading.value = true
-    try {
-      const allResults = await Promise.all(
-        mediumTypes.map((type) => {
-          const req = mediumPageRequests[type]
-          ;(req as any).skipCount =
-            (req as any).skipCount + (req.maxResultCount || 20)
-          return mediumApis[type](req)
-        }),
-      )
-      const combinedItems: MediumGetListOutput[] = []
-      let combinedTotalCount = 0
-      allResults.forEach((res) => {
-        combinedItems.push(...res.items)
-        combinedTotalCount += res.totalCount
-      })
-      items.value.push(...combinedItems)
-      totalCount.value = combinedTotalCount
-      hasMore.value = items.value.length < combinedTotalCount
-    } finally {
-      loading.value = false
-    }
+  if (opts.autoLoad) {
+    // 不阻塞 setup
+
+    loadItems()
   }
 
   return {
     hasMore,
-    items,
+    items: items as any,
     loading,
     loadItems,
     loadNext,

@@ -185,6 +185,7 @@ const cover = computed(() => {
       }"
     >
       <img
+        loading="lazy"
         v-if="cover"
         :src="cover"
         alt="cover"

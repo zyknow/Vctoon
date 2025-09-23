@@ -43,9 +43,7 @@ const onInnerScroll = () => {
 }
 
 const providerLoadNext = async () => {
-  if ('loadNext' in injected && typeof injected.loadNext === 'function') {
-    await injected.loadNext()
-  }
+  await injected.loadNext()
 }
 
 onMounted(() => {

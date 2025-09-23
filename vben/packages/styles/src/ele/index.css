@@ -49,7 +49,15 @@ html .el-loading-mask {
 }
 
 .medium-content {
-  @apply flex-1 min-h-0 overflow-auto;
+  @apply flex-1 min-h-0 overflow-auto pb-16;
+}
+
+.library-recommend {
+  @apply min-h-0 flex flex-1 flex-col gap-16 overflow-auto pb-16;
+}
+
+.library-collection {
+  @apply  flex flex-1 flex-col overflow-auto pb-16;
 }
 
 .medium-toolbar{

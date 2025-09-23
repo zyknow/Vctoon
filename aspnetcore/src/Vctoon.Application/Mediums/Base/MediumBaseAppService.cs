@@ -19,19 +19,13 @@ public abstract class MediumBaseAppService<TEntity, TGetOutputDto, TGetListOutpu
 {
     protected override async Task<IQueryable<TEntity>> CreateFilteredQueryAsync(TGetListInput input)
     {
-        var query = await (Repository as IMediumBaseRepository<TEntity>)!.WithPageDetailsAsync(CurrentUser.Id.Value);
-
-        query = ApplyMediumAddendSorting(query, input, out var hasSorting);
-
-        if (hasSorting)
-        {
-            return query;
-        }
+        // 修正：传入 Guid?，避免未登录时 CurrentUser.Id.Value 抛异常
+        var query = await (Repository as IMediumBaseRepository<TEntity>)!.WithPageDetailsAsync(CurrentUser.Id);
 
         // TODO: AbpHelper generated
         query = query
-                .WhereIf(!input.Title.IsNullOrWhiteSpace(), x => x.Title.Contains(input.Title))
-                .WhereIf(!input.Description.IsNullOrWhiteSpace(), x => x.Description.Contains(input.Description))
+                .WhereIf(!input.Title.IsNullOrWhiteSpace(), x => x.Title.Contains(input.Title!))
+                .WhereIf(!input.Description.IsNullOrWhiteSpace(), x => x.Description.Contains(input.Description!))
                 .WhereIf(input.LibraryId != null, x => x.LibraryId == input.LibraryId)
                 .WhereIf(!input.Artists.IsNullOrEmpty(), x => x.Artists.Any(a => input.Artists!.Contains(a.Id)))
                 .WhereIf(!input.Tags.IsNullOrEmpty(), x => x.Tags.Any(t => input.Tags!.Contains(t.Id)))
@@ -61,22 +55,38 @@ public abstract class MediumBaseAppService<TEntity, TGetOutputDto, TGetListOutpu
         if (field.Equals(nameof(IMediumHasReadingProcessDto.ReadingLastTime), StringComparison.OrdinalIgnoreCase))
         {
             hasSorting = true;
+            var userId = CurrentUser.Id!.Value;
             return isAsc
-                ? query.OrderBy(x => x.Processes.Where(p => p.UserId == CurrentUser.Id).Max(p => p.LastReadTime))
+                ? query.OrderBy(x => x.Processes.Where(p => p.UserId == userId).Max(p => p.LastReadTime))
                 : query.OrderByDescending(x =>
-                    x.Processes.Where(p => p.UserId == CurrentUser.Id).Max(p => p.LastReadTime));
+                    x.Processes.Where(p => p.UserId == userId).Max(p => p.LastReadTime));
         }
         else if (field.Equals(nameof(IMediumHasReadingProcessDto.ReadingProgress), StringComparison.OrdinalIgnoreCase))
         {
             hasSorting = true;
+            var userId = CurrentUser.Id!.Value;
             return isAsc
-                ? query.OrderBy(x => x.Processes.Where(p => p.UserId == CurrentUser.Id).Max(p => p.Progress))
-                : query.OrderByDescending(x => x.Processes.Where(p => p.UserId == CurrentUser.Id).Max(p => p.Progress));
+                ? query.OrderBy(x =>
+                    x.Processes.Where(p => p.UserId == userId).Select(p => (double?)p.Progress).Max() ?? 0)
+                : query.OrderByDescending(x =>
+                    x.Processes.Where(p => p.UserId == userId).Select(p => (double?)p.Progress).Max() ?? 0);
         }
         else
         {
             return query;
         }
+    }
+
+    // 新增：覆盖基类排序，拦截自定义字段，避免 Dynamic LINQ 再按字符串排序
+    protected override IQueryable<TEntity> ApplySorting(IQueryable<TEntity> query, TGetListInput input)
+    {
+        var sorted = ApplyMediumAddendSorting(query, input, out var hasSorting);
+        if (hasSorting)
+        {
+            return sorted;
+        }
+
+        return base.ApplySorting(query, input);
     }
 
     protected override async Task<TEntity> GetEntityByIdAsync(Guid id)
