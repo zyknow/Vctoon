@@ -43,7 +43,7 @@ public abstract class MediumBaseAppService<TEntity, TGetOutputDto, TGetListOutpu
                 var predicate = ProcessPredicate;
                 query = query.Where(x => x.Processes.AsQueryable()
                     .Where(predicate)
-                    .Any(p => p.UserId == userId && p.Progress > 0) == input.HasReadingProgress);
+                    .Any(p => p.UserId == userId && p.Progress > 0 && p.Progress < 1) == input.HasReadingProgress);
             }
         }
 

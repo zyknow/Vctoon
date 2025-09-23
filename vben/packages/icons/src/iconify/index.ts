@@ -60,6 +60,7 @@ export const MdiCheckboxMarked = createIconifyIcon('mdi:checkbox-marked')
 export const MdiCheckboxBlankOutline = createIconifyIcon(
   'mdi:checkbox-blank-outline',
 )
+export const MdiCheck = createIconifyIcon('mdi:check')
 export const MdiCheckCircle = createIconifyIcon('mdi:check-circle')
 export const MdiCheckCircleOutline = createIconifyIcon(
   'mdi:check-circle-outline',

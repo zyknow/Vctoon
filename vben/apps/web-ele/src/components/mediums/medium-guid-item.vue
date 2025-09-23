@@ -8,6 +8,7 @@ import { useAppConfig } from '@vben/hooks'
 import {
   CiEditPencilLine01,
   CiMoreVertical,
+  MdiCheck,
   MdiCheckCircle,
   MdiPlayCircle,
 } from '@vben/icons'
@@ -143,6 +144,26 @@ const timeAgo = computed(() => {
   }
 })
 
+// 阅读进度相关
+const readingProgress = computed(() => {
+  const progress = props.modelValue?.readingProgress
+  if (typeof progress !== 'number') return 0
+  // 确保进度值在 0-1 范围内，然后转换为百分比
+  const normalizedProgress = Math.max(0, Math.min(1, progress))
+  return Math.round(normalizedProgress * 100)
+})
+
+const showReadingProgress = computed(() => {
+  const progress = props.modelValue?.readingProgress
+  return typeof progress === 'number' && progress > 0 && progress < 1
+})
+
+// 是否已完成阅读
+const isCompleted = computed(() => {
+  const progress = props.modelValue?.readingProgress
+  return typeof progress === 'number' && progress >= 1
+})
+
 const cover = computed(() => {
   let mediumUrl
   switch (props.mediumType) {
@@ -234,6 +255,29 @@ const cover = computed(() => {
           :class="{
             'opacity-100': isInSelectionMode,
             'opacity-0 group-hover:opacity-100': !isInSelectionMode,
+          }"
+        ></div>
+      </div>
+
+      <!-- 完成标记 - 显示在右上角 -->
+      <div
+        v-if="isCompleted"
+        class="bg-primary/80 absolute right-0 top-0 flex h-7 w-7 items-center justify-center rounded-bl-md text-white shadow-sm"
+      >
+        <MdiCheck class="text-sm" />
+      </div>
+
+      <!-- 阅读进度条 - 显示在图片底部 -->
+      <div
+        v-if="showReadingProgress"
+        class="absolute bottom-0 left-0 right-0 h-1 overflow-hidden rounded-b-lg"
+      >
+        <div class="absolute inset-0 bg-black/20"></div>
+        <div
+          class="relative z-10 h-full transition-all duration-300 ease-out"
+          :style="{
+            width: `${readingProgress}%`,
+            backgroundColor: `hsl(var(--primary))`,
           }"
         ></div>
       </div>

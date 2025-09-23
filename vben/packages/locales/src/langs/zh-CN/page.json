@@ -14,5 +14,8 @@
       "newest": "最新添加的{mediumType}",
       "mostViewed": "最多观看的{mediumType}"
     }
+  },
+  "medium": {
+    "readingProgress": "阅读进度"
   }
 }

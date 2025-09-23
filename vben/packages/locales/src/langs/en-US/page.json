@@ -14,5 +14,8 @@
       "newest": "Recently Added {mediumType}",
       "mostViewed": "Most Viewed {mediumType}"
     }
+  },
+  "medium": {
+    "readingProgress": "Reading Progress"
   }
 }
