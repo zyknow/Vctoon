@@ -7,7 +7,7 @@ import type { UseRecommendMediumProviderOptions } from '#/hooks/useRecommendProv
 
 import { ref } from 'vue'
 
-import { MediumType } from '@vben/api'
+import { MediumType, ReadingProgressType } from '@vben/api'
 import { Page } from '@vben/common-ui'
 import { $t } from '@vben/locales'
 
@@ -34,7 +34,7 @@ const lastReading = createRecommendMediumProvider({
   pageRequest: {
     ...commonOptions.pageRequest,
     sorting: 'readingLastTime desc',
-    hasReadingProgress: true,
+    readingProgressType: ReadingProgressType.InProgress,
   },
 })
 

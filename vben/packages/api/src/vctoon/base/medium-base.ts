@@ -34,8 +34,14 @@ export type MediumGetListInputBase = BasePageRequest & {
   createdInDays?: number
   description?: string
   hasReadCount?: boolean
-  hasReadingProgress?: boolean
   libraryId?: string
+  readingProgressType?: ReadingProgressType
   tags?: string[]
   title?: string
+}
+
+export enum ReadingProgressType {
+  NotStarted,
+  InProgress,
+  Completed,
 }

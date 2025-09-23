@@ -1,8 +1,8 @@
 using System.Linq.Expressions;
-using Vctoon.Identities;
 using Vctoon.Mediums.Dtos.Base;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
+using Vctoon.Extensions;
 
 namespace Vctoon.Mediums.Base;
 
@@ -19,8 +19,10 @@ public abstract class MediumBaseAppService<TEntity, TGetOutputDto, TGetListOutpu
     where TCreateInput : MediumCreateUpdateDtoBase
     where TUpdateInput : MediumCreateUpdateDtoBase
 {
-    protected abstract Expression<Func<IdentityUserReadingProcess, bool>> ProcessPredicate { get; }
+    // 由派生类提供用于标识“当前媒资类型绑定键”的属性选择器，例如 p => p.ComicId 或 p => p.VideoId
+    protected abstract LambdaExpression ProcessKeySelector { get; }
 
+    // 可重写：默认用属性选择器做 NotNull 判断；派生类如需 IsNull/Equal/组合条件，可覆盖此方法。
     protected override async Task<IQueryable<TEntity>> CreateFilteredQueryAsync(TGetListInput input)
     {
         // 修正：传入 Guid?，避免未登录时 CurrentUser.Id.Value 抛异常
@@ -40,19 +42,21 @@ public abstract class MediumBaseAppService<TEntity, TGetOutputDto, TGetListOutpu
             var userId = CurrentUser.Id.Value;
             if (input.ReadingProgressType != null)
             {
-                var predicate = ProcessPredicate;
+                var isNotNullPredicate = ProcessKeySelector.NotNull();
 
                 query = input.ReadingProgressType switch
                 {
-                    ReadingProgressType.NotStarted => query.Where(x => x.Processes.AsQueryable()
-                        .Where(predicate)
-                        .All(p => p.UserId != userId || p.Progress == 0)),
+                    ReadingProgressType.NotStarted => query.Where(x =>
+                        !x.Processes.AsQueryable()
+                            .Where(isNotNullPredicate)
+                            .Any(p => p.UserId == userId && p.Progress > 0)
+                    ),
                     ReadingProgressType.InProgress => query.Where(x => x.Processes.AsQueryable()
-                        .Where(predicate)
+                        .Where(isNotNullPredicate)
                         .Any(p => p.UserId == userId && p.Progress > 0 && p.Progress < 1)),
                     ReadingProgressType.Completed => query.Where(x => x.Processes.AsQueryable()
-                        .Where(predicate)
-                        .Any(p => p.UserId == userId && p.Progress == 1)),
+                        .Where(isNotNullPredicate)
+                        .Any(p => p.UserId == userId && p.Progress >= 1)),
                     _ => query
                 };
             }

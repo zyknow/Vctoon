@@ -2,7 +2,7 @@
 import type { LibraryMediumProvider } from '#/hooks/useLibraryMediumProvider'
 import type { UseRecommendMediumProviderOptions } from '#/hooks/useRecommendProvider'
 
-import { MediumType } from '@vben/api'
+import { MediumType, ReadingProgressType } from '@vben/api'
 import { $t } from '@vben/locales'
 
 import { useInjectedMediumProvider } from '#/hooks/useMediumProvider'
@@ -31,7 +31,7 @@ const lastReading = createRecommendMediumProvider({
   pageRequest: {
     ...commonOptions.pageRequest,
     sorting: 'readingLastTime desc',
-    hasReadingProgress: true,
+    readingProgressType: ReadingProgressType.InProgress,
   },
 })
 

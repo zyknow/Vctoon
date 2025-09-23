@@ -19,7 +19,8 @@ public class VideoAppService(IVideoRepository repository)
     protected override string? UpdatePolicyName { get; set; } = VctoonPermissions.Video.Update;
     protected override string? DeletePolicyName { get; set; } = VctoonPermissions.Video.Delete;
 
-    protected override Expression<Func<IdentityUserReadingProcess, bool>> ProcessPredicate => p => p.VideoId != null;
+    // 原为布尔谓词，现改为属性选择器
+    protected override LambdaExpression ProcessKeySelector => (Expression<Func<IdentityUserReadingProcess, Guid?>>)(p => p.VideoId);
 
     [RemoteService(false)]
     public override Task<VideoDto> CreateAsync(VideoCreateUpdateDto input)

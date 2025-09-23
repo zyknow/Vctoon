@@ -27,7 +27,8 @@ public class ComicAppService(
     protected override string? DeletePolicyName { get; set; } = VctoonPermissions.Comic.Delete;
 
 
-    protected override Expression<Func<IdentityUserReadingProcess, bool>> ProcessPredicate => p => p.ComicId != null;
+    // 原为布尔谓词，现改为属性选择器，交由基类统一转换
+    protected override LambdaExpression ProcessKeySelector => (Expression<Func<IdentityUserReadingProcess, Guid?>>)(p => p.ComicId);
 
     [RemoteService(false)]
     public override Task<ComicDto> CreateAsync(ComicCreateUpdateDto input)
