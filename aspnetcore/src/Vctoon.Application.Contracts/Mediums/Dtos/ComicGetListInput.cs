@@ -1,7 +1,6 @@
 namespace Vctoon.Mediums.Dtos;
 
 [Serializable]
-public class ComicGetListInput : MediumGetListInputBase, IMediumHasReadingProcessQuery
+public class ComicGetListInput : MediumGetListInputBase
 {
-    public bool? HasReadingProgress { get; set; }
 }

@@ -31,7 +31,9 @@ export type MediumCreateUpdateBase = {
 // 列表查询通用基础输入
 export type MediumGetListInputBase = BasePageRequest & {
   artists?: string[]
+  createdInDays?: number
   description?: string
+  hasReadCount?: boolean
   hasReadingProgress?: boolean
   libraryId?: string
   tags?: string[]

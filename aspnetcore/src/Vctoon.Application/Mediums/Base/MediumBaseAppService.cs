@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+using Vctoon.Identities;
 using Vctoon.Mediums.Dtos.Base;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
@@ -17,6 +19,8 @@ public abstract class MediumBaseAppService<TEntity, TGetOutputDto, TGetListOutpu
     where TCreateInput : MediumCreateUpdateDtoBase
     where TUpdateInput : MediumCreateUpdateDtoBase
 {
+    protected abstract Expression<Func<IdentityUserReadingProcess, bool>> ProcessPredicate { get; }
+
     protected override async Task<IQueryable<TEntity>> CreateFilteredQueryAsync(TGetListInput input)
     {
         // 修正：传入 Guid?，避免未登录时 CurrentUser.Id.Value 抛异常
@@ -30,6 +34,34 @@ public abstract class MediumBaseAppService<TEntity, TGetOutputDto, TGetListOutpu
                 .WhereIf(!input.Artists.IsNullOrEmpty(), x => x.Artists.Any(a => input.Artists!.Contains(a.Id)))
                 .WhereIf(!input.Tags.IsNullOrEmpty(), x => x.Tags.Any(t => input.Tags!.Contains(t.Id)))
             ;
+
+        if (CurrentUser.Id != null)
+        {
+            var userId = CurrentUser.Id.Value;
+            if (input.HasReadingProgress != null)
+            {
+                var predicate = ProcessPredicate;
+                query = query.Where(x => x.Processes.AsQueryable()
+                    .Where(predicate)
+                    .Any(p => p.UserId == userId && p.Progress > 0) == input.HasReadingProgress);
+            }
+        }
+
+        if (input.CreatedInDays != null && input.CreatedInDays > 0)
+        {
+            var from = Clock.Now.AddDays(-input.CreatedInDays.Value);
+            query = query.Where(x => x.CreationTime >= from);
+        }
+
+        if (CurrentUser.Id != null)
+        {
+            query = query.WhereIf(input.HasReadCount == true,
+                x => x.ReadCount > 0);
+
+            query = query.WhereIf(input.HasReadCount == false,
+                x => x.ReadCount == 0);
+        }
+
 
         return query;
     }

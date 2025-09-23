@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+using Vctoon.Identities;
 using Vctoon.ImageProviders;
 using Vctoon.Libraries.Dtos;
 using Vctoon.Mediums.Base;
@@ -18,32 +20,20 @@ public class ComicAppService(
             ComicCreateUpdateDto>(repository),
         IComicAppService
 {
-    protected override string GetPolicyName { get; set; } = VctoonPermissions.Comic.Default;
-    protected override string GetListPolicyName { get; set; } = VctoonPermissions.Comic.Default;
-    protected override string CreatePolicyName { get; set; } = VctoonPermissions.Comic.Create;
-    protected override string UpdatePolicyName { get; set; } = VctoonPermissions.Comic.Update;
-    protected override string DeletePolicyName { get; set; } = VctoonPermissions.Comic.Delete;
+    protected override string? GetPolicyName { get; set; } = VctoonPermissions.Comic.Default;
+    protected override string? GetListPolicyName { get; set; } = VctoonPermissions.Comic.Default;
+    protected override string? CreatePolicyName { get; set; } = VctoonPermissions.Comic.Create;
+    protected override string? UpdatePolicyName { get; set; } = VctoonPermissions.Comic.Update;
+    protected override string? DeletePolicyName { get; set; } = VctoonPermissions.Comic.Delete;
+
+
+    protected override Expression<Func<IdentityUserReadingProcess, bool>> ProcessPredicate => p => p.ComicId != null;
 
     [RemoteService(false)]
     public override Task<ComicDto> CreateAsync(ComicCreateUpdateDto input)
     {
         throw new UserFriendlyException("Not supported");
     }
-
-
-    protected override async Task<IQueryable<Comic>> CreateFilteredQueryAsync(ComicGetListInput input)
-    {
-        var query = await base.CreateFilteredQueryAsync(input);
-        if (CurrentUser.Id != null)
-        {
-            query = query.WhereIf(input.HasReadingProgress != null,
-                x => x.Processes.Any(p => p.ComicId != null && p.UserId == CurrentUser.Id && p.Progress > 0) ==
-                     input.HasReadingProgress);
-        }
-
-        return query;
-    }
-
 
     [Authorize]
     public async Task<RemoteStreamContent> GetComicImageAsync(Guid comicImageId, int? maxWidth = null)
@@ -113,7 +103,7 @@ public class ComicAppService(
         {
             UnitOfWorkManager.Current!.OnCompleted(() =>
             {
-                if (File.Exists(file.Path))
+                if (file != null && File.Exists(file.Path))
                 {
                     File.Delete(file.Path);
                 }
