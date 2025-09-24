@@ -5,6 +5,7 @@ import type {
   ComicGetListOutput,
 } from './typing'
 
+import { MediumType, requestClient } from '../..'
 import {
   createBaseCurdApi,
   createBaseCurdUrl,
@@ -26,6 +27,24 @@ export const comicApi = {
     ComicGetListInput,
     PageResult<ComicGetListOutput>
   >(baseUrl),
+
+  async getById(id: string) {
+    const item = await requestClient.get<ComicGetListOutput>(`${baseUrl}/${id}`)
+    item.mediumType = MediumType.Comic
+    return item
+  },
+  async getPage(pageRequest: ComicGetListInput) {
+    const result = await requestClient.get<PageResult<ComicGetListOutput>>(
+      baseUrl,
+      {
+        params: pageRequest,
+      },
+    )
+    for (const element of result.items) {
+      element.mediumType = MediumType.Comic
+    }
+    return result
+  },
 }
 
 export * from './typing'

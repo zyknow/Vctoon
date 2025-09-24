@@ -61,6 +61,7 @@ const mostViewed = createRecommendMediumProvider({
 
 <template>
   <Page auto-content-height content-class="flex flex-col overflow-hidden gap-6">
+    <medium-toolbar-first :title="$t('page.home.title')" />
     <MediumToolbarSecondSelect v-if="selectedMediumIds.length > 0" />
     <div class="library-recommend">
       <MediumRecommendationSection

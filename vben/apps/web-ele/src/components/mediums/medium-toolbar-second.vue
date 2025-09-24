@@ -6,7 +6,7 @@ const { pageRequest, updateSorting, totalCount } = useInjectedMediumProvider()
 
 <template>
   <div class="flex w-full flex-row items-center justify-between">
-    <slot name="filter-left">
+    <slot name="left">
       <div class="flex flex-row items-center gap-2">
         <medium-sort-dropdown
           v-model:model-value="pageRequest.sorting"
@@ -15,10 +15,10 @@ const { pageRequest, updateSorting, totalCount } = useInjectedMediumProvider()
         <el-tag type="primary">{{ totalCount || 0 }}</el-tag>
       </div>
     </slot>
-    <slot name="filter-center">
+    <slot name="center">
       <div></div>
     </slot>
-    <slot name="filter-right">
+    <slot name="right">
       <div></div>
     </slot>
   </div>

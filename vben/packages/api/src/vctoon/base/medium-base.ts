@@ -1,6 +1,7 @@
 /** Medium 通用基础类型（对齐后端 MediumDtoBase） */
 
 import type { Artist } from '../artist/typing'
+import type { MediumType } from '../library'
 import type { Tag } from '../tag/typing'
 
 // 列表/详情通用基础输出（含审计字段）
@@ -8,6 +9,7 @@ export type MediumGetListOutputBase = FullAuditedEntityDto & {
   cover?: string
   description?: string
   libraryId: string
+  mediumType: MediumType
   readCount: number
   readingLastTime?: Date
   readingProgress?: number

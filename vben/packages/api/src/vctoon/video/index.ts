@@ -5,6 +5,7 @@ import type {
   VideoGetListOutput,
 } from './typing'
 
+import { MediumType, requestClient } from '../..'
 import {
   createBaseCurdApi,
   createBaseCurdUrl,
@@ -26,6 +27,23 @@ export const videoApi = {
     VideoGetListInput,
     PageResult<VideoGetListOutput>
   >(baseUrl),
+  async getById(id: string) {
+    const item = await requestClient.get<VideoGetListOutput>(`${baseUrl}/${id}`)
+    item.mediumType = MediumType.Video
+    return item
+  },
+  async getPage(pageRequest: VideoGetListInput) {
+    const result = await requestClient.get<PageResult<VideoGetListOutput>>(
+      baseUrl,
+      {
+        params: pageRequest,
+      },
+    )
+    for (const element of result.items) {
+      element.mediumType = MediumType.Video
+    }
+    return result
+  },
 }
 
 export * from './typing'
