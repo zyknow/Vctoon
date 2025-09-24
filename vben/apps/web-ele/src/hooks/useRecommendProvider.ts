@@ -96,10 +96,6 @@ export function createRecommendMediumProvider(
             ? (mediumItems[type]?.length ?? 0)
             : 0
 
-          result.items.forEach((item) => {
-            ;(item as any).mediumType = type
-          })
-
           mediumItems[type] = loadMore
             ? [...(mediumItems[type] || []), ...result.items]
             : result.items || []
