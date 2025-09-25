@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { libraryApi } from '@vben/api'
 import { Page } from '@vben/common-ui'
+import { useUserStore } from '@vben/stores'
 
 import { createLibraryMediumProvider } from '#/hooks/useLibraryMediumProvider'
 import {
@@ -11,7 +11,11 @@ import {
 import LibraryRecommend from './library-recommend.vue'
 
 const libraryId = location.pathname.replace('/library/', '')
-const library = await libraryApi.getById(libraryId)
+const userStore = useUserStore()
+const library = userStore.libraries.find((i) => i.id === libraryId)
+if (!library) {
+  throw new Error('Library not found')
+}
 const state = createLibraryMediumProvider(library)
 provideMediumProvider(state)
 provideMediumItemProvider({

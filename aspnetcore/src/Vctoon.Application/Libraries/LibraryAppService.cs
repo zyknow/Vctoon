@@ -100,6 +100,7 @@ public class LibraryAppService(
     public async Task<LibraryDto> GetAsync(Guid id)
     {
         var query = await repository.WithDetailsAsync(x => x.Paths.Where(p => p.IsRoot));
+        query = query.Where(x => x.Id == id);
 
         var library = await AsyncExecuter.FirstAsync(query);
 
