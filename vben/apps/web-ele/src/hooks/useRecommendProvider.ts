@@ -57,7 +57,18 @@ export function createRecommendMediumProvider(
   )
 
   const items = computed(() => {
-    return mediumTypes.flatMap((type) => mediumItems[type] || [])
+    // 并且根据 opts.pageRequest.sorting 进行排序 , 过滤字符串格式为 field ASC|DESC
+    const sorting = opts.pageRequest.sorting || 'CreationTime DESC'
+    return mediumTypes
+      .flatMap((type) => mediumItems[type] || [])
+      .sort((a, b) => {
+        const [field, order] = sorting.split(' ')
+        const aValue = (a as any)[field as any]
+        const bValue = (b as any)[field as any]
+        if (aValue < bValue) return order === 'ASC' ? -1 : 1
+        if (aValue > bValue) return order === 'ASC' ? 1 : -1
+        return 0
+      })
   })
   const title = ref(opts.title ?? '')
   const totalCount = computed(() => {

@@ -7,7 +7,7 @@
   "library": {
     "mediumType": {
       "comic": "漫画",
-      "video": "动画"
+      "video": "视频"
     },
     "recommend": {
       "continueWatching": "继续观看的{mediumType}",

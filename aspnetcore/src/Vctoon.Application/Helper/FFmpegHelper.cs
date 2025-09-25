@@ -56,7 +56,8 @@ public class FFmpegHelper
                 var args = "-an -sn -dn -frames:v 1 -vsync vfr -f image2 -vcodec png";
                 if (maxWidth > 0)
                 {
-                    args += $" -vf scale=min({maxWidth},iw):-2";
+                    // 注意：在 filtergraph 表达式中，逗号需要转义为 \, 否则会被解析为过滤器分隔符
+                    args += $" -vf scale=min({maxWidth}\\,iw):-2";
                 }
 
                 o.WithCustomArgument(args);
