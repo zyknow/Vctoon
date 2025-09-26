@@ -97,8 +97,17 @@ export function createRecommendMediumProvider(
     try {
       await Promise.all(
         mediumTypes.map(async (type) => {
+          const pageResult = mediumPageResults[type]
+          if (
+            pageResult?.totalCount !== 0 &&
+            pageResult?.totalCount <= (mediumItems[type]?.length ?? 0)
+          ) {
+            return
+          }
+
           const pageApi = mediumApis[type]
           const pageRequest = mediumPageRequests[type]
+
           const result = await pageApi(
             pageRequest as ComicGetListInput & VideoGetListInput,
           )
