@@ -19,6 +19,14 @@
   "create": "新增",
   "yes": "是",
   "no": "否",
+  "save": "保存",
   "showSearchPanel": "显示搜索面板",
-  "hideSearchPanel": "隐藏搜索面板"
+  "hideSearchPanel": "隐藏搜索面板",
+  "loadFailed": "加载失败",
+  "updateSuccess": "更新成功",
+  "updateFailed": "更新失败",
+  "validation": {
+    "imageOnly": "只能上传图片文件",
+    "fileSizeLimit": "文件大小不能超过10MB"
+  }
 }

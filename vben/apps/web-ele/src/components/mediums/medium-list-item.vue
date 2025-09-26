@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Comic, Video } from '@vben/api'
+import type { MediumGetListOutput } from '@vben/api'
 
 import { computed } from 'vue'
 
@@ -8,14 +8,13 @@ import { useAppConfig } from '@vben/hooks'
 import { CiEditPencilLine01, CiMoreVertical, MdiPlayCircle } from '@vben/icons'
 import { formatDate } from '@vben/utils'
 
-type Medium = Comic | Video
-
 const props = defineProps<{
-  mediumType?: MediumType
-  modelValue?: Medium
+  modelValue: MediumGetListOutput
 }>()
 
 const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD)
+
+const mediumType = computed(() => props.modelValue?.mediumType)
 
 // 标题、年份、相对时间
 const title = computed(() => props.modelValue?.title ?? '')
@@ -41,7 +40,8 @@ const timeAgo = computed(() => {
 
 const cover = computed(() => {
   let mediumUrl
-  switch (props.mediumType) {
+
+  switch (mediumType.value) {
     case MediumType.Comic: {
       mediumUrl = mediumResourceApi.url.getCover.format({
         cover: props.modelValue?.cover,

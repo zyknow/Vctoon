@@ -17,5 +17,21 @@
   },
   "medium": {
     "readingProgress": "Reading Progress"
+  },
+  "mediums": {
+    "edit": {
+      "title": "Edit Media",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Please enter title",
+      "description": "Description",
+      "descriptionPlaceholder": "Please enter description",
+      "artists": "Artists",
+      "artistsPlaceholder": "Please select artists",
+      "tags": "Tags",
+      "tagsPlaceholder": "Please select tags",
+      "cover": "Cover",
+      "uploadCover": "Upload Cover",
+      "coverTip": "Supports JPG, PNG format, file size should not exceed 10MB"
+    }
   }
 }

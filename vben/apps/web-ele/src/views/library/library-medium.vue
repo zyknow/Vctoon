@@ -44,6 +44,7 @@ provideMediumItemProvider({
           "
         />
         <medium-toolbar-second-select
+          :show-selected-all-btn="true"
           v-else-if="state.selectedMediumIds.value.length > 0"
         />
       </div>

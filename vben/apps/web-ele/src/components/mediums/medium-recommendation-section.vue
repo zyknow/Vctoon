@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import type { RecommendMediumProvider } from '#/hooks/useRecommendProvider'
 
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 
 import { ChevronLeft, ChevronRight } from '@vben/icons'
-
-import MediumGuidItem from './medium-guid-item.vue'
 
 interface Props {
   data: RecommendMediumProvider
@@ -18,6 +16,35 @@ const scrollContainer = ref<HTMLElement>()
 // 滚动控制
 const canScrollLeft = ref(false)
 const canScrollRight = ref(true)
+
+// 保存并恢复滚动位置的工具函数
+const preserveScrollPosition = async (callback: () => Promise<void>) => {
+  if (!scrollContainer.value) return
+
+  const currentScrollLeft = scrollContainer.value.scrollLeft
+  await callback()
+
+  // 在下一个渲染周期恢复滚动位置
+  await nextTick()
+  if (scrollContainer.value) {
+    scrollContainer.value.scrollLeft = currentScrollLeft
+  }
+}
+
+// 防抖标志，避免重复触发加载
+let isLoadingMore = false
+
+// 防抖加载函数
+const debouncedLoadNext = async () => {
+  if (isLoadingMore || props.data.loading.value) return
+
+  isLoadingMore = true
+  try {
+    await preserveScrollPosition(() => props.data.loadNext())
+  } finally {
+    isLoadingMore = false
+  }
+}
 
 // 检查滚动状态
 const checkScrollState = () => {
@@ -41,7 +68,7 @@ const scrollLeft = () => {
 }
 
 // 向右滚动
-const scrollRight = () => {
+const scrollRight = async () => {
   if (!scrollContainer.value) return
 
   const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.value
@@ -51,9 +78,9 @@ const scrollRight = () => {
   if (
     scrollLeft >= scrollWidth - clientWidth - 1 &&
     props.data.hasMore.value &&
-    !props.data.loading.value
+    !isLoadingMore
   ) {
-    props.data.loadNext()
+    await debouncedLoadNext()
   } else {
     scrollContainer.value.scrollBy({
       left: scrollAmount,
@@ -69,7 +96,7 @@ const handleScroll = () => {
 }
 
 // 检查是否需要加载更多
-const checkNeedLoadMore = () => {
+const checkNeedLoadMore = async () => {
   if (
     !scrollContainer.value ||
     !props.data.hasMore.value ||
@@ -82,7 +109,7 @@ const checkNeedLoadMore = () => {
   // 当滚动到距离右边界100px以内时开始加载更多
   const threshold = 100
   if (scrollLeft + clientWidth >= scrollWidth - threshold) {
-    props.data.loadNext()
+    await debouncedLoadNext()
   }
 }
 
@@ -127,8 +154,11 @@ const hasItems = computed(
 
     <!-- 内容区域 -->
     <div class="relative">
-      <!-- 加载状态 -->
-      <div v-if="props.data.loading.value" class="flex gap-6 overflow-hidden">
+      <!-- 初始加载状态 -->
+      <div
+        v-if="props.data.loading.value && !hasItems"
+        class="flex gap-6 overflow-hidden"
+      >
         <div
           v-for="i in 6"
           :key="`skeleton-${i}`"
@@ -139,7 +169,7 @@ const hasItems = computed(
 
       <!-- 空状态 -->
       <div
-        v-else-if="!hasItems"
+        v-else-if="!hasItems && !props.data.loading.value"
         class="text-muted-foreground flex h-32 items-center justify-center text-sm"
       >
         暂无内容
@@ -149,17 +179,27 @@ const hasItems = computed(
       <div
         v-else
         ref="scrollContainer"
-        class="scrollbar-hide flex gap-6 overflow-x-auto pb-4"
+        class="scrollbar-hide overflow-x-auto pb-4"
         @scroll="handleScroll"
         @scrollend="checkScrollState"
       >
-        <div
-          v-for="item in props.data.items.value"
-          :key="item.id"
-          class="flex-shrink-0"
+        <TransitionGroup
+          name="fade-slide"
+          tag="div"
+          class="flex gap-6 pt-1"
+          appear
         >
-          <MediumGuidItem :model-value="item" :medium-type="item.mediumType" />
-        </div>
+          <div
+            v-for="item in props.data.items.value"
+            :key="item.id"
+            class="flex-shrink-0"
+          >
+            <MediumGridItem
+              :model-value="item"
+              :medium-type="item.mediumType"
+            />
+          </div>
+        </TransitionGroup>
       </div>
 
       <!-- 左侧渐变遮罩 -->
@@ -207,5 +247,40 @@ const hasItems = computed(
 
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 过渡动画 */
+.fade-slide-enter-active {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateX(30px) scale(0.9);
+}
+
+.fade-slide-enter-to {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+/* 确保动画的平滑性 */
+.fade-slide-move {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 优化硬件加速 */
+.fade-slide-enter-active,
+.fade-slide-move {
+  will-change: transform, opacity;
+}
+
+/* 改善视觉效果的额外样式 */
+.medium-recommendation-section .flex-shrink-0 {
+  transition: transform 0.2s ease;
+}
+
+.medium-recommendation-section .flex-shrink-0:hover {
+  transform: translateY(-2px);
 }
 </style>

@@ -107,14 +107,13 @@ export function createRecommendMediumProvider(
 
           const pageApi = mediumApis[type]
           const pageRequest = mediumPageRequests[type]
-
+          pageRequest.skipCount = loadMore
+            ? (mediumItems[type]?.length ?? 0)
+            : 0
           const result = await pageApi(
             pageRequest as ComicGetListInput & VideoGetListInput,
           )
           mediumPageResults[type] = result
-          pageRequest.skipCount = loadMore
-            ? (mediumItems[type]?.length ?? 0)
-            : 0
 
           mediumItems[type] = loadMore
             ? [...(mediumItems[type] || []), ...result.items]

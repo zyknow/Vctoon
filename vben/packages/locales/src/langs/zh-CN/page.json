@@ -17,5 +17,21 @@
   },
   "medium": {
     "readingProgress": "阅读进度"
+  },
+  "mediums": {
+    "edit": {
+      "title": "编辑媒体",
+      "titleLabel": "标题",
+      "titlePlaceholder": "请输入标题",
+      "description": "描述",
+      "descriptionPlaceholder": "请输入描述",
+      "artists": "作者",
+      "artistsPlaceholder": "请选择作者",
+      "tags": "标签",
+      "tagsPlaceholder": "请选择标签",
+      "cover": "封面",
+      "uploadCover": "上传封面",
+      "coverTip": "支持 JPG、PNG 格式，文件大小不超过 10MB"
+    }
   }
 }

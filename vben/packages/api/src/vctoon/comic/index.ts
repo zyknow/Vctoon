@@ -5,20 +5,19 @@ import type {
   ComicGetListOutput,
 } from './typing'
 
-import { MediumType, requestClient } from '../..'
-import {
-  createBaseCurdApi,
-  createBaseCurdUrl,
-} from '../base/curd-api-definition-base'
+import { createMediumBaseCurdApi, createMediumBaseCurdUrl } from '../..'
+import { MediumType } from '../library'
 
 /** Comic API 根路径 */
 const baseUrl = '/api/app/comic'
 
+const url = {
+  ...createMediumBaseCurdUrl(baseUrl),
+}
+
 export const comicApi = {
-  url: {
-    ...createBaseCurdUrl(baseUrl),
-  },
-  ...createBaseCurdApi<
+  url,
+  ...createMediumBaseCurdApi<
     string,
     Comic,
     ComicGetListOutput,
@@ -26,25 +25,7 @@ export const comicApi = {
     ComicCreateUpdate,
     ComicGetListInput,
     PageResult<ComicGetListOutput>
-  >(baseUrl),
-
-  async getById(id: string) {
-    const item = await requestClient.get<ComicGetListOutput>(`${baseUrl}/${id}`)
-    item.mediumType = MediumType.Comic
-    return item
-  },
-  async getPage(pageRequest: ComicGetListInput) {
-    const result = await requestClient.get<PageResult<ComicGetListOutput>>(
-      baseUrl,
-      {
-        params: pageRequest,
-      },
-    )
-    for (const element of result.items) {
-      element.mediumType = MediumType.Comic
-    }
-    return result
-  },
+  >(baseUrl, MediumType.Comic),
 }
 
 export * from './typing'

@@ -11,6 +11,5 @@ export type ArtistCreateUpdate = {
 }
 
 export type ArtistGetListInput = BasePageRequest & {
-  description?: string
-  name?: string
+  filter?: string
 }

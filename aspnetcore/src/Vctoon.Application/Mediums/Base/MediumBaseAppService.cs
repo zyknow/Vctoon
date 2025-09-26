@@ -3,6 +3,11 @@ using Vctoon.Mediums.Dtos.Base;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
 using Vctoon.Extensions;
+using Volo.Abp.Content; // 新增 RemoteStreamContent
+using Volo.Abp; // UserFriendlyException
+using Vctoon.Services; // CoverSaver
+using Vctoon.Libraries; // Tag / Artist
+using Vctoon.Mediums.Base;
 
 namespace Vctoon.Mediums.Base;
 
@@ -81,7 +86,6 @@ public abstract class MediumBaseAppService<TEntity, TGetOutputDto, TGetListOutpu
         return query;
     }
 
-
     protected virtual IQueryable<TEntity> ApplyMediumAddendSorting(IQueryable<TEntity> query, TGetListInput input,
         out bool hasSorting)
     {
@@ -140,5 +144,88 @@ public abstract class MediumBaseAppService<TEntity, TGetOutputDto, TGetListOutpu
     {
         return (await Repository.WithDetailsAsync()).FirstOrDefault(x => x.Id == id) ??
                throw new EntityNotFoundException(typeof(TEntity), (object)id);
+    }
+    
+    // 延迟解析依赖（不破坏派生类构造函数）
+    protected CoverSaver CoverSaver => LazyServiceProvider.LazyGetRequiredService<CoverSaver>();
+    protected ITagRepository TagRepository => LazyServiceProvider.LazyGetRequiredService<ITagRepository>();
+    protected IArtistRepository ArtistRepository => LazyServiceProvider.LazyGetRequiredService<IArtistRepository>();
+
+    public virtual async Task<TGetOutputDto> UpdateCoverAsync(Guid id, RemoteStreamContent cover)
+    {
+        await CheckUpdatePolicyAsync();
+
+        if (cover == null)
+        {
+            throw new UserFriendlyException("封面流不能为空");
+        }
+
+        var entity = await GetEntityByIdAsync(id);
+
+        // 保存新封面
+        await using var stream = cover.GetStream();
+        if (stream == null || stream.Length == 0)
+        {
+            throw new UserFriendlyException("封面流为空");
+        }
+
+        var newCover = await CoverSaver.SaveAsync(stream);
+        entity.Cover = newCover;
+
+        await Repository.UpdateAsync(entity, true);
+        return await MapToGetOutputDtoAsync(entity);
+    }
+    
+    public virtual async Task<TGetOutputDto> UpdateArtistsAsync(Guid id, List<Guid> artistIds)
+    {
+        await CheckUpdatePolicyAsync();
+
+        artistIds ??= new List<Guid>();
+        artistIds = artistIds.Distinct().Where(g => g != Guid.Empty).ToList();
+
+        var entity = await GetEntityByIdAsync(id);
+
+        // 查询需要的作者
+        var artistQuery = await ArtistRepository.GetQueryableAsync();
+        var artists = await AsyncExecuter.ToListAsync(artistQuery.Where(a => artistIds.Contains(a.Id)));
+
+        // 替换集合（移除不存在的，添加新的）
+        entity.Artists.RemoveAll(a => !artistIds.Contains(a.Id));
+        foreach (var artist in artists)
+        {
+            if (entity.Artists.All(a => a.Id != artist.Id))
+            {
+                entity.Artists.Add(artist);
+            }
+        }
+
+        await Repository.UpdateAsync(entity, true);
+        return await MapToGetOutputDtoAsync(entity);
+    }
+    
+    public virtual async Task<TGetOutputDto> UpdateTagsAsync(Guid id, List<Guid> tagIds)
+    {
+        await CheckUpdatePolicyAsync();
+
+        tagIds ??= new List<Guid>();
+        tagIds = tagIds.Distinct().Where(g => g != Guid.Empty).ToList();
+
+        var entity = await GetEntityByIdAsync(id);
+
+        var tagQuery = await TagRepository.GetQueryableAsync();
+        var tags = await AsyncExecuter.ToListAsync(tagQuery.Where(t => tagIds.Contains(t.Id)));
+
+        // 移除未包含的标签
+        entity.Tags.RemoveAll(t => !tagIds.Contains(t.Id));
+        foreach (var tag in tags)
+        {
+            if (entity.Tags.All(t => t.Id != tag.Id))
+            {
+                entity.Tags.Add(tag);
+            }
+        }
+
+        await Repository.UpdateAsync(entity, true);
+        return await MapToGetOutputDtoAsync(entity);
     }
 }

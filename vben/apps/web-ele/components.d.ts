@@ -8,7 +8,6 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    copy: typeof import('./src/components/mediums/medium-toobar-second copy.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElButtonGroup: typeof import('element-plus/es')['ElButtonGroup']
     ElCard: typeof import('element-plus/es')['ElCard']
@@ -41,11 +40,13 @@ declare module 'vue' {
     ElTag: typeof import('element-plus/es')['ElTag']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     ElTreeSelect: typeof import('element-plus/es')['ElTreeSelect']
+    ElUpload: typeof import('element-plus/es')['ElUpload']
     LibraryScanButton: typeof import('./src/components/headers/library-scan-button.vue')['default']
     LibraryTitleComponent: typeof import('./src/components/sider-menus/library-title-component.vue')['default']
     MainLibraryTitleComponent: typeof import('./src/components/sider-menus/main-library-title-component.vue')['default']
     MediumContent: typeof import('./src/components/mediums/medium-content.vue')['default']
-    MediumGuidItem: typeof import('./src/components/mediums/medium-guid-item.vue')['default']
+    MediumEditDialog: typeof import('./src/components/mediums/medium-edit-dialog.vue')['default']
+    MediumGridItem: typeof import('./src/components/mediums/medium-grid-item.vue')['default']
     MediumLayoutDropdownSelect: typeof import('./src/components/mediums/medium-layout-dropdown-select.vue')['default']
     MediumListItem: typeof import('./src/components/mediums/medium-list-item.vue')['default']
     MediumRecommendationSection: typeof import('./src/components/mediums/medium-recommendation-section.vue')['default']

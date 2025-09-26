@@ -18,8 +18,7 @@ public class ArtistAppService(IArtistRepository repository)
     {
         // TODO: AbpHelper generated
         return (await base.CreateFilteredQueryAsync(input))
-            .WhereIf(!input.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(input.Name))
-            .WhereIf(!input.Description.IsNullOrWhiteSpace(), x => x.Description.Contains(input.Description))
+            .WhereIf(!input.Filter.IsNullOrWhiteSpace(), x => x.Name.Contains(input.Filter!) || x.Description.Contains(input.Filter!))
             ;
     }
 }

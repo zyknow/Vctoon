@@ -5,20 +5,22 @@ import type {
   VideoGetListOutput,
 } from './typing'
 
-import { MediumType, requestClient } from '../..'
 import {
-  createBaseCurdApi,
-  createBaseCurdUrl,
-} from '../base/curd-api-definition-base'
+  createMediumBaseCurdApi,
+  createMediumBaseCurdUrl,
+  MediumType,
+} from '../..'
 
 /** Video API 根路径 */
 const baseUrl = '/api/app/video'
 
+const url = {
+  ...createMediumBaseCurdUrl(baseUrl),
+}
+
 export const videoApi = {
-  url: {
-    ...createBaseCurdUrl(baseUrl),
-  },
-  ...createBaseCurdApi<
+  url,
+  ...createMediumBaseCurdApi<
     string,
     Video,
     VideoGetListOutput,
@@ -26,24 +28,7 @@ export const videoApi = {
     VideoCreateUpdate,
     VideoGetListInput,
     PageResult<VideoGetListOutput>
-  >(baseUrl),
-  async getById(id: string) {
-    const item = await requestClient.get<VideoGetListOutput>(`${baseUrl}/${id}`)
-    item.mediumType = MediumType.Video
-    return item
-  },
-  async getPage(pageRequest: VideoGetListInput) {
-    const result = await requestClient.get<PageResult<VideoGetListOutput>>(
-      baseUrl,
-      {
-        params: pageRequest,
-      },
-    )
-    for (const element of result.items) {
-      element.mediumType = MediumType.Video
-    }
-    return result
-  },
+  >(baseUrl, MediumType.Video),
 }
 
 export * from './typing'

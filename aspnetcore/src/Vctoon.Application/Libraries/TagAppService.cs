@@ -55,7 +55,7 @@ public class TagAppService(ITagRepository repository, TagManager tagManager)
     {
         // TODO: AbpHelper generated
         return (await base.CreateFilteredQueryAsync(input))
-            .WhereIf(!input.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(input.Name))
+            .WhereIf(!input.Filter.IsNullOrWhiteSpace(), x => x.Name.Contains(input.Filter!))
             ;
     }
 }

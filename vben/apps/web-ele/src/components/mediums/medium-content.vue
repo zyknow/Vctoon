@@ -8,7 +8,7 @@ import {
 import { useMediumStore } from '#/store'
 import { ItemDisplayMode } from '#/store/typing'
 
-import MediumGuidItem from './medium-guid-item.vue'
+import MediumGridItem from './medium-grid-item.vue'
 import MediumListItem from './medium-list-item.vue'
 
 defineProps<{
@@ -21,7 +21,7 @@ const mediumStore = useMediumStore()
 
 const currentItemComp = computed(() =>
   mediumStore.itemDisplayMode === ItemDisplayMode.Grid
-    ? MediumGuidItem
+    ? MediumGridItem
     : MediumListItem,
 )
 

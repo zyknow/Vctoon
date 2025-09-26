@@ -6,6 +6,8 @@ import { MdiClose, MdiSelectAll } from '@vben/icons'
 import { useInjectedMediumItemProvider } from '#/hooks/useMediumProvider'
 import { $t } from '#/locales'
 
+defineProps<{ showSelectedAllBtn?: boolean }>()
+
 const { selectedMediumIds, items } = useInjectedMediumItemProvider()
 
 // 计算选中数量
@@ -42,6 +44,7 @@ const clearSelection = () => {
 
         <!-- 全选按钮 -->
         <el-button
+          v-if="showSelectedAllBtn"
           type="primary"
           size="small"
           :icon="MdiSelectAll"

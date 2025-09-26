@@ -36,22 +36,4 @@ public abstract class MediumBase : AuditedAggregateRoot<Guid>, IMediumHasReading
     public virtual List<Artist> Artists { get; set; } = new();
 
     public ICollection<IdentityUserReadingProcess> Processes { get; set; } = [];
-
-    public virtual void AddTag(Tag tag)
-    {
-        Check.NotNull(tag, nameof(tag));
-
-        if (Tags.Any(x => x.Name == tag.Name || x.Id == tag.Id))
-        {
-            throw new Exception(@$"{nameof(tag)} is already exist.");
-        }
-
-        Tags.Add(tag);
-    }
-
-    public virtual void RemoveTag(Tag tag)
-    {
-        Check.NotNull(tag, nameof(tag));
-        Tags.RemoveAll(t => t.Name == tag.Name || t.Id == tag.Id);
-    }
 }

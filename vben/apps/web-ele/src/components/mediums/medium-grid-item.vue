@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Comic, Video } from '@vben/api'
+import type { MediumGetListOutput } from '@vben/api'
 
 import { computed } from 'vue'
 
@@ -17,21 +17,27 @@ import { formatDate } from '@vben/utils'
 import { useInjectedMediumItemProvider } from '#/hooks/useMediumProvider'
 import { useMediumStore } from '#/store'
 
-type Medium = Comic | Video
-
 const props = defineProps<{
-  mediumType?: MediumType
-  modelValue?: Medium
+  modelValue: MediumGetListOutput
+}>()
+
+const emit = defineEmits<{
+  edit: [medium: MediumGetListOutput]
+  updated: [medium: MediumGetListOutput]
 }>()
 
 const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD)
 const mediumStore = useMediumStore()
 const { selectedMediumIds, items } = useInjectedMediumItemProvider()
 
+// 编辑相关状态
+
 // 通过 CSS 变量传递缩放比例
 const zoomStyle = computed(() => ({
   '--zoom': String(mediumStore.itemZoom || 1),
 }))
+
+const mediumType = computed(() => props.modelValue.mediumType)
 
 // 检查当前项目是否被选中
 const isSelected = computed(() => {
@@ -121,6 +127,12 @@ const handleRangeSelection = (currentId: string) => {
   }
 }
 
+// 编辑功能相关
+const handleEdit = (event: MouseEvent) => {
+  event.stopPropagation()
+  emit('edit', props.modelValue)
+}
+
 // 标题、年份、相对时间（简化展示：优先使用 creationTime 与 lastModificationTime）
 const title = computed(() => props.modelValue?.title ?? '')
 const year = computed(() => {
@@ -166,7 +178,8 @@ const isCompleted = computed(() => {
 
 const cover = computed(() => {
   let mediumUrl
-  switch (props.mediumType) {
+
+  switch (mediumType.value) {
     case MediumType.Comic: {
       mediumUrl = mediumResourceApi.url.getCover.format({
         cover: props.modelValue?.cover,
@@ -224,6 +237,7 @@ const cover = computed(() => {
         <div class="pointer-events-auto absolute bottom-2 left-2 text-white/90">
           <CiEditPencilLine01
             class="hover:text-primary cursor-pointer text-2xl"
+            @click="handleEdit"
           />
         </div>
         <!-- right-bottom: more icon -->
@@ -291,6 +305,8 @@ const cover = computed(() => {
       <div class="text-muted-foreground text-xs">{{ year }}</div>
       <div class="text-muted-foreground text-xs">{{ timeAgo }}</div>
     </div>
+
+    <!-- 编辑对话框已移除，由父组件统一管理 -->
   </div>
 </template>
 
@@ -309,6 +325,7 @@ const cover = computed(() => {
   display: -webkit-box;
   overflow: hidden;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 </style>

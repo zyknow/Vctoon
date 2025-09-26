@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 
 import { MdiViewGrid, MdiViewList } from '@vben/icons'
 
-const props = defineProps<{
+defineProps<{
   modelValue?: 'grid' | 'list'
 }>()
 

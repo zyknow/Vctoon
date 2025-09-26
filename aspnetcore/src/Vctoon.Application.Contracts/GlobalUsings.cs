@@ -9,3 +9,4 @@ global using Volo.Abp;
 global using Volo.Abp.Application.Dtos;
 global using Volo.Abp.Application.Services;
 global using Volo.Abp.Identity;
+global using Volo.Abp.Content;

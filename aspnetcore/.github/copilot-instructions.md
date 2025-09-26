@@ -1,7 +1,7 @@
 # Copilot Instructions for this Repository
 
 Chat
-Use zh for responses
+Use Zh-CN language for responses
 
 Project stack
 - .NET 9, C# latest

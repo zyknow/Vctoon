@@ -13,6 +13,5 @@ export type TagCreateUpdate = {
 }
 
 export type TagGetListInput = BasePageRequest & {
-  Name?: string
-  Sorting?: string
+  filter?: string
 }

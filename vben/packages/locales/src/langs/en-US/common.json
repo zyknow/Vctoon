@@ -19,6 +19,14 @@
   "create": "Create",
   "yes": "Yes",
   "no": "No",
+  "save": "Save",
   "showSearchPanel": "Show search panel",
-  "hideSearchPanel": "Hide search panel"
+  "hideSearchPanel": "Hide search panel",
+  "loadFailed": "Loading failed",
+  "updateSuccess": "Update successful",
+  "updateFailed": "Update failed",
+  "validation": {
+    "imageOnly": "Only image files are allowed",
+    "fileSizeLimit": "File size cannot exceed 10MB"
+  }
 }
