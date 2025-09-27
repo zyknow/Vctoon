@@ -12,6 +12,11 @@ const props = defineProps<{
   modelValue: MediumGetListOutput
 }>()
 
+const emit = defineEmits<{
+  edit: [medium: MediumGetListOutput]
+  updated: [medium: MediumGetListOutput]
+}>()
+
 const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD)
 
 const mediumType = computed(() => props.modelValue?.mediumType)
@@ -61,6 +66,12 @@ const cover = computed(() => {
 
   return `${apiURL}${mediumUrl}`
 })
+
+// 编辑功能相关
+const handleEdit = (event: MouseEvent) => {
+  event.stopPropagation()
+  emit('edit', props.modelValue)
+}
 </script>
 
 <template>
@@ -103,8 +114,11 @@ const cover = computed(() => {
 
       <!-- 行内操作 -->
       <div class="text-muted-foreground mt-2 flex items-center gap-3">
-        <CiEditPencilLine01 class="h-4 w-4" />
-        <CiMoreVertical class="h-4 w-4" />
+        <CiEditPencilLine01
+          class="hover:text-primary h-4 w-4 cursor-pointer"
+          @click="handleEdit"
+        />
+        <CiMoreVertical class="hover:text-primary h-4 w-4 cursor-pointer" />
       </div>
     </div>
   </div>
@@ -115,6 +129,7 @@ const cover = computed(() => {
   display: -webkit-box;
   overflow: hidden;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
 }
 </style>

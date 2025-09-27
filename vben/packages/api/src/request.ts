@@ -13,7 +13,7 @@ import {
 } from '@vben/request'
 import { useAccessStore } from '@vben/stores'
 
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 import { useOidcManager } from './oidc'
 
@@ -96,9 +96,21 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
       // 当前mock接口返回的错误字段是 error 或者 message
 
       const responseData = error?.response?.data ?? {}
-      const errorMessage = responseData?.error ?? responseData?.message ?? ''
-      // 如果没有错误信息，则会根据状态码进行提示
-      if (errorMessage || msg) {
+      const errorMessage = responseData?.error as ErrorMessage | undefined
+
+      if (errorMessage && errorMessage.validationErrors?.length > 0) {
+        ElMessageBox.alert(
+          errorMessage.validationErrors
+            .map((item) => item.message)
+            .join('<br/>'),
+          'Request Error',
+          {
+            dangerouslyUseHTMLString: true,
+            confirmButtonText: 'Got it',
+            showClose: true,
+          },
+        )
+      } else if (errorMessage || msg) {
         ElMessage.error(errorMessage || msg)
       }
     }),

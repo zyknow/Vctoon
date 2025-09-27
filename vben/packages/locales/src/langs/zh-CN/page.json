@@ -33,5 +33,95 @@
       "uploadCover": "上传封面",
       "coverTip": "支持 JPG、PNG 格式，文件大小不超过 10MB"
     }
+  },
+  "tag": {
+    "title": "标签管理",
+    "statistics": {
+      "total": "总数",
+      "filtered": "筛选结果",
+      "totalResources": "总资源数"
+    },
+    "search": {
+      "filterPlaceholder": "请输入标签名称搜索",
+      "reset": "重置"
+    },
+    "actions": {
+      "refresh": "刷新",
+      "create": "创建标签",
+      "edit": "编辑",
+      "delete": "删除",
+      "multiSelect": "批量选择",
+      "exitMultiSelect": "退出批量选择",
+      "selectAll": "全选",
+      "selectedCount": "已选择 {count}/{total} 项",
+      "batchDelete": "批量删除"
+    },
+    "sort": {
+      "label": "排序：",
+      "name": "按名称",
+      "resourceCount": "按资源数"
+    },
+    "resourceCount": "{count} 个资源",
+    "empty": {
+      "noTags": "暂无标签数据",
+      "noResults": "未找到匹配的标签"
+    },
+    "messages": {
+      "loadTagsError": "加载标签列表失败",
+      "loadTagError": "加载标签数据失败"
+    },
+    "create": {
+      "title": "创建标签",
+      "fields": {
+        "name": "标签名称"
+      },
+      "placeholders": {
+        "name": "请输入标签名称"
+      },
+      "validation": {
+        "nameRequired": "请输入标签名称",
+        "nameLength": "标签名称长度应为1-50个字符"
+      },
+      "actions": {
+        "cancel": "取消",
+        "confirm": "创建"
+      },
+      "messages": {
+        "success": "创建标签成功",
+        "error": "创建标签失败"
+      }
+    },
+    "edit": {
+      "title": "编辑标签",
+      "actions": {
+        "cancel": "取消",
+        "confirm": "保存"
+      },
+      "messages": {
+        "success": "更新标签成功",
+        "error": "更新标签失败"
+      }
+    },
+    "delete": {
+      "confirmTitle": "确认删除",
+      "confirmMessage": "确定要删除这个标签吗？此操作不可恢复。",
+      "confirm": "删除",
+      "cancel": "取消",
+      "messages": {
+        "success": "删除标签成功",
+        "error": "删除标签失败"
+      }
+    },
+    "batchDelete": {
+      "confirmTitle": "确认批量删除",
+      "confirmMessage": "确定要删除选中的 {count} 个标签吗？此操作不可恢复。",
+      "confirm": "批量删除",
+      "cancel": "取消",
+      "noSelection": "请先选择要删除的标签",
+      "messages": {
+        "success": "成功删除 {count} 个标签",
+        "error": "批量删除标签失败"
+      }
+    }
   }
 }

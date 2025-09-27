@@ -28,5 +28,9 @@
   "validation": {
     "imageOnly": "只能上传图片文件",
     "fileSizeLimit": "文件大小不能超过10MB"
+  },
+  "error": {
+    "requestError": "请求错误",
+    "confirmButton": "知道了"
   }
 }

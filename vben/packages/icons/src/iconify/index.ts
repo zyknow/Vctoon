@@ -65,3 +65,10 @@ export const MdiCheckCircle = createIconifyIcon('mdi:check-circle')
 export const MdiCheckCircleOutline = createIconifyIcon(
   'mdi:check-circle-outline',
 )
+
+// Tag icons
+export const MdiTag = createIconifyIcon('mdi:tag')
+export const MdiTagMultiple = createIconifyIcon('mdi:tag-multiple')
+export const MdiTagOutline = createIconifyIcon('mdi:tag-outline')
+export const MdiLabel = createIconifyIcon('mdi:label')
+export const MdiHashtag = createIconifyIcon('mdi:hashtag')

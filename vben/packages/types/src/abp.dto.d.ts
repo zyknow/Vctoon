@@ -4,6 +4,18 @@ export declare global {
     resourceName: string
   }
 
+  export declare type ErrorMessage = {
+    code: string
+    details: string
+    message: string
+    validationErrors: ValidationError[]
+  }
+
+  export declare type ValidationError = {
+    members: string[]
+    message: string
+  }
+
   export declare type ExtraPropertyDictionary = { [key: string]: any }
 
   export declare type IHasConcurrencyStamp = {

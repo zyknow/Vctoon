@@ -28,5 +28,9 @@
   "validation": {
     "imageOnly": "Only image files are allowed",
     "fileSizeLimit": "File size cannot exceed 10MB"
+  },
+  "error": {
+    "requestError": "Request Error",
+    "confirmButton": "Got it"
   }
 }

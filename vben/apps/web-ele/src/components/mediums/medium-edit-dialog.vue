@@ -1,9 +1,9 @@
 <script setup lang="ts">
 // 1. 导入类型
-import type { Artist, Comic, Tag, Video } from '@vben/api'
+import type { Artist, MediumDto, Tag } from '@vben/api'
 
 // 2. 导入外部依赖
-import { computed, ref, watch } from 'vue'
+import { onMounted, ref } from 'vue'
 
 // 3. 导入内部依赖
 import { artistApi, comicApi, MediumType, tagApi, videoApi } from '@vben/api'
@@ -23,38 +23,37 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<Emits>()
 
-type Medium = Comic | Video
+type Medium = MediumDto
 
 interface Props {
-  modelValue: boolean
-  medium?: Medium
+  mediumId: string
   mediumType: MediumType
+  onClose?: () => void
 }
 
 interface Emits {
-  (e: 'update:modelValue', value: boolean): void
   (e: 'updated', medium: Medium): void
+  (e: 'close'): void
 }
 
 // 6. 响应式数据
-const formData = ref({
-  title: '',
-  description: '',
-  artistIds: [] as string[],
-  tagIds: [] as string[],
-})
-
+const medium = ref<Medium | null>(null)
 const allArtists = ref<Artist[]>([])
 const allTags = ref<Tag[]>([])
 const loading = ref(false)
-
-// 7. 计算属性
-const dialogVisible = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value),
-})
+const initialLoading = ref(true)
 
 // 8. 方法
+const loadMedium = async () => {
+  try {
+    const api = props.mediumType === MediumType.Comic ? comicApi : videoApi
+    medium.value = await api.getById(props.mediumId)
+  } catch (error) {
+    console.error('加载媒体数据失败:', error)
+    ElMessage.error($t('common.loadFailed'))
+  }
+}
+
 const loadOptions = async () => {
   try {
     const [artistsResult, tagsResult] = await Promise.all([
@@ -69,69 +68,41 @@ const loadOptions = async () => {
   }
 }
 
-const initFormData = () => {
-  if (!props.medium) return
-
-  formData.value = {
-    title: props.medium.title || '',
-    description: props.medium.description || '',
-    artistIds: props.medium.artists?.map((a: Artist) => a.id) || [],
-    tagIds: props.medium.tags?.map((t: Tag) => t.id) || [],
+// 9. 初始化
+onMounted(async () => {
+  initialLoading.value = true
+  try {
+    await Promise.all([loadMedium(), loadOptions()])
+  } catch (error) {
+    console.error('初始化失败:', error)
+  } finally {
+    initialLoading.value = false
   }
-}
-
-// 9. 监听器
-watch(
-  () => props.modelValue,
-  (visible) => {
-    if (visible) {
-      loadOptions()
-      initFormData()
-    }
-  },
-)
+})
 
 const handleSave = async () => {
-  if (!props.medium) return
+  if (!medium.value) return
 
   loading.value = true
   try {
-    const currentArtistIds = (
-      props.medium.artists?.map((a: Artist) => a.id) || []
-    ).sort()
-    const currentTagIds = (
-      props.medium.tags?.map((t: Tag) => t.id) || []
-    ).sort()
+    const api = props.mediumType === MediumType.Comic ? comicApi : videoApi
+
+    // 直接使用 medium 对象更新
+    await api.update(medium.value as any, props.mediumId)
 
     // 更新作者
-    if (
-      JSON.stringify(formData.value.artistIds.sort()) !==
-      JSON.stringify(currentArtistIds)
-    ) {
-      const updateArtistsApi =
-        props.mediumType === MediumType.Comic ? comicApi : videoApi
-      await updateArtistsApi.updateArtists(
-        props.medium.id,
-        formData.value.artistIds,
-      )
-    }
+    const artistIds = medium.value.artists?.map((a: Artist) => a.id) || []
+    await api.updateArtists(props.mediumId, artistIds)
 
     // 更新标签
-    if (
-      JSON.stringify(formData.value.tagIds.sort()) !==
-      JSON.stringify(currentTagIds)
-    ) {
-      const updateTagsApi =
-        props.mediumType === MediumType.Comic ? comicApi : videoApi
-      await updateTagsApi.updateTags(props.medium.id, formData.value.tagIds)
-    }
+    const tagIds = medium.value.tags?.map((t: Tag) => t.id) || []
+    await api.updateTags(props.mediumId, tagIds)
 
     ElMessage.success($t('common.updateSuccess'))
     // 重新获取更新后的数据
-    const api = props.mediumType === MediumType.Comic ? comicApi : videoApi
-    const updatedMedium = await api.getById(props.medium.id)
+    const updatedMedium = await api.getById(props.mediumId)
     emit('updated', updatedMedium as Medium)
-    dialogVisible.value = false
+    emit('close')
   } catch (error) {
     console.error('更新失败:', error)
     ElMessage.error($t('common.updateFailed'))
@@ -141,15 +112,12 @@ const handleSave = async () => {
 }
 
 const handleCoverUpload = async (file: File) => {
-  if (!props.medium) return
+  if (!medium.value) return
 
   try {
     const updateCoverApi =
       props.mediumType === MediumType.Comic ? comicApi : videoApi
-    const updatedMedium = await updateCoverApi.updateCover(
-      props.medium.id,
-      file,
-    )
+    const updatedMedium = await updateCoverApi.updateCover(props.mediumId, file)
     ElMessage.success($t('common.updateSuccess'))
     emit('updated', updatedMedium as Medium)
   } catch (error) {
@@ -175,22 +143,19 @@ const beforeCoverUpload = (file: File) => {
 </script>
 
 <template>
-  <el-dialog
-    v-model="dialogVisible"
-    :title="$t('page.mediums.edit.title')"
-    width="600px"
-    append-to-body
-    :close-on-click-modal="false"
-  >
+  <div class="medium-edit-content">
+    <div v-if="initialLoading" class="py-4 text-center">
+      <el-text>{{ $t('common.loading') }}</el-text>
+    </div>
     <el-form
-      v-if="medium"
-      :model="formData"
+      v-else-if="medium"
+      :model="medium"
       label-width="80px"
       label-position="left"
     >
       <el-form-item :label="$t('page.mediums.edit.titleLabel')">
         <el-input
-          v-model="formData.title"
+          v-model="medium.title"
           :placeholder="$t('page.mediums.edit.titlePlaceholder')"
           maxlength="200"
           show-word-limit
@@ -199,7 +164,7 @@ const beforeCoverUpload = (file: File) => {
 
       <el-form-item :label="$t('page.mediums.edit.description')">
         <el-input
-          v-model="formData.description"
+          v-model="medium.description"
           type="textarea"
           :placeholder="$t('page.mediums.edit.descriptionPlaceholder')"
           :rows="3"
@@ -210,34 +175,36 @@ const beforeCoverUpload = (file: File) => {
 
       <el-form-item :label="$t('page.mediums.edit.artists')">
         <el-select
-          v-model="formData.artistIds"
+          v-model="medium.artists"
           multiple
           filterable
           :placeholder="$t('page.mediums.edit.artistsPlaceholder')"
           class="w-full"
+          value-key="id"
         >
           <el-option
             v-for="artist in allArtists"
             :key="artist.id"
             :label="artist.name"
-            :value="artist.id"
+            :value="artist"
           />
         </el-select>
       </el-form-item>
 
       <el-form-item :label="$t('page.mediums.edit.tags')">
         <el-select
-          v-model="formData.tagIds"
+          v-model="medium.tags"
           multiple
           filterable
           :placeholder="$t('page.mediums.edit.tagsPlaceholder')"
           class="w-full"
+          value-key="id"
         >
           <el-option
             v-for="tag in allTags"
             :key="tag.id"
             :label="tag.name"
-            :value="tag.id"
+            :value="tag"
           />
         </el-select>
       </el-form-item>
@@ -261,15 +228,13 @@ const beforeCoverUpload = (file: File) => {
       </el-form-item>
     </el-form>
 
-    <template #footer>
-      <div class="flex justify-end gap-3">
-        <el-button @click="dialogVisible = false">
-          {{ $t('common.cancel') }}
-        </el-button>
-        <el-button type="primary" :loading="loading" @click="handleSave">
-          {{ $t('common.save') }}
-        </el-button>
-      </div>
-    </template>
-  </el-dialog>
+    <div class="mt-6 flex justify-end gap-3">
+      <el-button @click="emit('close')">
+        {{ $t('common.cancel') }}
+      </el-button>
+      <el-button type="primary" :loading="loading" @click="handleSave">
+        {{ $t('common.save') }}
+      </el-button>
+    </div>
+  </div>
 </template>

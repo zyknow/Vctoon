@@ -27,9 +27,7 @@ export type MediumRelations = {
 
 // 新增/更新通用基础输入
 export type MediumCreateUpdateBase = {
-  cover?: string
   description?: string
-  libraryId: string
   title?: string
 }
 

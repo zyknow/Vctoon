@@ -33,5 +33,95 @@
       "uploadCover": "Upload Cover",
       "coverTip": "Supports JPG, PNG format, file size should not exceed 10MB"
     }
+  },
+  "tag": {
+    "title": "Tag Management",
+    "statistics": {
+      "total": "Total",
+      "filtered": "Filtered",
+      "totalResources": "Total Resources"
+    },
+    "search": {
+      "filterPlaceholder": "Search by tag name",
+      "reset": "Reset"
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "create": "Create Tag",
+      "edit": "Edit",
+      "delete": "Delete",
+      "multiSelect": "Multi Select",
+      "exitMultiSelect": "Exit Multi Select",
+      "selectAll": "Select All",
+      "selectedCount": "Selected {count}/{total} items",
+      "batchDelete": "Batch Delete"
+    },
+    "sort": {
+      "label": "Sort:",
+      "name": "By Name",
+      "resourceCount": "By Resource Count"
+    },
+    "resourceCount": "{count} resources",
+    "empty": {
+      "noTags": "No tags available",
+      "noResults": "No matching tags found"
+    },
+    "messages": {
+      "loadTagsError": "Failed to load tag list",
+      "loadTagError": "Failed to load tag data"
+    },
+    "create": {
+      "title": "Create Tag",
+      "fields": {
+        "name": "Tag Name"
+      },
+      "placeholders": {
+        "name": "Please enter tag name"
+      },
+      "validation": {
+        "nameRequired": "Please enter tag name",
+        "nameLength": "Tag name length should be 1-50 characters"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "confirm": "Create"
+      },
+      "messages": {
+        "success": "Tag created successfully",
+        "error": "Failed to create tag"
+      }
+    },
+    "edit": {
+      "title": "Edit Tag",
+      "actions": {
+        "cancel": "Cancel",
+        "confirm": "Save"
+      },
+      "messages": {
+        "success": "Tag updated successfully",
+        "error": "Failed to update tag"
+      }
+    },
+    "delete": {
+      "confirmTitle": "Confirm Delete",
+      "confirmMessage": "Are you sure you want to delete this tag? This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "messages": {
+        "success": "Tag deleted successfully",
+        "error": "Failed to delete tag"
+      }
+    },
+    "batchDelete": {
+      "confirmTitle": "Confirm Batch Delete",
+      "confirmMessage": "Are you sure you want to delete the selected {count} tags? This action cannot be undone.",
+      "confirm": "Batch Delete",
+      "cancel": "Cancel",
+      "noSelection": "Please select tags to delete first",
+      "messages": {
+        "success": "Successfully deleted {count} tags",
+        "error": "Failed to batch delete tags"
+      }
+    }
   }
 }

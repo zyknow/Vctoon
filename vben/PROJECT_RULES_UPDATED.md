@@ -367,6 +367,7 @@ import { useVbenForm } from '@vben-core/form-ui'
 import { VbenAdminLayout } from '@vben-core/layout-ui'
 import { AccessControl } from '@vben/access'
 import { CountTo } from '@vben/common-ui'
+import { Page } from '@vben/common-ui'
 </script>
 
 <template>
@@ -380,8 +381,28 @@ import { CountTo } from '@vben/common-ui'
       </div>
     </AccessControl>
   </VbenAdminLayout>
+  
+  <!-- 页面容器组件使用规范 -->
+  <!-- ✅ 正确：使用 content-class 属性 -->
+  <Page content-class="flex flex-col gap-4">
+    <div>页面内容</div>
+  </Page>
+  
+  <!-- ❌ 错误：不要使用 class 属性 -->
+  <Page class="flex flex-col gap-4">
+    <div>页面内容</div>
+  </Page>
 </template>
 ```
+
+##### Page组件使用要点
+
+**重要**: `Page` 组件必须使用 `content-class` 属性而不是 `class` 属性来设置内容样式。
+
+- **正确用法**: `<Page content-class="flex flex-col gap-4">`
+- **错误用法**: `<Page class="flex flex-col gap-4">`
+
+`content-class` 属性会将样式应用到页面内容容器上，确保正确的布局和样式隔离。
 
 ### 2. 样式开发规范
 

@@ -2,11 +2,7 @@
 
 public abstract class MediumCreateUpdateDtoBase
 {
-    public string Title { get; protected set; }
+    public string Title { get; set; }
 
-    public string Description { get; protected set; }
-
-    public string Cover { get; protected set; }
-
-    public Guid LibraryId { get; internal set; }
+    public string Description { get; set; }
 }

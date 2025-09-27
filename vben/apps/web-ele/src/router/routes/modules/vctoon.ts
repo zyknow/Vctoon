@@ -49,6 +49,17 @@ const routes: RouteRecordRaw[] = [
     path: '/security-logs',
     component: () => import('#/views/security-logs/index.vue'),
   },
+  {
+    meta: {
+      icon: 'mdi:tag',
+      keepAlive: true,
+      order: 10_002,
+      title: $t('page.tag.title'),
+    },
+    name: 'Tag',
+    path: '/tag',
+    component: () => import('#/views/tag/index.vue'),
+  },
 ]
 
 export default routes

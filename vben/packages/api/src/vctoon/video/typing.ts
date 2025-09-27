@@ -23,16 +23,7 @@ export type VideoGetListOutput = MediumGetListOutputBase & {
 export type Video = MediumRelations & VideoGetListOutput
 
 // 创建/更新：基础 + 视频专有输入
-export type VideoCreateUpdate = MediumCreateUpdateBase & {
-  bitrate: number
-  codec?: string
-  duration: string
-  framerate: number
-  height: number
-  path?: string
-  ratio?: string
-  width: number
-}
+export type VideoCreateUpdate = MediumCreateUpdateBase & {}
 
 // 查询输入：复用基础
 export type VideoGetListInput = MediumGetListInputBase
