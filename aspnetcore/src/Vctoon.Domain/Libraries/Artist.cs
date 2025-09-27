@@ -1,6 +1,6 @@
 namespace Vctoon.Libraries;
 
-public class Artist : AuditedEntity<Guid>
+public class Artist : Entity<Guid>
 {
     protected Artist()
     {
@@ -8,17 +8,11 @@ public class Artist : AuditedEntity<Guid>
 
     public Artist(
         Guid id,
-        string name,
-        long slug,
-        string description
+        string name
     ) : base(id)
     {
         Name = name;
-        Slug = slug;
-        Description = description;
     }
 
     public string Name { get; set; }
-    public long Slug { get; set; }
-    public string Description { get; set; }
 }

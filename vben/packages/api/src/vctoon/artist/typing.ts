@@ -1,12 +1,10 @@
 /** Artist 模块类型（对齐 Vctoon.Libraries.Dtos.ArtistDto） */
 
-export type Artist = FullAuditedEntityDto & {
-  description?: string
+export type Artist = EntityDto<string> & {
   name?: string
 }
 
 export type ArtistCreateUpdate = {
-  description?: string
   name?: string
 }
 

@@ -29,6 +29,17 @@ const routes: RouteRecordRaw[] = [
   },
   {
     meta: {
+      icon: 'mdi:tag',
+      keepAlive: true,
+      order: 2001,
+      title: $t('page.tag.title'),
+    },
+    name: 'Tag',
+    path: '/tag',
+    component: () => import('#/views/tag/index.vue'),
+  },
+  {
+    meta: {
       icon: 'ci:user',
       keepAlive: false,
       order: 10_000,
@@ -48,17 +59,6 @@ const routes: RouteRecordRaw[] = [
     name: 'SecurityLogs',
     path: '/security-logs',
     component: () => import('#/views/security-logs/index.vue'),
-  },
-  {
-    meta: {
-      icon: 'mdi:tag',
-      keepAlive: true,
-      order: 10_002,
-      title: $t('page.tag.title'),
-    },
-    name: 'Tag',
-    path: '/tag',
-    component: () => import('#/views/tag/index.vue'),
   },
 ]
 

@@ -15,6 +15,7 @@ import { useAccessStore } from '@vben/stores'
 
 import { ElMessage, ElMessageBox } from 'element-plus'
 
+import { i18n } from '../../locales/src/i18n'
 import { useOidcManager } from './oidc'
 
 const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD)
@@ -24,6 +25,8 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
     ...options,
     baseURL,
   })
+
+  const $t = i18n.global.t
 
   /**
    * 重新认证逻辑
@@ -103,10 +106,10 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
           errorMessage.validationErrors
             .map((item) => item.message)
             .join('<br/>'),
-          'Request Error',
+          $t('common.error.requestError'),
           {
             dangerouslyUseHTMLString: true,
-            confirmButtonText: 'Got it',
+            confirmButtonText: $t('common.error.confirmButton'),
             showClose: true,
           },
         )

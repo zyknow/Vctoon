@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Vctoon.Libraries.Dtos;
 using Vctoon.Permissions;
 
@@ -18,7 +19,21 @@ public class ArtistAppService(IArtistRepository repository)
     {
         // TODO: AbpHelper generated
         return (await base.CreateFilteredQueryAsync(input))
-            .WhereIf(!input.Filter.IsNullOrWhiteSpace(), x => x.Name.Contains(input.Filter!) || x.Description.Contains(input.Filter!))
+            .WhereIf(!input.Filter.IsNullOrWhiteSpace(), x => x.Name.Contains(input.Filter!))
             ;
+    }
+
+    [Route("/api/app/artist/all")]
+    public async Task<List<ArtistDto>> GetAllTagAsync(bool withResourceCount = false)
+    {
+        await CheckGetListPolicyAsync();
+
+        var tags = await AsyncExecuter.ToListAsync((await Repository.GetQueryableAsync()).Select(x =>
+            new ArtistDto
+            {
+                Name = x.Name,
+                Id = x.Id
+            }));
+        return tags;
     }
 }
