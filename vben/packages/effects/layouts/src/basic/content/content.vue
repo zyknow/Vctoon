@@ -106,42 +106,46 @@ function transformComponent(
         appear
         mode="out-in"
       >
-        <KeepAlive
-          v-if="keepAlive"
-          :exclude="getExcludeCachedTabs"
-          :include="getCachedTabs"
-        >
-          <component
-            :is="transformComponent(Component, route)"
-            v-if="renderRouteView"
-            v-show="!route.meta.iframeSrc"
-            :key="getTabKey(route)"
-          />
-        </KeepAlive>
-        <component
-          :is="Component"
-          v-else-if="renderRouteView"
-          :key="getTabKey(route)"
-        />
+        <!-- 强制单根，避免 Fragment 及条件切换导致 Transition 警告 -->
+        <div class="route-transition-wrapper" :key="getTabKey(route)">
+          <template v-if="renderRouteView">
+            <KeepAlive
+              v-if="keepAlive"
+              :exclude="getExcludeCachedTabs"
+              :include="getCachedTabs"
+            >
+              <component
+                :is="transformComponent(Component, route)"
+                v-show="!route.meta.iframeSrc"
+              />
+            </KeepAlive>
+            <component
+              v-else
+              :is="Component"
+            />
+          </template>
+        </div>
       </Transition>
       <template v-else>
-        <KeepAlive
-          v-if="keepAlive"
-          :exclude="getExcludeCachedTabs"
-          :include="getCachedTabs"
-        >
-          <component
-            :is="transformComponent(Component, route)"
-            v-if="renderRouteView"
-            v-show="!route.meta.iframeSrc"
-            :key="getTabKey(route)"
-          />
-        </KeepAlive>
-        <component
-          :is="Component"
-          v-else-if="renderRouteView"
-          :key="getTabKey(route)"
-        />
+        <!-- 未启用过渡时也保持与有过渡时相同的单根结构，避免布局抖动 -->
+        <div class="route-transition-wrapper" :key="getTabKey(route)">
+          <template v-if="renderRouteView">
+            <KeepAlive
+              v-if="keepAlive"
+              :exclude="getExcludeCachedTabs"
+              :include="getCachedTabs"
+            >
+              <component
+                :is="transformComponent(Component, route)"
+                v-show="!route.meta.iframeSrc"
+              />
+            </KeepAlive>
+            <component
+              v-else
+              :is="Component"
+            />
+          </template>
+        </div>
       </template>
     </RouterView>
   </div>
