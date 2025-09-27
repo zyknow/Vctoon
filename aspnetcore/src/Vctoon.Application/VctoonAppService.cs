@@ -1,4 +1,7 @@
-﻿using Vctoon.Localization.Vctoon;
+﻿using Microsoft.AspNetCore.SignalR;
+using Vctoon.Hubs;
+using Vctoon.Localization.Vctoon;
+using Volo.Abp.Authorization;
 
 namespace Vctoon;
 
@@ -14,6 +17,9 @@ public abstract class VctoonAppService : ApplicationService
     protected LibraryPermissionChecker LibraryPermissionChecker =>
         LazyServiceProvider.LazyGetRequiredService<LibraryPermissionChecker>();
 
+    protected IHubContext<DataChangedHub> DataChangedHub => LazyServiceProvider.LazyGetRequiredService<IHubContext<DataChangedHub>>();
+
+    
     /// <summary>
     /// </summary>
     /// <param name="libraryId"></param>

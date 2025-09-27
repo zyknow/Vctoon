@@ -5,7 +5,6 @@ import type {
 } from '@vben/types'
 
 import { generateAccessible } from '@vben/access'
-import { libraryApi } from '@vben/api'
 import { preferences } from '@vben/preferences'
 import { useAccessStore, useUserStore } from '@vben/stores'
 
@@ -74,10 +73,6 @@ async function generateAccess(options: GenerateMenuAndRoutesOptions) {
 async function refreshLibraryAccess() {
   const userStore = useUserStore()
   const accessStore = useAccessStore()
-  // 生成路由表
-  // 当前登录用户拥有的角色标识列表
-  const libraries = await libraryApi.getCurrentUserLibraryList()
-  userStore.setLibraries(libraries)
   // 生成菜单和路由
   const { accessibleMenus, accessibleRoutes } = await generateAccess({
     roles: userStore.userInfo?.roles,

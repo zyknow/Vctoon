@@ -2,7 +2,7 @@
 
 namespace Vctoon.Hubs;
 
-public class LibraryScanMessage
+public class LibraryScanHubMessage
 {
     public Guid LibraryId { get; set; }
     public string Title { get; set; }

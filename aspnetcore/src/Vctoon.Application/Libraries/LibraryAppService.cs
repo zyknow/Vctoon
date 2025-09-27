@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
+using Vctoon.Hubs;
 using Vctoon.Libraries.Dtos;
 using Vctoon.Permissions;
 using Volo.Abp;
@@ -17,8 +19,7 @@ public class LibraryAppService(
     ILibraryPermissionRepository libraryPermissionRepository,
     IdentityUserStore identityUserStore,
     IRepository<IdentityUser> identityUserRepository,
-    IIdentityRoleRepository identityRoleRepository,
-    IUnitOfWorkManager unitOfWorkManager)
+    IIdentityRoleRepository identityRoleRepository)
     : VctoonAppService,
         ILibraryAppService
 {
@@ -55,7 +56,18 @@ public class LibraryAppService(
             await libraryPermissionStore.SetAsync(permission);
         }
 
-        return ObjectMapper.Map<Library, LibraryDto>(entity);
+        var resDto = ObjectMapper.Map<Library, LibraryDto>(entity);
+
+        UnitOfWorkManager.Current!.OnCompleted(async () =>
+        {
+            await DataChangedHub.Clients.All.SendAsync(HubEventConst.DataChangedHub.OnCreated,
+                typeof(Library).Name.ToLowerInvariant(),new List<LibraryDto>()
+                {
+                    resDto
+                } );
+        });
+        
+        return resDto;
     }
 
     [Authorize(VctoonPermissions.Library.Update)]
@@ -75,7 +87,18 @@ public class LibraryAppService(
         await libraryStore.UpdateLibraryAsync(library);
         await libraryStore.UpdateLibraryPathsAsync(library, input.Paths);
 
-        return ObjectMapper.Map<Library, LibraryDto>(library);
+        var resDto =  ObjectMapper.Map<Library, LibraryDto>(library);
+        
+        UnitOfWorkManager.Current!.OnCompleted(async () =>
+        {
+            await DataChangedHub.Clients.All.SendAsync(HubEventConst.DataChangedHub.OnUpdated,
+                typeof(Library).Name.ToLowerInvariant(),new List<LibraryDto>()
+                {
+                    resDto
+                } );
+        });
+        
+        return resDto;
     }
 
 
@@ -84,7 +107,7 @@ public class LibraryAppService(
     {
         _ = Task.Run(async () =>
         {
-            using (var uow = unitOfWorkManager.Begin(
+            using (var uow = UnitOfWorkManager.Begin(
                        true, false
                    ))
             {
@@ -108,9 +131,15 @@ public class LibraryAppService(
     }
 
     [Authorize(VctoonPermissions.Library.Delete)]
-    public Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id)
     {
-        return repository.DeleteAsync(id);
+        await repository.DeleteAsync(id);
+        
+        UnitOfWorkManager.Current!.OnCompleted(async () =>
+        {
+            await DataChangedHub.Clients.All.SendAsync(HubEventConst.DataChangedHub.OnDeleted,
+                typeof(Library).Name.ToLowerInvariant(), new List<Guid>() { id });
+        });
     }
 
     [Authorize(VctoonPermissions.Library.Update)]

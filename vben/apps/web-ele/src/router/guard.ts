@@ -1,6 +1,6 @@
 import type { Router } from 'vue-router'
 
-import { useOidcManager } from '@vben/api'
+import { dataChangedHub, useOidcManager } from '@vben/api'
 import { LOGIN_PATH } from '@vben/constants'
 import { preferences } from '@vben/preferences'
 import { useAccessStore, useUserStore } from '@vben/stores'
@@ -9,7 +9,7 @@ import { startProgress, stopProgress } from '@vben/utils'
 import { accessRoutes, coreRouteNames } from '#/router/routes'
 import { useAuthStore } from '#/store'
 
-import { generateAccess } from './access'
+import { generateAccess, refreshLibraryAccess } from './access'
 
 function setupOidcRedirectGuard(router: Router) {
   const oidc = useOidcManager()
@@ -126,6 +126,24 @@ function setupAccessGuard(router: Router) {
       (to.path === preferences.app.defaultHomePath
         ? preferences.app.defaultHomePath
         : to.fullPath)) as string
+
+    dataChangedHub.on('OnDeleted', (entityName, _) => {
+      if (entityName === 'library') {
+        refreshLibraryAccess()
+      }
+    })
+
+    dataChangedHub.on('OnCreated', (entityName, _) => {
+      if (entityName === 'library') {
+        refreshLibraryAccess()
+      }
+    })
+
+    dataChangedHub.on('OnUpdated', (entityName, _) => {
+      if (entityName === 'library') {
+        refreshLibraryAccess()
+      }
+    })
 
     return {
       ...router.resolve(decodeURIComponent(redirectPath)),

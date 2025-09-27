@@ -8,4 +8,5 @@ public interface IArtistAppService :
         ArtistCreateUpdateDto,
         ArtistCreateUpdateDto>
 {
+    Task DeleteManyAsync(List<Guid> ids);
 }

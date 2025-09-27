@@ -81,7 +81,7 @@ export const useAccessStore = defineStore('core-access', {
     unlockScreen() {
       this.isLockScreen = false
       this.lockScreenPassword = undefined
-    },
+    }
   },
   persist: {
     // 持久化
@@ -94,7 +94,7 @@ export const useAccessStore = defineStore('core-access', {
     isAccessChecked: false,
     isLockScreen: false,
     lockScreenPassword: undefined,
-    loginExpired: false,
+    loginExpired: false
   }),
 })
 

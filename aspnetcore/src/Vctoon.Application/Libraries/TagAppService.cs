@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Vctoon.Hubs;
 using Vctoon.Libraries.Dtos;
 using Vctoon.Permissions;
 
 namespace Vctoon.Libraries;
 
 [Authorize]
-public class TagAppService(ITagRepository repository, TagManager tagManager)
-    : CrudAppService<Tag, TagDto, Guid, TagGetListInput, TagCreateUpdateDto, TagCreateUpdateDto>(repository),
+public class TagAppService(ITagRepository repository)
+    : VctoonCrudAppService<Tag, TagDto, Guid, TagGetListInput, TagCreateUpdateDto, TagCreateUpdateDto>(repository),
         ITagAppService
 {
     protected override string GetPolicyName { get; set; } = VctoonPermissions.Tag.Default;
@@ -15,12 +17,8 @@ public class TagAppService(ITagRepository repository, TagManager tagManager)
     protected override string UpdatePolicyName { get; set; } = VctoonPermissions.Tag.Update;
     protected override string DeletePolicyName { get; set; } = VctoonPermissions.Tag.Delete;
 
-    public override async Task<TagDto> CreateAsync(TagCreateUpdateDto input)
-    {
-        await CheckCreatePolicyAsync();
-        var tag = await tagManager.CreateTagAsync(input.Name);
-        return ObjectMapper.Map<Tag, TagDto>(tag);
-    }
+    protected override bool EnabledDataChangedHubNotify => true;
+    
 
     [Route("/api/app/tag/all")]
     public async Task<List<TagDto>> GetAllTagAsync(bool withResourceCount = false)
@@ -36,19 +34,16 @@ public class TagAppService(ITagRepository repository, TagManager tagManager)
         return tags;
     }
 
-    public override async Task<TagDto> UpdateAsync(Guid id, TagCreateUpdateDto input)
-    {
-        await CheckUpdatePolicyAsync();
-        var tag = await Repository.GetAsync(id);
-        tag.SetName(input.Name);
-        await tagManager.UpdateTagAsync(tag);
-        return ObjectMapper.Map<Tag, TagDto>(tag);
-    }
-
     public async Task DeleteManyAsync(List<Guid> ids)
     {
         await CheckDeletePolicyAsync();
         await Repository.DeleteManyAsync(ids);
+        
+        UnitOfWorkManager.Current!.OnCompleted(async () =>
+        {
+            await DataChangedHub.Clients.All.SendAsync(HubEventConst.DataChangedHub.OnDeleted,
+                typeof(Tag).Name.ToLowerInvariant() , ids);
+        });
     }
 
     protected override async Task<IQueryable<Tag>> CreateFilteredQueryAsync(TagGetListInput input)

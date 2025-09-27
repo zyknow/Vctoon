@@ -11,10 +11,8 @@ type OnReceive = {
   }) => void
 }
 
-type OnSend = {
-  SendMessage: (message: string) => void
-  SendMessageToGroup: (groupName: string, message: string) => void
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+type OnSend = {}
 
 const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD)
 

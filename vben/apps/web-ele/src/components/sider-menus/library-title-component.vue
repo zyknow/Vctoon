@@ -18,7 +18,6 @@ import { useUserStore } from '@vben/stores'
 import { ElMessageBox } from 'element-plus'
 
 import { $t } from '#/locales'
-import { refreshLibraryAccess } from '#/router/access'
 import EditLibraryDialog from '#/views/library/edit-library-dialog.vue'
 import LibraryPermissionDialog from '#/views/library/library-permission-dialog.vue'
 
@@ -82,7 +81,6 @@ async function handleDelete() {
     await libraryApi.delete(library.value.id)
     // TODO: 刷新库列表，显示删除成功消息
 
-    refreshLibraryAccess()
   } catch (error) {
     // 用户取消删除或删除失败
     if (error !== 'cancel') {

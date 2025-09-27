@@ -5,7 +5,6 @@ import { computed, ref } from 'vue'
 
 import { CiAddPlus } from '@vben/icons'
 
-import { refreshLibraryAccess } from '#/router/access'
 import CreateLibraryDialog from '#/views/library/create-library-dialog.vue'
 
 const props = withDefaults(defineProps<{ menu: MenuRecordRaw }>(), {})
@@ -14,7 +13,6 @@ const menu = computed(() => props.menu)
 // 创建库对话框显隐
 const showCreateDialog = ref(false)
 async function onCreated(_library: any) {
-  refreshLibraryAccess()
 }
 </script>
 

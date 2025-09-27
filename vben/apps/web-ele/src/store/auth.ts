@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-import { libraryApi, useOidcManager } from '@vben/api'
+import { useOidcManager } from '@vben/api'
 import { LOGIN_PATH } from '@vben/constants'
 import { resetAllStores, useAccessStore, useUserStore } from '@vben/stores'
 
@@ -50,8 +50,7 @@ export const useAuthStore = defineStore('auth', () => {
     const currentUser = abpStore.application.currentUser
     userStore.setUserInfo(currentUser)
 
-    const libraries = await libraryApi.getCurrentUserLibraryList()
-    userStore.setLibraries(libraries)
+    await userStore.reloadAllUserData()
     // 返回用户信息
 
     return abpStore.application.currentUser
