@@ -82,25 +82,64 @@ onBeforeUnmount(() => {
 
 <template>
   <div ref="scrollWrapRef" class="medium-content">
-    <div :class="containerClass">
-      <template v-if="mediumStore.itemDisplayMode === ItemDisplayMode.Grid">
-        <MediumGridItem
-          :medium-type="loadType"
-          v-for="item in items"
-          :key="`grid-${item.id}`"
-          :model-value="item"
-          @edit="handleEdit"
-        />
-      </template>
-      <template v-else>
-        <MediumListItem
-          :medium-type="loadType"
-          v-for="item in items"
-          :key="`list-${item.id}`"
-          :model-value="item"
-          @edit="handleEdit"
-        />
-      </template>
-    </div>
+    <!-- Grid 模式动画容器 -->
+    <TransitionGroup
+      v-if="mediumStore.itemDisplayMode === ItemDisplayMode.Grid"
+      name="fade-slide"
+      tag="div"
+      :class="containerClass"
+      appear
+    >
+      <MediumGridItem
+        :medium-type="loadType"
+        v-for="item in items"
+        :key="`grid-${item.id}`"
+        :model-value="item"
+        @edit="handleEdit"
+      />
+    </TransitionGroup>
+
+    <!-- List 模式动画容器 -->
+    <TransitionGroup
+      v-else
+      name="fade-slide"
+      tag="div"
+      :class="containerClass"
+      appear
+    >
+      <MediumListItem
+        :medium-type="loadType"
+        v-for="item in items"
+        :key="`list-${item.id}`"
+        :model-value="item"
+        @edit="handleEdit"
+      />
+    </TransitionGroup>
   </div>
 </template>
+
+<style scoped>
+/* 动画（参考 medium-recommendation-section.vue） */
+.fade-slide-enter-active {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateX(30px) scale(0.9);
+}
+
+.fade-slide-enter-to {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.fade-slide-move {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-slide-enter-active,
+.fade-slide-move {
+  will-change: transform, opacity;
+}
+</style>
