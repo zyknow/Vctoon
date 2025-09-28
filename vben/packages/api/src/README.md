@@ -46,7 +46,7 @@ src/vctoon/
 - 如果当前 VS Code 只打开了 `vben` 子仓库：
   - 推荐使用"多根工作区"（File > Add Folder to Workspace）把 `<repo-root>/aspnetcore` 一并加入，以便跨端检索 DTO 与服务；或
   - 直接在文件系统中浏览 `<repo-root>/aspnetcore/src`；或
-  - 无法访问后端源码时，可使用后端 Swagger 文档（`{.env.VITE_GLOB_API_URL}/swagger/v1/swagger.json` 或 Swagger UI）来确认路由与 DTO 结构。`.env.VITE_GLOB_API_URL` 来自于 `apps/web-ele/src/.env.development` 中，拼接后你即可通过请求获取到 Swagger 文档。
+  - 无法访问后端源码时，可使用后端 Swagger `https://localhost:44364/swagger/v1/swagger.json` 来确认路由与 DTO 结构。
 
 ## 生成流程
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using Vctoon.Hubs;
 using Vctoon.Libraries.Dtos;
 using Vctoon.Permissions;
+using Volo.Abp;
 
 namespace Vctoon.Libraries;
 
@@ -19,6 +20,17 @@ public class ArtistAppService(IArtistRepository repository)
 
     protected override bool EnabledDataChangedHubNotify => true;
 
+    public override async Task<ArtistDto> CreateAsync(ArtistCreateUpdateDto input)
+    {
+        var existing = await Repository.FindAsync(x => x.Name == input.Name);
+        if (existing != null)
+        {
+            throw new UserFriendlyException(L["ArtistAlreadyExists", input.Name]);
+        }
+
+        return await base.CreateAsync(input);
+    }
+
     protected override async Task<IQueryable<Artist>> CreateFilteredQueryAsync(ArtistGetListInput input)
     {
         // TODO: AbpHelper generated
@@ -26,19 +38,19 @@ public class ArtistAppService(IArtistRepository repository)
             .WhereIf(!input.Filter.IsNullOrWhiteSpace(), x => x.Name.Contains(input.Filter!))
             ;
     }
-    
+
     public async Task DeleteManyAsync(List<Guid> ids)
     {
         await CheckDeletePolicyAsync();
         await Repository.DeleteManyAsync(ids);
-        
+
         UnitOfWorkManager.Current!.OnCompleted(async () =>
         {
             await DataChangedHub.Clients.All.SendAsync(HubEventConst.DataChangedHub.OnDeleted,
-                typeof(Artist).Name.ToLowerInvariant() , ids);
+                typeof(Artist).Name.ToLowerInvariant(), ids);
         });
     }
-    
+
 
     [Route("/api/app/artist/all")]
     public async Task<List<ArtistDto>> GetAllTagAsync(bool withResourceCount = false)

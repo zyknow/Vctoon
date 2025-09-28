@@ -3,16 +3,14 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import { ElMessage } from 'element-plus'
 
-import { useDialogService } from '#/hooks/useDialogService'
+import useMediumDialogService from '#/hooks/useMediumDialogService'
 import {
   useInjectedMediumItemProvider,
   useInjectedMediumProvider,
 } from '#/hooks/useMediumProvider'
-import { $t } from '#/locales'
 import { useMediumStore } from '#/store'
 import { ItemDisplayMode } from '#/store/typing'
 
-import MediumEditDialog from './medium-edit-dialog.vue'
 import MediumGridItem from './medium-grid-item.vue'
 import MediumListItem from './medium-list-item.vue'
 
@@ -23,7 +21,7 @@ defineProps<{
 const { loadType } = useInjectedMediumProvider()
 const { items } = useInjectedMediumItemProvider()
 const mediumStore = useMediumStore()
-const { openDialog } = useDialogService()
+const { openEdit } = useMediumDialogService()
 
 const containerClass = computed(() =>
   mediumStore.itemDisplayMode === ItemDisplayMode.Grid
@@ -50,35 +48,22 @@ const providerLoadNext = async () => {
   await injected.loadNext()
 }
 
-// 编辑弹窗处理
-const handleEdit = (medium: any) => {
+// 编辑弹窗处理（Promise 化）
+const handleEdit = async (medium: any) => {
   try {
-    const dialogInstance = openDialog(
-      MediumEditDialog,
-      {
-        mediumId: medium.id,
-        mediumType: medium.mediumType,
-        onClose: () => {
-          dialogInstance.close()
-        },
-        onUpdated: (updatedMedium: any) => {
-          // 更新列表中的 medium 数据
-          const index = items.value.findIndex(
-            (item) => item.id === updatedMedium.id,
-          )
-          if (index !== -1) {
-            items.value[index] = updatedMedium
-          }
-          dialogInstance.close()
-        },
-      },
-      {
-        title: $t('page.mediums.edit.title'),
-        width: '600px',
-        closeOnClickModal: false,
-      },
-    )
+    const updated = await openEdit({
+      mediumId: medium.id,
+      mediumType: medium.mediumType,
+      closeOnClickModal: false,
+    })
+    if (updated) {
+      const index = items.value.findIndex((item) => item.id === updated.id)
+      if (index !== -1) {
+        items.value[index] = updated
+      }
+    }
   } catch (error) {
+    // reject 场景（目前未使用）
     console.error('Error creating dialog:', error)
     ElMessage.error('创建弹窗失败，请查看控制台')
   }

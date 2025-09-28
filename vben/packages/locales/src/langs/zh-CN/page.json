@@ -123,5 +123,95 @@
         "error": "批量删除标签失败"
       }
     }
+  },
+  "artist": {
+    "title": "艺术家管理",
+    "statistics": {
+      "total": "总数",
+      "filtered": "筛选结果",
+      "totalResources": "总资源数"
+    },
+    "search": {
+      "filterPlaceholder": "请输入艺术家名称搜索",
+      "reset": "重置"
+    },
+    "actions": {
+      "refresh": "刷新",
+      "create": "创建艺术家",
+      "edit": "编辑",
+      "delete": "删除",
+      "multiSelect": "批量选择",
+      "exitMultiSelect": "退出批量选择",
+      "selectAll": "全选",
+      "selectedCount": "已选择 {count}/{total} 项",
+      "batchDelete": "批量删除"
+    },
+    "sort": {
+      "label": "排序：",
+      "name": "按名称",
+      "resourceCount": "按资源数"
+    },
+    "resourceCount": "{count} 个资源",
+    "empty": {
+      "noArtists": "暂无艺术家数据",
+      "noResults": "未找到匹配的艺术家"
+    },
+    "messages": {
+      "loadArtistsError": "加载艺术家列表失败",
+      "loadArtistError": "加载艺术家数据失败"
+    },
+    "create": {
+      "title": "创建艺术家",
+      "fields": {
+        "name": "艺术家名称"
+      },
+      "placeholders": {
+        "name": "请输入艺术家名称"
+      },
+      "validation": {
+        "nameRequired": "请输入艺术家名称",
+        "nameLength": "艺术家名称长度应为1-50个字符"
+      },
+      "actions": {
+        "cancel": "取消",
+        "confirm": "创建"
+      },
+      "messages": {
+        "success": "创建艺术家成功",
+        "error": "创建艺术家失败"
+      }
+    },
+    "edit": {
+      "title": "编辑艺术家",
+      "actions": {
+        "cancel": "取消",
+        "confirm": "保存"
+      },
+      "messages": {
+        "success": "更新艺术家成功",
+        "error": "更新艺术家失败"
+      }
+    },
+    "delete": {
+      "confirmTitle": "确认删除",
+      "confirmMessage": "确定要删除这个艺术家吗？此操作不可恢复。",
+      "confirm": "删除",
+      "cancel": "取消",
+      "messages": {
+        "success": "删除艺术家成功",
+        "error": "删除艺术家失败"
+      }
+    },
+    "batchDelete": {
+      "confirmTitle": "确认批量删除",
+      "confirmMessage": "确定要删除选中的 {count} 个艺术家吗？此操作不可恢复。",
+      "confirm": "批量删除",
+      "cancel": "取消",
+      "noSelection": "请先选择要删除的艺术家",
+      "messages": {
+        "success": "成功删除 {count} 个艺术家",
+        "error": "批量删除艺术家失败"
+      }
+    }
   }
 }

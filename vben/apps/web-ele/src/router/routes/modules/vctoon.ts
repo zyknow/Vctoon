@@ -41,6 +41,17 @@ const routes: RouteRecordRaw[] = [
   {
     meta: {
       icon: 'ci:user',
+      keepAlive: true,
+      order: 2002,
+      title: $t('page.artist.title'),
+    },
+    name: 'Artist',
+    path: '/artist',
+    component: () => import('#/views/artist/index.vue'),
+  },
+  {
+    meta: {
+      icon: 'ci:user',
       keepAlive: false,
       order: 10_000,
       title: $t('page.user.title'),

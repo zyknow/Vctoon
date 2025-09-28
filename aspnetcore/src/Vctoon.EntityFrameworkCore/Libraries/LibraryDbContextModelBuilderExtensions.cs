@@ -43,6 +43,7 @@ public static class LibraryDbContextModelBuilderExtensions
         builder.Entity<Tag>(b =>
         {
             b.ToTable(VctoonConsts.DbTablePrefix + "Tags", VctoonConsts.DbSchema);
+            b.HasIndex(x => x.Name).IsUnique();
             b.ConfigureByConvention();
         });
 
@@ -89,6 +90,7 @@ public static class LibraryDbContextModelBuilderExtensions
         builder.Entity<Artist>(b =>
         {
             b.ToTable(VctoonConsts.DbTablePrefix + "Artists", VctoonConsts.DbSchema);
+            b.HasIndex(x => x.Name).IsUnique();
             b.ConfigureByConvention();
             /* Configure more properties here */
         });

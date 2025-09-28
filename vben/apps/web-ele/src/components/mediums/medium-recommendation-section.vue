@@ -7,10 +7,7 @@ import { ChevronLeft, ChevronRight } from '@vben/icons'
 
 import { ElMessage } from 'element-plus'
 
-import { useDialogService } from '#/hooks/useDialogService'
-import { $t } from '#/locales'
-
-import MediumEditDialog from './medium-edit-dialog.vue'
+import useMediumDialogService from '#/hooks/useMediumDialogService'
 
 interface Props {
   data: RecommendMediumProvider
@@ -19,35 +16,21 @@ interface Props {
 const props = defineProps<Props>()
 
 const scrollContainer = ref<HTMLElement>()
-const { openDialog } = useDialogService()
+const { openEdit } = useMediumDialogService()
 
-// 编辑弹窗处理
-const handleEdit = (medium: any) => {
+// 编辑弹窗处理（Promise 化）
+const handleEdit = async (medium: any) => {
   try {
-    const dialogInstance = openDialog(
-      MediumEditDialog,
-      {
-        mediumId: medium.id,
-        mediumType: medium.mediumType,
-        onClose: () => {
-          dialogInstance.close()
-        },
-        onUpdated: (updatedMedium: any) => {
-          // 更新推荐列表中的 medium 数据
-          const items = props.data.items.value
-          const index = items.findIndex((item) => item.id === updatedMedium.id)
-          if (index !== -1) {
-            items[index] = updatedMedium
-          }
-          dialogInstance.close()
-        },
-      },
-      {
-        title: $t('page.mediums.edit.title'),
-        width: '600px',
-        closeOnClickModal: false,
-      },
-    )
+    const updated = await openEdit({
+      mediumId: medium.id,
+      mediumType: medium.mediumType,
+      closeOnClickModal: false,
+    })
+    if (updated) {
+      const items = props.data.items.value
+      const index = items.findIndex((item) => item.id === updated.id)
+      if (index !== -1) items[index] = updated
+    }
   } catch (error) {
     console.error('Error creating dialog:', error)
     ElMessage.error('创建弹窗失败，请查看控制台')

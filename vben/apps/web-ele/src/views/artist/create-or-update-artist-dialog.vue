@@ -1,51 +1,51 @@
 <script setup lang="ts">
 import type { FormInstance, FormRules } from 'element-plus'
 
-import type { Tag, TagCreateUpdate } from '@vben/api'
+import type { Artist, ArtistCreateUpdate } from '@vben/api'
 
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 
-import { tagApi } from '@vben/api'
+import { artistApi } from '@vben/api'
 
 import { $t } from '#/locales'
 
 import { useDialogContext } from '../../hooks/useDialogService'
 
 interface InjectedProps {
-  tag?: Tag
+  artist?: Artist
   registerDirtyChecker: (fn: () => boolean) => void
   markClean?: () => void
 }
 const props = defineProps<InjectedProps>()
 
-const { close, resolve } = useDialogContext<Tag>()
+const { close, resolve } = useDialogContext<Artist>()
 
 const formRef = ref<FormInstance>()
 const loading = ref(false)
-const form = reactive<TagCreateUpdate>({ name: '' })
+const form = reactive<ArtistCreateUpdate>({ name: '' })
 let initialSnapshot = ''
 const isDirty = ref(false)
-const isEdit = computed(() => !!props.tag?.id)
+const isEdit = computed(() => !!props.artist?.id)
 
-const rules: FormRules<TagCreateUpdate> = {
+const rules: FormRules<ArtistCreateUpdate> = {
   name: [
     {
       required: true,
-      message: $t('page.tag.create.validation.nameRequired'),
+      message: $t('page.artist.create.validation.nameRequired'),
       trigger: 'blur',
     },
     {
       min: 1,
       max: 50,
-      message: $t('page.tag.create.validation.nameLength'),
+      message: $t('page.artist.create.validation.nameLength'),
       trigger: 'blur',
     },
   ],
 }
 
 async function ensureData() {
-  if (props.tag) {
-    form.name = props.tag.name || ''
+  if (props.artist) {
+    form.name = props.artist.name || ''
     initialSnapshot = JSON.stringify(form)
     isDirty.value = false
     return
@@ -64,7 +64,7 @@ watch(
 )
 
 // 注册脏检查
-onMounted(() => props.registerDirtyChecker(() => isDirty.value))
+props.registerDirtyChecker(() => isDirty.value)
 
 const resetForm = () => {
   form.name = ''
@@ -72,34 +72,37 @@ const resetForm = () => {
 }
 
 const submit = async () => {
-  if (loading.value) return // 防重复提交
+  if (loading.value) return
   if (!formRef.value) return
   const valid = await formRef.value.validate()
   if (!valid) return
   try {
     loading.value = true
-    if (isEdit.value && props.tag?.id) {
-      const updated = await tagApi.update(form, props.tag.id)
-      // 提交成功后禁用脏检查，防止关闭时再次出现未保存提示
+    if (isEdit.value && props.artist?.id) {
+      const updated = await artistApi.update(form, props.artist.id)
+      // 成功提示交由全局拦截器处理
+      // 提交成功后禁用脏检查，避免关闭确认
       props.markClean?.()
       isDirty.value = false
       initialSnapshot = JSON.stringify(form)
-      resolve(updated as Tag)
+      resolve(updated as Artist)
     } else {
-      const created = await tagApi.create(form)
+      const created = await artistApi.create(form)
+      // 成功提示交由全局拦截器处理
       props.markClean?.()
       isDirty.value = false
       initialSnapshot = JSON.stringify(form)
-      resolve(created as Tag)
+      resolve(created as Artist)
     }
   } catch (error) {
-    console.error('保存标签失败:', error)
+    console.error('保存艺术家失败:', error)
+    // 失败提示交由全局拦截器处理
   } finally {
     loading.value = false
   }
 }
 
-watch(() => props.tag, ensureData, { immediate: true })
+watch(() => props.artist, ensureData, { immediate: true })
 </script>
 
 <template>
@@ -112,10 +115,10 @@ watch(() => props.tag, ensureData, { immediate: true })
         label-width="80px"
         label-position="left"
       >
-        <el-form-item :label="$t('page.tag.create.fields.name')" prop="name">
+        <el-form-item :label="$t('page.artist.create.fields.name')" prop="name">
           <el-input
             v-model="form.name"
-            :placeholder="$t('page.tag.create.placeholders.name')"
+            :placeholder="$t('page.artist.create.placeholders.name')"
             maxlength="50"
             show-word-limit
             clearable
@@ -126,13 +129,13 @@ watch(() => props.tag, ensureData, { immediate: true })
 
     <div class="flex justify-end gap-3 pt-2">
       <el-button :disabled="loading" @click="close()">
-        {{ $t('page.tag.create.actions.cancel') }}
+        {{ $t('page.artist.create.actions.cancel') }}
       </el-button>
       <el-button type="primary" :loading="loading" @click="submit">
         {{
           isEdit
-            ? $t('page.tag.edit.actions.confirm')
-            : $t('page.tag.create.actions.confirm')
+            ? $t('page.artist.edit.actions.confirm')
+            : $t('page.artist.create.actions.confirm')
         }}
       </el-button>
     </div>

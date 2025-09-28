@@ -15,18 +15,20 @@ import {
   MdiSortDescending,
   MdiTag,
 } from '@vben/icons'
+import { useUserStore } from '@vben/stores'
 
 import { ElMessage, ElMessageBox } from 'element-plus'
 
+import { useTagDialogService } from '#/hooks/useTagDialogService'
 import { $t } from '#/locales'
-
-import CreateOrUpdateTagDialog from './create-or-update-tag-dialog.vue'
 
 // 响应式数据
 const loading = ref(false)
 
-// 标签列表数据
-const tags = ref<Tag[]>([])
+const userStore = useUserStore()
+
+// 使用 userStore 中的 tags 数据
+const tags = computed(() => userStore.tags || [])
 
 // 搜索和排序状态
 const searchForm = reactive({
@@ -38,9 +40,8 @@ const sortState = reactive({
   order: 'asc' as 'asc' | 'desc',
 })
 
-// 对话框状态
-const dialogVisible = ref(false)
-const currentTagId = ref('')
+// dialog service
+const tagDialog = useTagDialogService()
 
 // 多选状态
 const selectedTags = ref<Set<string>>(new Set())
@@ -95,8 +96,8 @@ const statistics = computed(() => ({
 const loadTags = async () => {
   try {
     loading.value = true
-    const result = await tagApi.getAllTags(true) // 获取资源计数
-    tags.value = result || []
+    // 从 userStore 刷新标签数据
+    await userStore.reloadTags()
   } catch (error) {
     console.error('加载标签列表失败:', error)
     ElMessage.error($t('page.tag.messages.loadTagsError'))
@@ -143,18 +144,14 @@ const getTagColor = (
   return 'danger'
 }
 
-const handleCreate = () => {
-  currentTagId.value = ''
-  dialogVisible.value = true
+const handleCreate = async () => {
+  const created = await tagDialog.openCreate()
+  if (created) loadTags()
 }
 
-const handleEdit = (tagId: string) => {
-  currentTagId.value = tagId
-  dialogVisible.value = true
-}
-
-const handleDialogSuccess = () => {
-  loadTags()
+const handleEdit = async (tagId: string) => {
+  const updated = await tagDialog.openEdit(tagId)
+  if (updated) loadTags()
 }
 
 // 多选相关方法
@@ -470,10 +467,5 @@ loadTags()
     </el-card>
   </Page>
 
-  <!-- 创建/编辑对话框 -->
-  <CreateOrUpdateTagDialog
-    v-model:visible="dialogVisible"
-    :tag-id="currentTagId"
-    @success="handleDialogSuccess"
-  />
+  <!-- dialog 由 service 动态挂载 -->
 </template>

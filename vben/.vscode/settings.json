@@ -243,5 +243,6 @@
     {
       "file": "../.github/.copilot-commit.md"
     }
-  ]
+  ],
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true
 }

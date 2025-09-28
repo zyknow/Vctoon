@@ -5,7 +5,7 @@ import { UserManager } from 'oidc-client-ts'
 export function useOidcManager() {
   const host = window.location.origin
 
-  const scopes = ['openid', 'Vctoon']
+  const scopes = ['openid', 'Vctoon', 'offline_access']
 
   const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD)
 

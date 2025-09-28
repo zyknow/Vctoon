@@ -1,4 +1,5 @@
 {
+  "loading": "Loading...",
   "back": "Back",
   "backToHome": "Back To Home",
   "login": "Login",
@@ -29,6 +30,7 @@
     "imageOnly": "Only image files are allowed",
     "fileSizeLimit": "File size cannot exceed 10MB"
   },
+  "unsavedLeave": "You have unsaved changes. Are you sure you want to close?",
   "error": {
     "requestError": "Request Error",
     "confirmButton": "Got it"

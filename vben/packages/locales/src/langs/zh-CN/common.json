@@ -1,4 +1,5 @@
 {
+  "loading": "加载中...",
   "back": "返回",
   "backToHome": "返回首页",
   "login": "登录",
@@ -29,6 +30,7 @@
     "imageOnly": "只能上传图片文件",
     "fileSizeLimit": "文件大小不能超过10MB"
   },
+  "unsavedLeave": "当前有未保存的更改，确定要关闭吗？",
   "error": {
     "requestError": "请求错误",
     "confirmButton": "知道了"

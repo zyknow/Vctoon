@@ -101,7 +101,11 @@ public class OpenIddictDataSeedContributor(
                 OpenIddictConstants.ConsentTypes.Implicit,
                 "Web Application",
                 null,
-                [OpenIddictConstants.GrantTypes.AuthorizationCode, OpenIddictConstants.GrantTypes.Password],
+                [
+                    OpenIddictConstants.GrantTypes.AuthorizationCode, 
+                    OpenIddictConstants.GrantTypes.Password,
+                    OpenIddictConstants.GrantTypes.RefreshToken
+                ],
                 commonScopes,
                 [$"{rootUrl}/signin-callback-oidc"],
                 [$"{rootUrl}/signout-callback-oidc"],

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { MenuRecordRaw } from '@vben/types'
 
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 
 import { libraryApi, MediumType } from '@vben/api'
 import {
@@ -17,9 +17,8 @@ import { useUserStore } from '@vben/stores'
 
 import { ElMessageBox } from 'element-plus'
 
+import { useLibraryDialogService } from '#/hooks/useLibraryDialogService'
 import { $t } from '#/locales'
-import EditLibraryDialog from '#/views/library/edit-library-dialog.vue'
-import LibraryPermissionDialog from '#/views/library/library-permission-dialog.vue'
 
 const props = withDefaults(defineProps<{ menu: MenuRecordRaw }>(), {})
 const menu = computed(() => props.menu)
@@ -35,17 +34,22 @@ const mediumTypeIconMap = {
   [MediumType.Video]: MdiVideo,
 }
 
-// 编辑库对话框显隐
-const showEditDialog = ref(false)
-// 权限管理对话框显隐
-const showPermissionDialog = ref(false)
+const dialog = useLibraryDialogService()
 
-function onUpdated(_library: any) {
-  // TODO: 可在此处触发列表刷新
+async function onEdit() {
+  if (!library.value?.id) return
+  const updated = await dialog.openEdit(library.value.id)
+  if (updated) {
+    // TODO: 刷新库信息或触发 store reload
+  }
 }
 
-function onPermissionUpdated() {
-  // TODO: 可在此处触发权限更新处理
+async function onPermission() {
+  if (!library.value?.id || !library.value?.name) return
+  const ok = await dialog.openPermission(library.value.id, library.value.name)
+  if (ok) {
+    // TODO: 刷新权限信息
+  }
 }
 
 // 扫描库文件
@@ -60,10 +64,6 @@ async function handleScanFiles() {
   }
 }
 
-// 授权访问
-function handleAuthorizeAccess() {
-  showPermissionDialog.value = true
-}
 // 删除
 async function handleDelete() {
   if (!library.value?.id) return
@@ -80,7 +80,6 @@ async function handleDelete() {
     )
     await libraryApi.delete(library.value.id)
     // TODO: 刷新库列表，显示删除成功消息
-
   } catch (error) {
     // 用户取消删除或删除失败
     if (error !== 'cancel') {
@@ -110,14 +109,14 @@ async function handleDelete() {
             <el-dropdown-item
               :icon="CiEditPencilLine01"
               class="min-w-[200px]"
-              @click="showEditDialog = true"
+              @click="onEdit"
             >
               {{ $t('page.library.actions.edit') }}
             </el-dropdown-item>
             <el-dropdown-item :icon="CiSearch" @click="handleScanFiles">
               {{ $t('page.library.actions.scanFiles') }}
             </el-dropdown-item>
-            <el-dropdown-item :icon="CiLock" @click="handleAuthorizeAccess">
+            <el-dropdown-item :icon="CiLock" @click="onPermission">
               {{ $t('page.library.actions.authorizeAccess') }}
             </el-dropdown-item>
             <el-dropdown-item
@@ -131,17 +130,6 @@ async function handleDelete() {
         </template>
       </el-dropdown>
     </div>
-    <EditLibraryDialog
-      v-model="showEditDialog"
-      :library="library"
-      @success="onUpdated"
-    />
-    <LibraryPermissionDialog
-      v-model="showPermissionDialog"
-      :library-id="library?.id"
-      :library-name="library?.name"
-      @success="onPermissionUpdated"
-    />
   </div>
 </template>
 

@@ -11,6 +11,8 @@ public static class ComicEfCoreQueryableExtensions
         }
 
         queryable = queryable
+                .Include(x=> x.Artists)
+                .Include(x=> x.Tags)
             // .Include(x => x.xxx) // TODO: AbpHelper generated
             ;
 

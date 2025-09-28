@@ -123,5 +123,95 @@
         "error": "Failed to batch delete tags"
       }
     }
+  },
+  "artist": {
+    "title": "Artist Management",
+    "statistics": {
+      "total": "Total",
+      "filtered": "Filtered",
+      "totalResources": "Total Resources"
+    },
+    "search": {
+      "filterPlaceholder": "Search by artist name",
+      "reset": "Reset"
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "create": "Create Artist",
+      "edit": "Edit",
+      "delete": "Delete",
+      "multiSelect": "Multi Select",
+      "exitMultiSelect": "Exit Multi Select",
+      "selectAll": "Select All",
+      "selectedCount": "Selected {count}/{total} items",
+      "batchDelete": "Batch Delete"
+    },
+    "sort": {
+      "label": "Sort:",
+      "name": "By Name",
+      "resourceCount": "By Resource Count"
+    },
+    "resourceCount": "{count} resources",
+    "empty": {
+      "noArtists": "No artists available",
+      "noResults": "No matching artists found"
+    },
+    "messages": {
+      "loadArtistsError": "Failed to load artist list",
+      "loadArtistError": "Failed to load artist data"
+    },
+    "create": {
+      "title": "Create Artist",
+      "fields": {
+        "name": "Artist Name"
+      },
+      "placeholders": {
+        "name": "Please enter artist name"
+      },
+      "validation": {
+        "nameRequired": "Please enter artist name",
+        "nameLength": "Artist name length should be 1-50 characters"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "confirm": "Create"
+      },
+      "messages": {
+        "success": "Artist created successfully",
+        "error": "Failed to create artist"
+      }
+    },
+    "edit": {
+      "title": "Edit Artist",
+      "actions": {
+        "cancel": "Cancel",
+        "confirm": "Save"
+      },
+      "messages": {
+        "success": "Artist updated successfully",
+        "error": "Failed to update artist"
+      }
+    },
+    "delete": {
+      "confirmTitle": "Confirm Delete",
+      "confirmMessage": "Are you sure you want to delete this artist? This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "messages": {
+        "success": "Artist deleted successfully",
+        "error": "Failed to delete artist"
+      }
+    },
+    "batchDelete": {
+      "confirmTitle": "Confirm Batch Delete",
+      "confirmMessage": "Are you sure you want to delete the selected {count} artists? This action cannot be undone.",
+      "confirm": "Batch Delete",
+      "cancel": "Cancel",
+      "noSelection": "Please select artists to delete first",
+      "messages": {
+        "success": "Successfully deleted {count} artists",
+        "error": "Failed to batch delete artists"
+      }
+    }
   }
 }

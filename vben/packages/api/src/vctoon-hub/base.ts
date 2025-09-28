@@ -85,7 +85,10 @@ const createHub = <
   const httpOptions: IHttpConnectionOptions = {}
   if (useAccessToken) {
     const { getAccessToken } = useOidcManager()
-    httpOptions.accessTokenFactory = async () => (await getAccessToken()) ?? ''
+    httpOptions.accessTokenFactory = async () => {
+      const token = await getAccessToken()
+      return token ?? ''
+    }
   }
 
   // 自定义重试策略（如启用自动重连）

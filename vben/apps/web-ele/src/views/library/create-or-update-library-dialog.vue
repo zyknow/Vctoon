@@ -1,43 +1,34 @@
 <script setup lang="ts">
 import type { FormInstance, FormRules } from 'element-plus'
-import type {
-  Library,
-  LibraryCreateUpdate,
-} from 'node_modules/@vben/api/src/vctoon/library/typing'
+
+import type { Library, LibraryCreateUpdate } from '@vben/api'
 
 import { reactive, ref, watch } from 'vue'
 
 import { libraryApi, systemApi } from '@vben/api'
-import { useIsMobile } from '@vben/hooks'
 
-import { ElMessage } from 'element-plus'
-
+import { useDialogContext } from '#/hooks/useDialogService'
 import { $t } from '#/locales'
 
-// v-model
-const props = defineProps<{ modelValue: boolean }>()
-const emit = defineEmits<{
-  (e: 'update:modelValue', v: boolean): void
-  (e: 'success', data: Library): void
-}>()
+// 统一：传 libraryId => 编辑；不传 => 创建
+interface InjectedProps {
+  library?: Library
+  registerDirtyChecker?: (fn: () => boolean) => void
+  markClean?: () => void
+}
+defineOptions({ name: 'CreateOrUpdateLibraryDialog' })
+// 使用 defineProps 以在运行时真正接收父级传入的 props（原先使用 declare 仅是类型声明，运行时 props 永远为空，导致编辑时无法预填）
+const props = defineProps<InjectedProps>()
+const { resolve, close } = useDialogContext<Library | undefined>()
 
-const visible = ref(false)
-watch(
-  () => props.modelValue,
-  (v) => (visible.value = v),
-  { immediate: true },
-)
-watch(visible, (v) => emit('update:modelValue', v))
-
-const mobile = useIsMobile()
-
-// 表单
 const formRef = ref<FormInstance>()
 const form = reactive<LibraryCreateUpdate>({
   name: '',
   mediumType: 0,
   paths: [],
 })
+let initialSnapshot = ''
+const isDirty = ref(false)
 
 const rules = reactive<FormRules<LibraryCreateUpdate>>({
   name: [
@@ -57,9 +48,8 @@ const rules = reactive<FormRules<LibraryCreateUpdate>>({
   paths: [
     {
       validator: (_r, val, cb) => {
-        if (!val || (Array.isArray(val) && val.length === 0)) {
+        if (!val || (Array.isArray(val) && val.length === 0))
           return cb(new Error($t('page.library.create.actions.requirePath')))
-        }
         cb()
       },
       trigger: 'change',
@@ -67,13 +57,11 @@ const rules = reactive<FormRules<LibraryCreateUpdate>>({
   ],
 })
 
-// 媒体类型（根据后端枚举 0/1）
 const mediumTypeOptions = [
   { key: 'image' as const, value: 0 },
   { key: 'video' as const, value: 1 },
 ]
 
-// 路径树懒加载
 type PathNode = {
   children?: PathNode[]
   isLeaf?: boolean
@@ -91,65 +79,98 @@ function makeNode(fullPath: string): PathNode {
   const base = parts.at(-1) ?? fullPath
   return { label: base, value: fullPath }
 }
-async function loadPathNodes(node: any, resolve: (data: PathNode[]) => void) {
+async function loadPathNodes(
+  node: any,
+  resolveNodes: (data: PathNode[]) => void,
+) {
   const parent = node?.level === 0 ? '' : (node.data?.value as string)
   const list = await systemApi.getSystemPaths(parent)
   const nodes = (Array.isArray(list) ? list : []).map((p) => makeNode(p))
-  resolve(nodes)
+  resolveNodes(nodes)
 }
 
-// 提交
 const submitting = ref(false)
-async function onSubmit() {
+async function submit() {
+  if (submitting.value) return
   if (!formRef.value) return
   const valid = await formRef.value.validate()
   if (!valid) return
   try {
     submitting.value = true
-    const created = await libraryApi.create({
-      name: form.name,
-      mediumType: form.mediumType,
-      paths: form.paths && form.paths.length > 0 ? form.paths : undefined,
-    })
-    ElMessage.success($t('page.library.create.actions.success'))
-    emit('success', created as unknown as Library)
-    visible.value = false
-
-    resetForm()
+    if (props.library?.id) {
+      const updated = await libraryApi.update(
+        {
+          name: form.name,
+          mediumType: form.mediumType,
+          paths: form.paths && form.paths.length > 0 ? form.paths : undefined,
+        },
+        props.library.id,
+      )
+      // 全局拦截器已处理成功提示，这里仅负责关闭与返回数据
+      props.markClean?.()
+      initialSnapshot = JSON.stringify(form)
+      isDirty.value = false
+      resolve(updated as Library)
+    } else {
+      const created = await libraryApi.create({
+        name: form.name,
+        mediumType: form.mediumType,
+        paths: form.paths && form.paths.length > 0 ? form.paths : undefined,
+      })
+      // 全局拦截器已处理成功提示，这里仅负责关闭与返回数据
+      props.markClean?.()
+      initialSnapshot = JSON.stringify(form)
+      isDirty.value = false
+      resolve(created as Library)
+      resetForm()
+    }
   } finally {
     submitting.value = false
   }
-}
-
-function onCancel() {
-  visible.value = false
-  resetForm()
 }
 
 function resetForm() {
   form.name = ''
   form.mediumType = 0
   form.paths = []
-  // 重置树选择，无需预置数据（lazy 模式）
 }
 
+function fillForm(lib: Library) {
+  form.name = lib.name ?? ''
+  form.mediumType = typeof lib.mediumType === 'number' ? lib.mediumType : 0
+  form.paths = lib.paths && Array.isArray(lib.paths) ? [...lib.paths] : []
+  initialSnapshot = JSON.stringify(form)
+  isDirty.value = false
+}
+
+async function ensureData() {
+  // 1. 若外部已传入完整 library，则直接填充
+  if (props.library) {
+    fillForm(props.library)
+    // 已有实体直接填充
+  }
+  // 2. 仅当有 libraryId 且尚未传 library 时再请求
+  // 不再通过 id 请求，服务层已预取；若未来需要兼容可在此添加 fallback
+}
+
+// 监听 libraryId 与 library（支持复用组件或服务层动态更新）
+watch(() => props.library, ensureData, { immediate: true })
 watch(
-  () => visible.value,
-  (v) => {
-    if (v) {
-      // 打开时无需预加载，树为懒加载
-    }
+  () => ({ ...form }),
+  () => {
+    const current = JSON.stringify(form)
+    isDirty.value = current !== initialSnapshot
   },
+  { deep: true },
 )
+
+if (props.registerDirtyChecker) {
+  props.registerDirtyChecker(() => isDirty.value)
+}
 </script>
 
 <template>
-  <el-dialog
-    v-model="visible"
-    :fullscreen="mobile.isMobile.value"
-    :title="$t('page.library.create.title')"
-    :close-on-click-modal="false"
-  >
+  <div class="space-y-4">
     <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
       <el-form-item :label="$t('page.library.create.fields.name')" prop="name">
         <el-input
@@ -157,7 +178,6 @@ watch(
           :placeholder="$t('page.library.create.placeholders.name')"
         />
       </el-form-item>
-
       <el-form-item
         :label="$t('page.library.create.fields.mediumType')"
         prop="mediumType"
@@ -174,7 +194,6 @@ watch(
           />
         </el-select>
       </el-form-item>
-
       <el-form-item
         :label="$t('page.library.create.fields.paths')"
         prop="paths"
@@ -195,16 +214,15 @@ watch(
         />
       </el-form-item>
     </el-form>
-
-    <template #footer>
-      <el-button @click="onCancel">
+    <div class="flex justify-end gap-3">
+      <el-button :disabled="submitting" @click="close()">
         {{ $t('page.library.create.actions.cancel') }}
       </el-button>
-      <el-button type="primary" :loading="submitting" @click="onSubmit">
+      <el-button type="primary" :loading="submitting" @click="submit">
         {{ $t('page.library.create.actions.confirm') }}
       </el-button>
-    </template>
-  </el-dialog>
+    </div>
+  </div>
 </template>
 
 <style scoped>

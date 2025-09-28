@@ -3,13 +3,13 @@
 import type { Artist, MediumDto, Tag } from '@vben/api'
 
 // 2. 导入外部依赖
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 
 // 3. 导入内部依赖
-import { artistApi, comicApi, MediumType, tagApi, videoApi } from '@vben/api'
+import { comicApi, MediumType, videoApi } from '@vben/api'
+import { useUserStore } from '@vben/stores'
 
-import { ElMessage } from 'element-plus'
-
+import { useDialogContext } from '#/hooks/useDialogService'
 import { $t } from '#/locales'
 
 // 4. 定义组件选项
@@ -26,45 +26,44 @@ const emit = defineEmits<Emits>()
 type Medium = MediumDto
 
 interface Props {
-  mediumId: string
-  mediumType: MediumType
-  onClose?: () => void
+  medium: Medium // 直接传完整实体
+  registerDirtyChecker?: (fn: () => boolean) => void
+  markClean?: () => void
 }
 
 interface Emits {
   (e: 'updated', medium: Medium): void
-  (e: 'close'): void
 }
+// 新增：获取对话上下文（用于 resolve/close）
+const dialog = useDialogContext<Medium | undefined>()
 
 // 6. 响应式数据
-const medium = ref<Medium | null>(null)
-const allArtists = ref<Artist[]>([])
-const allTags = ref<Tag[]>([])
+const mediumState = ref<Medium | null>(null)
+let initialSnapshot = ''
+const isDirty = ref(false)
 const loading = ref(false)
 const initialLoading = ref(true)
 
+// 使用 userStore 获取 artists 和 tags 数据
+const userStore = useUserStore()
+const allArtists = computed(() => userStore.artists || [])
+const allTags = computed(() => userStore.tags || [])
+
 // 8. 方法
 const loadMedium = async () => {
-  try {
-    const api = props.mediumType === MediumType.Comic ? comicApi : videoApi
-    medium.value = await api.getById(props.mediumId)
-  } catch (error) {
-    console.error('加载媒体数据失败:', error)
-    ElMessage.error($t('common.loadFailed'))
-  }
+  // 直接使用传入实体（保持异步结构以便后续扩展）
+  mediumState.value = props.medium
+  initialSnapshot = JSON.stringify(mediumState.value)
+  isDirty.value = false
 }
 
 const loadOptions = async () => {
   try {
-    const [artistsResult, tagsResult] = await Promise.all([
-      artistApi.getPage({ maxResultCount: 1000 }),
-      tagApi.getAllTags(),
-    ])
-    allArtists.value = artistsResult.items
-    allTags.value = tagsResult
+    // 使用 userStore 确保数据已加载（支持缓存机制）
+    await Promise.all([userStore.reloadArtists(), userStore.reloadTags()])
   } catch (error) {
     console.error('加载选项失败:', error)
-    ElMessage.error($t('common.loadFailed'))
+    // 全局拦截器处理错误提示
   }
 }
 
@@ -80,49 +79,78 @@ onMounted(async () => {
   }
 })
 
-const handleSave = async () => {
-  if (!medium.value) return
+// 监听外部传入的 medium 变化（支持后续动态注入或刷新）
+watch(
+  () => props.medium,
+  (val) => {
+    if (val) {
+      mediumState.value = val as Medium
+      initialSnapshot = JSON.stringify(mediumState.value)
+      isDirty.value = false
+    }
+  },
+)
+watch(
+  () => mediumState.value,
+  () => {
+    if (!mediumState.value) return
+    const current = JSON.stringify(mediumState.value)
+    isDirty.value = current !== initialSnapshot
+  },
+  { deep: true },
+)
 
+if (props.registerDirtyChecker) {
+  props.registerDirtyChecker(() => isDirty.value)
+}
+
+const handleSave = async () => {
+  if (loading.value) return
+  if (!mediumState.value) return
   loading.value = true
   try {
-    const api = props.mediumType === MediumType.Comic ? comicApi : videoApi
-
-    // 直接使用 medium 对象更新
-    await api.update(medium.value as any, props.mediumId)
+    const api =
+      mediumState.value.mediumType === MediumType.Comic ? comicApi : videoApi
+    await api.update(mediumState.value as any, mediumState.value.id)
 
     // 更新作者
-    const artistIds = medium.value.artists?.map((a: Artist) => a.id) || []
-    await api.updateArtists(props.mediumId, artistIds)
+    const artistIds = mediumState.value.artists?.map((a: Artist) => a.id) || []
+    await api.updateArtists(mediumState.value.id, artistIds)
 
     // 更新标签
-    const tagIds = medium.value.tags?.map((t: Tag) => t.id) || []
-    await api.updateTags(props.mediumId, tagIds)
+    const tagIds = mediumState.value.tags?.map((t: Tag) => t.id) || []
+    await api.updateTags(mediumState.value.id, tagIds)
 
-    ElMessage.success($t('common.updateSuccess'))
+    // 成功提示交给全局拦截器，这里仅刷新数据
     // 重新获取更新后的数据
-    const updatedMedium = await api.getById(props.mediumId)
+    const updatedMedium = await api.getById(mediumState.value.id)
+    props.markClean?.()
+    initialSnapshot = JSON.stringify(updatedMedium)
+    isDirty.value = false
     emit('updated', updatedMedium as Medium)
-    emit('close')
+    dialog.resolve(updatedMedium as Medium)
   } catch (error) {
     console.error('更新失败:', error)
-    ElMessage.error($t('common.updateFailed'))
+    // 全局拦截器处理错误提示
   } finally {
     loading.value = false
   }
 }
 
 const handleCoverUpload = async (file: File) => {
-  if (!medium.value) return
-
+  if (!mediumState.value) return
   try {
     const updateCoverApi =
-      props.mediumType === MediumType.Comic ? comicApi : videoApi
-    const updatedMedium = await updateCoverApi.updateCover(props.mediumId, file)
-    ElMessage.success($t('common.updateSuccess'))
+      mediumState.value.mediumType === MediumType.Comic ? comicApi : videoApi
+    const updatedMedium = await updateCoverApi.updateCover(
+      mediumState.value.id,
+      file,
+    )
+    // 成功提示交给全局拦截器
     emit('updated', updatedMedium as Medium)
   } catch (error) {
     console.error('封面更新失败:', error)
-    ElMessage.error($t('common.updateFailed'))
+    // 全局拦截器处理错误提示
   }
 }
 
@@ -131,11 +159,11 @@ const beforeCoverUpload = (file: File) => {
   const isLt10M = file.size / 1024 / 1024 < 10
 
   if (!isImage) {
-    ElMessage.error($t('common.validation.imageOnly'))
+    // 校验失败：图片类型限制（局部不走全局拦截器）
     return false
   }
   if (!isLt10M) {
-    ElMessage.error($t('common.validation.fileSizeLimit'))
+    // 校验失败：大小限制（局部不走全局拦截器）
     return false
   }
   return true
@@ -148,14 +176,14 @@ const beforeCoverUpload = (file: File) => {
       <el-text>{{ $t('common.loading') }}</el-text>
     </div>
     <el-form
-      v-else-if="medium"
-      :model="medium"
+      v-else-if="mediumState"
+      :model="mediumState"
       label-width="80px"
       label-position="left"
     >
       <el-form-item :label="$t('page.mediums.edit.titleLabel')">
         <el-input
-          v-model="medium.title"
+          v-model="mediumState.title"
           :placeholder="$t('page.mediums.edit.titlePlaceholder')"
           maxlength="200"
           show-word-limit
@@ -164,7 +192,7 @@ const beforeCoverUpload = (file: File) => {
 
       <el-form-item :label="$t('page.mediums.edit.description')">
         <el-input
-          v-model="medium.description"
+          v-model="mediumState.description"
           type="textarea"
           :placeholder="$t('page.mediums.edit.descriptionPlaceholder')"
           :rows="3"
@@ -175,7 +203,7 @@ const beforeCoverUpload = (file: File) => {
 
       <el-form-item :label="$t('page.mediums.edit.artists')">
         <el-select
-          v-model="medium.artists"
+          v-model="mediumState.artists"
           multiple
           filterable
           :placeholder="$t('page.mediums.edit.artistsPlaceholder')"
@@ -193,7 +221,7 @@ const beforeCoverUpload = (file: File) => {
 
       <el-form-item :label="$t('page.mediums.edit.tags')">
         <el-select
-          v-model="medium.tags"
+          v-model="mediumState.tags"
           multiple
           filterable
           :placeholder="$t('page.mediums.edit.tagsPlaceholder')"
@@ -229,7 +257,7 @@ const beforeCoverUpload = (file: File) => {
     </el-form>
 
     <div class="mt-6 flex justify-end gap-3">
-      <el-button @click="emit('close')">
+      <el-button :disabled="loading" @click="dialog.close()">
         {{ $t('common.cancel') }}
       </el-button>
       <el-button type="primary" :loading="loading" @click="handleSave">

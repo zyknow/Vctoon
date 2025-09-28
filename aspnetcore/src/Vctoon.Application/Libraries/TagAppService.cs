@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.SignalR;
 using Vctoon.Hubs;
 using Vctoon.Libraries.Dtos;
 using Vctoon.Permissions;
+using Volo.Abp;
+using Volo.Abp.Domain.Repositories;
 
 namespace Vctoon.Libraries;
 
@@ -18,7 +20,18 @@ public class TagAppService(ITagRepository repository)
     protected override string DeletePolicyName { get; set; } = VctoonPermissions.Tag.Delete;
 
     protected override bool EnabledDataChangedHubNotify => true;
-    
+
+
+    public override async Task<TagDto> CreateAsync(TagCreateUpdateDto input)
+    {
+        var existing = await Repository.FirstOrDefaultAsync(x => x.Name == input.Name);
+        if (existing != null)
+        {
+            throw new UserFriendlyException(L["TagAlreadyExists", input.Name]);
+        }
+        return await base.CreateAsync(input);
+    }
+
 
     [Route("/api/app/tag/all")]
     public async Task<List<TagDto>> GetAllTagAsync(bool withResourceCount = false)

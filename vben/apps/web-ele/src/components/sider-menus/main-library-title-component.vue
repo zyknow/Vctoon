@@ -1,18 +1,21 @@
 <script setup lang="ts">
 import type { MenuRecordRaw } from '@vben/types'
 
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 
 import { CiAddPlus } from '@vben/icons'
 
-import CreateLibraryDialog from '#/views/library/create-library-dialog.vue'
+import { useLibraryDialogService } from '#/hooks/useLibraryDialogService'
 
 const props = withDefaults(defineProps<{ menu: MenuRecordRaw }>(), {})
 const menu = computed(() => props.menu)
 
-// 创建库对话框显隐
-const showCreateDialog = ref(false)
-async function onCreated(_library: any) {
+const dialog = useLibraryDialogService()
+async function onCreate() {
+  const created = await dialog.openCreate()
+  if (created) {
+    // TODO: 刷新库列表或触发 store reload
+  }
 }
 </script>
 
@@ -20,12 +23,11 @@ async function onCreated(_library: any) {
   <div class="library-title">
     <div class="font-bold">{{ menu.name }}</div>
     <div class="flex flex-row items-center gap-2">
-      <el-button text link @click.stop @click="showCreateDialog = true">
+      <el-button text link @click.stop @click="onCreate">
         <CiAddPlus class="library-action-icon" />
       </el-button>
     </div>
   </div>
-  <CreateLibraryDialog v-model="showCreateDialog" @success="onCreated" />
 </template>
 
 <style lang="scss" scoped>

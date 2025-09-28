@@ -2,10 +2,12 @@
 
 export type Artist = EntityDto<string> & {
   name?: string
+  resourceCount?: null | number
+  slug?: number
 }
 
 export type ArtistCreateUpdate = {
-  name?: string
+  name: string
 }
 
 export type ArtistGetListInput = BasePageRequest & {

@@ -1,25 +1,23 @@
-import {
-  artistApi,
-  dataChangedHub,
-  libraryApi,
-  tagApi,
-  type Artist,
-  type Tag,
-} from '@vben/api'
+// eslint-disable-next-line no-restricted-imports
+import type { Artist, Tag } from '@vben/api'
+
 import type { Library } from '../../../api/src/vctoon/library/typing'
+
+// eslint-disable-next-line no-restricted-imports
+import { artistApi, dataChangedHub, libraryApi, tagApi } from '@vben/api'
 
 import { acceptHMRUpdate, defineStore } from 'pinia'
 
 interface AccessState {
+  artists: Artist[]
   libraries: Library[]
+
+  loadedKeys: string[]
+  tags: Tag[]
   /**
    * 用户信息
    */
   userInfo: CurrentUser | null
-
-  tags: Tag[]
-  artists: Artist[]
-  loadedKeys: string[]
 }
 
 /**
