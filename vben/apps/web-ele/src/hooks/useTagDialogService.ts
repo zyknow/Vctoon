@@ -1,7 +1,6 @@
 import type { Tag } from '@vben/api'
 
 import { tagApi } from '@vben/api'
-import { useIsMobile } from '@vben/hooks'
 
 import { $t } from '#/locales'
 
@@ -16,7 +15,6 @@ import CreateOrUpdateTagDialog from '../views/tag/create-or-update-tag-dialog.vu
  */
 export function useTagDialogService() {
   const dialog = useDialogService()
-  const mobile = useIsMobile()
 
   // 去重：同一 Tag 编辑弹窗只保留一个实例（使用抽离 helper）
   const deduper = createEditDeduper<string, Tag | undefined>()
@@ -47,7 +45,6 @@ export function useTagDialogService() {
       width: options?.width || '500px',
       dialog: {
         closeOnClickModal: options?.closeOnClickModal ?? false,
-        fullscreen: mobile.isMobile.value,
         beforeClose,
       },
     })
@@ -97,7 +94,6 @@ export function useTagDialogService() {
       width: options?.width || '500px',
       dialog: {
         closeOnClickModal: options?.closeOnClickModal ?? false,
-        fullscreen: mobile.isMobile.value,
         beforeClose,
       },
     })

@@ -27,11 +27,107 @@
       "descriptionPlaceholder": "请输入描述",
       "artists": "作者",
       "artistsPlaceholder": "请选择作者",
+      "manualEntryHint": {
+        "artist": "可手动输入新作者名称并按回车添加",
+        "tag": "可手动输入新标签名称并按回车添加"
+      },
       "tags": "标签",
       "tagsPlaceholder": "请选择标签",
       "cover": "封面",
       "uploadCover": "上传封面",
-      "coverTip": "支持 JPG、PNG 格式，文件大小不超过 10MB"
+      "coverTip": "支持 JPG、PNG 格式，文件大小不超过 10MB",
+      "coverSelect": "选择封面",
+      "coverSelectTip": "点击下方任意漫画图片以设置为封面"
+    },
+    "selection": {
+      "selectedCount": "已选择 {count} 项",
+      "selectAll": "全选",
+      "deselectAll": "取消全选",
+      "cancel": "退出选择模式",
+      "artistActions": {
+        "label": "作者关联",
+        "add": "添加作者",
+        "update": "设置作者",
+        "remove": "移除作者"
+      },
+      "tagActions": {
+        "label": "标签关联",
+        "add": "添加标签",
+        "update": "设置标签",
+        "remove": "移除标签"
+      },
+      "dialog": {
+        "title": {
+          "artist": {
+            "add": "为选中媒体添加作者",
+            "remove": "从选中媒体移除作者",
+            "update": "设置选中媒体的作者"
+          },
+          "tag": {
+            "add": "为选中媒体添加标签",
+            "remove": "从选中媒体移除标签",
+            "update": "设置选中媒体的标签"
+          }
+        },
+        "description": {
+          "artist": {
+            "add": "选择要追加到所有选中媒体的作者。",
+            "remove": "选择需要从选中媒体移除的作者。",
+            "update": "选择将应用到所有选中媒体的作者列表，留空表示清除全部作者。"
+          },
+          "tag": {
+            "add": "选择要追加到所有选中媒体的标签。",
+            "remove": "选择需要从选中媒体移除的标签。",
+            "update": "选择将应用到所有选中媒体的标签列表，留空表示清除全部标签。"
+          }
+        },
+        "placeholder": {
+          "artist": "请选择作者",
+          "tag": "请选择标签"
+        },
+        "hint": {
+          "artist": "可输入新作者名称并按回车快速创建",
+          "tag": "可输入新标签名称并按回车快速创建"
+        },
+        "confirm": {
+          "add": "添加",
+          "remove": "移除",
+          "update": "更新"
+        },
+        "cancel": "取消",
+        "createSuccess": {
+          "artist": "已添加作者：{name}",
+          "tag": "已添加标签：{name}"
+        }
+      }
+    },
+    "detail": {
+      "title": "媒体详情",
+      "back": "返回",
+      "untitled": "未命名作品",
+      "comicImages": "漫画图片",
+      "sortLabel": "按{field}（{order}）",
+      "sortFieldIndex": "原始顺序",
+      "sortFieldName": "名称",
+      "sortFieldSize": "文件大小",
+      "sortAsc": "升序",
+      "sortDesc": "降序",
+      "selectAllImages": "全选图片",
+      "clearSelection": "清除选择",
+      "deleteSelectedImages": "删除所选图片",
+      "deleteImagesTitle": "删除图片",
+      "deleteImagesConfirm": "确认删除选中的 {count} 张图片吗？此操作不可恢复。",
+      "videoNoSelection": "视频仅展示详情信息，不支持多选操作。",
+      "noComicImages": "暂无漫画图片"
+    },
+    "actions": {
+      "info": "查看信息",
+      "markAsWatched": "标记已读",
+      "markAsUnwatched": "标记未读",
+      "delete": "删除",
+      "continueReading": "继续阅读",
+      "restartReading": "重新阅读",
+      "rate": "评分"
     }
   },
   "tag": {

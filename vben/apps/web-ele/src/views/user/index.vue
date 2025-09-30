@@ -20,7 +20,6 @@ import { $t } from '#/locales'
 // 响应式数据
 const loading = ref(false)
 const mobile = useIsMobile()
-
 // 用户列表数据
 const users = ref<IdentityUser[]>([])
 const total = ref(0)

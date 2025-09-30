@@ -5,10 +5,15 @@ import type { UseRecommendMediumProviderOptions } from '#/hooks/useRecommendProv
 import { MediumType, ReadingProgressType } from '@vben/api'
 import { $t } from '@vben/locales'
 
-import { useInjectedMediumProvider } from '#/hooks/useMediumProvider'
+import {
+  useInjectedMediumAllItemProvider,
+  useInjectedMediumProvider,
+} from '#/hooks/useMediumProvider'
 import { createRecommendMediumProvider } from '#/hooks/useRecommendProvider'
 
 const { library } = useInjectedMediumProvider() as LibraryMediumProvider
+
+const { itemsMap } = useInjectedMediumAllItemProvider()!
 
 const commonOptions: UseRecommendMediumProviderOptions = {
   mediumTypes: [library.mediumType],
@@ -58,6 +63,10 @@ const mostViewed = createRecommendMediumProvider({
     hasReadCount: true,
   },
 })
+
+itemsMap.recommend = lastReading.items
+itemsMap.newest = newest.items
+itemsMap.mostViewed = mostViewed.items
 </script>
 
 <template>

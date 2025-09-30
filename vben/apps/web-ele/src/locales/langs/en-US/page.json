@@ -5,6 +5,11 @@
   "library": {
     "title": "Library",
     "add": "Add Library",
+    "tabs": {
+      "recommend": "Recommend",
+      "library": "Library",
+      "collection": "Collection"
+    },
     "create": {
       "title": "Create Library",
       "fields": {
@@ -207,6 +212,47 @@
     }
   },
   "mediums": {
+    "actions": {
+      "info": "Info",
+      "delete": "Delete",
+      "deleteConfirmTitle": "Confirm Delete",
+      "deleteConfirmMessage": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+      "deleteSuccess": "Deleted successfully"
+    },
+    "info": {
+      "basicInfo": "Basic Information",
+      "technicalInfo": "Technical Information",
+      "readingInfo": "Reading Information",
+      "relatedInfo": "Related Information",
+      "title": "Title",
+      "description": "Description",
+      "creationTime": "Created",
+      "lastModificationTime": "Modified",
+      "readCount": "Read Count",
+      "readingProgress": "Reading Progress",
+      "readingLastTime": "Last Read",
+      "tags": "Tags",
+      "artists": "Artists",
+      "libraryId": "Library ID",
+      "library": "Library",
+      "mediumType": "Type",
+      "comic": "Comic",
+      "video": "Video",
+      "duration": "Duration",
+      "resolution": "Resolution",
+      "framerate": "Frame Rate",
+      "bitrate": "Bitrate",
+      "codec": "Codec",
+      "ratio": "Aspect Ratio",
+      "comicImages": "Images",
+      "path": "File Path",
+      "noTags": "No tags",
+      "noArtists": "No artists",
+      "never": "Never",
+      "completed": "Completed",
+      "inProgress": "In Progress ({progress}%)",
+      "notStarted": "Not Started"
+    },
     "sort": {
       "title": "Title",
       "dateAdded": "Creation Time",

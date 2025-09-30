@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Vctoon.Helper;
 using Vctoon.Identities;
 using Vctoon.ImageProviders;
 using Vctoon.Libraries.Dtos;
@@ -28,7 +29,8 @@ public class ComicAppService(
 
 
     // 原为布尔谓词，现改为属性选择器，交由基类统一转换
-    protected override LambdaExpression ProcessKeySelector => (Expression<Func<IdentityUserReadingProcess, Guid?>>)(p => p.ComicId);
+    protected override LambdaExpression ProcessKeySelector =>
+        (Expression<Func<IdentityUserReadingProcess, Guid?>>)(p => p.ComicId);
 
     [RemoteService(false)]
     public override Task<ComicDto> CreateAsync(ComicCreateUpdateDto input)
@@ -36,7 +38,9 @@ public class ComicAppService(
         throw new UserFriendlyException("Not supported");
     }
 
+#if !DEBUG
     [Authorize]
+#endif
     public async Task<RemoteStreamContent> GetComicImageAsync(Guid comicImageId, int? maxWidth = null)
     {
         if (comicImageId == Guid.Empty)
@@ -44,20 +48,33 @@ public class ComicAppService(
             throw new UserFriendlyException("Image file id is empty");
         }
 
-        var imageFile = await comicImageRepository.GetAsync(comicImageId);
-
+        var query = (await comicImageRepository.GetQueryableAsync())
+            .Where(x => x.Id == comicImageId)
+            .Select(x => new
+            {
+                x.Id,
+                x.Path,
+                x.ArchiveInfoPathId,
+                x.LibraryId,
+                x.LibraryPathId
+            });
+        var imageFile = await AsyncExecuter.FirstOrDefaultAsync(query);
 
         if (imageFile == null)
         {
             throw new UserFriendlyException("Image file not found");
         }
-
+//TODO: 非部署情况下img标签不会携带cookie，无法鉴权
+#if !DEBUG
         await CheckCurrentUserLibraryPermissionAsync(imageFile.LibraryId, x => x.CanView);
+#endif
+
+        var contentType = ConverterHelper.MapToRemoteContentType(imageFile.Path);
 
         if (imageFile.LibraryPathId is not null)
         {
             var steam = await imageProvider.GetImageStreamAsync(imageFile.Path, maxWidth);
-            return new RemoteStreamContent(steam, contentType: "image/jpeg");
+            return new RemoteStreamContent(steam, contentType: contentType);
         }
 
         var archiveInfo =
@@ -70,10 +87,11 @@ public class ComicAppService(
 
         {
             var steam = await imageProvider.GetImageStreamFromArchiveAsync(archiveInfo.Path, imageFile.Path, maxWidth);
-            return new RemoteStreamContent(steam, contentType: "image/jpeg");
+            return new RemoteStreamContent(steam, contentType: contentType);
         }
     }
 
+    [Authorize(VctoonPermissions.Comic.Default)]
     public async Task<List<ComicImageDto>> GetListByComicIdAsync(Guid comicId)
     {
         var query = await comicImageRepository.GetQueryableAsync();

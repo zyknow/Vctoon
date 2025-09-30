@@ -4,12 +4,15 @@ import { useUserStore } from '@vben/stores'
 
 import { createLibraryMediumProvider } from '#/hooks/useLibraryMediumProvider'
 import {
+  provideMediumAllItemProvider,
   provideMediumItemProvider,
   provideMediumProvider,
 } from '#/hooks/useMediumProvider'
+import { $t } from '#/locales'
 
 import LibraryRecommend from './library-recommend.vue'
 
+// 当前库 ID（从路径中解析）
 const libraryId = location.pathname.replace('/library/', '')
 const userStore = useUserStore()
 const library = userStore.libraries.find((i) => i.id === libraryId)
@@ -22,6 +25,12 @@ provideMediumItemProvider({
   items: state.items,
   selectedMediumIds: state.selectedMediumIds,
 })
+
+provideMediumAllItemProvider({
+  itemsMap: {
+    main: state.items,
+  },
+})
 </script>
 
 <template>
@@ -30,9 +39,27 @@ provideMediumItemProvider({
       <medium-toolbar-first :title="state.title.value">
         <template #center>
           <el-tabs v-model="state.currentTab.value">
-            <el-tab-pane label="Recommend" name="recommend" />
-            <el-tab-pane label="Library" name="library" />
-            <el-tab-pane label="Collection" name="collection" />
+            <el-tab-pane name="recommend">
+              <template #label>
+                <div class="tab-pane">
+                  {{ $t('page.library.tabs.recommend') }}
+                </div>
+              </template>
+            </el-tab-pane>
+            <el-tab-pane name="library">
+              <template #label>
+                <div class="tab-pane">
+                  {{ $t('page.library.tabs.library') }}
+                </div>
+              </template>
+            </el-tab-pane>
+            <el-tab-pane name="collection">
+              <template #label>
+                <div class="tab-pane">
+                  {{ $t('page.library.tabs.collection') }}
+                </div>
+              </template>
+            </el-tab-pane>
           </el-tabs>
         </template>
       </medium-toolbar-first>
@@ -54,4 +81,8 @@ provideMediumItemProvider({
   </Page>
 </template>
 
-<style scoped></style>
+<style scoped>
+.tab-pane {
+  @apply w-20 text-center;
+}
+</style>

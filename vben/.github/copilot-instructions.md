@@ -8,6 +8,16 @@
 5. 保证代码健壮性，必须包含错误处理。
 6. 注释仅用于关键逻辑，避免无意义注释。
 
+### 代码生成与格式化提示
+> 使用本仓库开发时，你只需要专注“生成正确的代码”。多余的导入、未使用变量、格式风格（缩进/分号/引号/排序等）无需手动反复调整，但多余无用的方法需要你手动删除：直接保存文件即可，保存会触发统一的 Lint & Format （包括 ESLint + Prettier + Stylelint + 自动移除未使用的 import）。
+
+规范补充：
+- 不必手写 import 顺序优化；保存自动整理。
+- 看到未使用的变量/导入报错，若暂时不用请删除；若将来会用可以先加前缀 `_` 以通过校验。
+- 若仅为通过类型而存在的占位，可使用 `// TODO:` 标记，避免影响可读性。
+- 不要在提交中刻意加入无意义空格/换行；持续保存即可获得最终格式。
+- 代码批量生成后，一次性保存触发格式化，再做针对性微调，避免多次无效 diff。
+
 # 聊天  
 1. 使用中文（简体）回复  
 2. 保持回答简洁，只聚焦核心信息
@@ -1045,4 +1055,44 @@ Don't：
 - 后续计划：移除 `openDialog/openConfirm` 兼容层；加入全局“阻止重复打开同类弹窗”的去重策略（可通过 key/缓存实现）。
 
 > 如需新增通用交互类型（Drawer / 全屏表单），保持同样 headless 思路，在 `useDialogService` 增量扩展或并行创建 `useDrawerService`。
+
+## 9. 移动端判断统一规范
+
+所有组件 / 页面在需要根据是否为移动端调整布局或交互时，必须统一使用组合式函数 `useIsMobile`，避免自行编写 `window.innerWidth` / `matchMedia` 等散落逻辑。
+
+示例（推荐解构写法，防止误把 Ref 对象当作 truthy 导致条件恒成立）：
+
+```ts
+import { useIsMobile } from '@vben/hooks'
+
+// 推荐：直接解构，模板语法会自动解包 Ref
+const { isMobile } = useIsMobile()
+
+// 模板中： :class="isMobile ? 'flex-col' : 'flex-row'"
+
+// 旧写法（可用但需注意）：
+// const mobile = useIsMobile()
+// 若直接写  mobile.isMobile ? ...  其实依然会被模板自动解包；
+// 但在 JS 逻辑里 if (mobile.isMobile) {...} 会因为 mobile.isMobile 是一个 Ref 对象而恒为真。
+```
+
+使用约定：
+1. 命名：若需要整体对象可命名为 `mobile`；仅使用布尔值推荐直接解构 `const { isMobile }`。
+2. 不手动修改 `isMobile`；它是响应式只读状态。
+3. 模板中条件：`isMobile ? '...' : '...'`；JS 逻辑中务必使用 `isMobile.value`（如果未解构）或直接解构后的 `isMobile`。
+4. 若需尺寸联动逻辑，集中到 `useIsMobile` 内处理，业务层不再重复添加 window 事件。
+5. 禁止再实现自定义窗口宽度判断（如再写一次 `window.innerWidth < 768`）。
+6. 避免在脚本里写 `if (mobile.isMobile) {...}`（Ref 对象恒 truthy）；应写 `if (mobile.isMobile.value)` 或解构后 `if (isMobile)`。
+
+典型应用场景：
+- 弹窗在移动端使用 `:fullscreen="mobile.isMobile"`。
+- 详情/编辑对话框：桌面端左右两栏（封面 + 表单），移动端上下布局。
+- 表格操作列：移动端合并为折叠面板或下拉菜单。
+
+错误示例（禁止）：
+```ts
+const isMobile = window.innerWidth < 768 // ❌ 直接写死
+```
+
+> 如需调整移动端判定阈值，请集中在 `useIsMobile` 内修改，而不是在业务代码中分散替换。
 

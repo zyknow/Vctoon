@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Mvc;
 using Vctoon.Mediums.Dtos.Base;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
@@ -8,6 +9,7 @@ using Volo.Abp; // UserFriendlyException
 using Vctoon.Services; // CoverSaver
 using Vctoon.Libraries; // Tag / Artist
 using Vctoon.Mediums.Base;
+using Vctoon.Mediums.Dtos;
 
 namespace Vctoon.Mediums.Base;
 
@@ -31,7 +33,7 @@ public abstract class MediumBaseAppService<TEntity, TGetOutputDto, TGetListOutpu
     protected override async Task<IQueryable<TEntity>> CreateFilteredQueryAsync(TGetListInput input)
     {
         // 修正：传入 Guid?，避免未登录时 CurrentUser.Id.Value 抛异常
-        var query = await (Repository as IMediumBaseRepository<TEntity>)!.WithPageDetailsAsync(CurrentUser.Id);
+        var query = await (Repository as IMediumBaseRepository<TEntity>)!.WithUserPageDetailsAsync(CurrentUser.Id);
 
         // TODO: AbpHelper generated
         query = query
@@ -142,10 +144,11 @@ public abstract class MediumBaseAppService<TEntity, TGetOutputDto, TGetListOutpu
 
     protected override async Task<TEntity> GetEntityByIdAsync(Guid id)
     {
-        return (await Repository.WithDetailsAsync()).FirstOrDefault(x => x.Id == id) ??
-               throw new EntityNotFoundException(typeof(TEntity), (object)id);
+        return (await (Repository as IMediumBaseRepository<TEntity>).WithUserDetailsAsync(CurrentUser.Id))
+               .FirstOrDefault(x => x.Id == id) ??
+               throw new EntityNotFoundException(typeof(TEntity), id);
     }
-    
+
     // 延迟解析依赖（不破坏派生类构造函数）
     protected CoverSaver CoverSaver => LazyServiceProvider.LazyGetRequiredService<CoverSaver>();
     protected ITagRepository TagRepository => LazyServiceProvider.LazyGetRequiredService<ITagRepository>();
@@ -175,7 +178,7 @@ public abstract class MediumBaseAppService<TEntity, TGetOutputDto, TGetListOutpu
         await Repository.UpdateAsync(entity, true);
         return await MapToGetOutputDtoAsync(entity);
     }
-    
+
     public virtual async Task<TGetOutputDto> UpdateArtistsAsync(Guid id, List<Guid> artistIds)
     {
         await CheckUpdatePolicyAsync();
@@ -202,7 +205,7 @@ public abstract class MediumBaseAppService<TEntity, TGetOutputDto, TGetListOutpu
         await Repository.UpdateAsync(entity, true);
         return await MapToGetOutputDtoAsync(entity);
     }
-    
+
     public virtual async Task<TGetOutputDto> UpdateTagsAsync(Guid id, List<Guid> tagIds)
     {
         await CheckUpdatePolicyAsync();

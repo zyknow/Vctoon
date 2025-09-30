@@ -5,6 +5,11 @@
   "library": {
     "title": "库",
     "add": "添加库",
+    "tabs": {
+      "recommend": "推荐",
+      "library": "库",
+      "collection": "合集"
+    },
     "create": {
       "title": "新建库",
       "fields": {
@@ -207,6 +212,49 @@
     }
   },
   "mediums": {
+    "actions": {
+      "info": "详情",
+      "delete": "删除",
+      "deleteConfirmTitle": "确认删除",
+      "deleteConfirmMessage": "确定要删除 \"{title}\" 吗？此操作不可撤销。",
+      "deleteSuccess": "删除成功",
+      "markAsWatched": "标记为已观看",
+      "markAsUnwatched": "标记为未观看"
+    },
+    "info": {
+      "basicInfo": "基本信息",
+      "technicalInfo": "技术信息",
+      "readingInfo": "阅读信息",
+      "relatedInfo": "关联信息",
+      "title": "标题",
+      "description": "描述",
+      "creationTime": "创建时间",
+      "lastModificationTime": "修改时间",
+      "readCount": "阅读次数",
+      "readingProgress": "阅读进度",
+      "readingLastTime": "最后阅读",
+      "tags": "标签",
+      "artists": "作者",
+      "libraryId": "库ID",
+      "library": "所属库",
+      "mediumType": "类型",
+      "comic": "漫画",
+      "video": "视频",
+      "duration": "时长",
+      "resolution": "分辨率",
+      "framerate": "帧率",
+      "bitrate": "码率",
+      "codec": "编码",
+      "ratio": "宽高比",
+      "comicImages": "图片数量",
+      "path": "文件路径",
+      "noTags": "无标签",
+      "noArtists": "无作者",
+      "never": "从未",
+      "completed": "已完成",
+      "inProgress": "进行中 ({progress}%)",
+      "notStarted": "未开始"
+    },
     "sort": {
       "title": "标题",
       "creationTime": "创建时间",

@@ -113,7 +113,12 @@ export const useUserStore = defineStore('core-user', {
       })
     },
     async reloadAllUserData() {
-      await dataChangedHub.start()
+      try {
+        await dataChangedHub.start()
+      } catch (error) {
+        console.error('Error starting dataChangedHub:', error)
+        throw error
+      }
 
       await Promise.all([
         this.reloadLibraries(),

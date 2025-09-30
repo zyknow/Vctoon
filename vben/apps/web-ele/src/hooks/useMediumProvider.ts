@@ -1,4 +1,4 @@
-import type { Ref } from 'vue'
+import type { ComputedRef, Ref } from 'vue'
 
 import type {
   ComicGetListInput,
@@ -13,10 +13,16 @@ import { comicApi, MediumType, videoApi } from '@vben/api'
 
 export const mediumProviderKey = Symbol('mediumProvider')
 export const mediumItemProviderKey = Symbol('mediumItemProvider')
-
+export const mediumAllItemProviderKey = Symbol('mediumAllItemProvider')
 export type MediumItemProvider = {
   items: Ref<MediumGetListOutput[]>
   selectedMediumIds: Ref<string[]>
+}
+
+export type MediumAllItemProvider = {
+  items: ComputedRef<MediumGetListOutput[]>
+  itemsMap: Record<string, Ref<MediumGetListOutput[]>>
+  updateItemField(medium: Partial<MediumGetListOutput> & { id: string }): void
 }
 
 /** 公共的分页查询类型，避免 union 导致的类型缩小问题 */
@@ -134,6 +140,27 @@ export function provideMediumItemProvider(model: MediumItemProvider) {
   provide(mediumItemProviderKey, model)
 }
 
+export function provideMediumAllItemProvider(
+  model: Omit<MediumAllItemProvider, 'items' | 'updateItemField'>,
+) {
+  const modelRef = model as MediumAllItemProvider
+
+  modelRef.items = computed(() => {
+    return Object.values(model.itemsMap).flatMap((i) => i.value)
+  })
+  modelRef.updateItemField = (
+    medium: Partial<MediumGetListOutput> & { id: string },
+  ) => {
+    Object.values(model.itemsMap).forEach((item) => {
+      const foundItem = item.value.find((item) => item.id === medium.id)
+      if (foundItem) {
+        Object.assign(foundItem, medium)
+      }
+    })
+  }
+  provide(mediumAllItemProviderKey, model)
+}
+
 /** 在子组件 inject */
 export function useInjectedMediumProvider(): MediumProvider {
   const model = inject<MediumProvider>(mediumProviderKey)
@@ -144,5 +171,12 @@ export function useInjectedMediumProvider(): MediumProvider {
 export function useInjectedMediumItemProvider(): MediumItemProvider {
   const model = inject<MediumItemProvider>(mediumItemProviderKey)
   if (!model) throw new Error('mediumItemProvider 未提供')
+  return model
+}
+
+export function useInjectedMediumAllItemProvider():
+  | MediumAllItemProvider
+  | undefined {
+  const model = inject<MediumAllItemProvider>(mediumAllItemProviderKey)
   return model
 }

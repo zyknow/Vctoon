@@ -11,7 +11,10 @@ import { MediumType, ReadingProgressType } from '@vben/api'
 import { Page } from '@vben/common-ui'
 import { $t } from '@vben/locales'
 
-import { provideMediumItemProvider } from '#/hooks/useMediumProvider'
+import {
+  provideMediumAllItemProvider,
+  provideMediumItemProvider,
+} from '#/hooks/useMediumProvider'
 import { createRecommendMediumProvider } from '#/hooks/useRecommendProvider'
 
 const commonOptions: UseRecommendMediumProviderOptions = {
@@ -55,6 +58,15 @@ const mostViewed = createRecommendMediumProvider({
     ...commonOptions.pageRequest,
     sorting: 'readCount desc',
     hasReadCount: true,
+  },
+})
+
+provideMediumAllItemProvider({
+  itemsMap: {
+    main: items,
+    lastReading: lastReading.items,
+    newest: newest.items,
+    mostViewed: mostViewed.items,
   },
 })
 </script>

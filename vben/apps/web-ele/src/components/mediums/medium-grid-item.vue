@@ -2,8 +2,9 @@
 import type { MediumGetListOutput } from '@vben/api'
 
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 
-import { mediumResourceApi, MediumType } from '@vben/api'
+import { comicApi, mediumResourceApi, MediumType, videoApi } from '@vben/api'
 import { useAppConfig } from '@vben/hooks'
 import {
   CiEditPencilLine01,
@@ -14,8 +15,16 @@ import {
 } from '@vben/icons'
 import { formatDate } from '@vben/utils'
 
-import { useInjectedMediumItemProvider } from '#/hooks/useMediumProvider'
+import { useDialogService } from '#/hooks/useDialogService'
+import {
+  useInjectedMediumAllItemProvider,
+  useInjectedMediumItemProvider,
+} from '#/hooks/useMediumProvider'
+import { $t } from '#/locales'
 import { useMediumStore } from '#/store'
+
+import MediumCoverCard from './medium-cover-card.vue'
+import MediumInfoDialog from './medium-info-dialog.vue'
 
 const props = defineProps<{
   modelValue: MediumGetListOutput
@@ -29,12 +38,17 @@ const emit = defineEmits<{
 const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD)
 const mediumStore = useMediumStore()
 const { selectedMediumIds, items } = useInjectedMediumItemProvider()
+const { open, confirm } = useDialogService()
+const router = useRouter()
+
+const { updateItemField } = useInjectedMediumAllItemProvider()!
 
 // 编辑相关状态
 
-// 通过 CSS 变量传递缩放比例
-const zoomStyle = computed(() => ({
-  '--zoom': String(mediumStore.itemZoom || 1),
+const cardStyleVars = computed(() => ({
+  '--cover-base-height': '14rem',
+  '--cover-base-width': '10rem',
+  '--cover-zoom': String(mediumStore.itemZoom || 1),
 }))
 
 const mediumType = computed(() => props.modelValue.mediumType)
@@ -78,6 +92,28 @@ const toggleSelection = (event: MouseEvent) => {
     // 普通点击：切换单个项目选中状态
     handleSingleSelection(currentId)
   }
+}
+
+const navigateToDetail = () => {
+  if (isInSelectionMode.value) return
+  const id = props.modelValue?.id
+  if (!id) return
+  const typeSegment = mediumType.value === MediumType.Video ? 'video' : 'comic'
+  void router.push({
+    name: 'MediumDetail',
+    params: {
+      mediumId: id,
+      type: typeSegment,
+    },
+  })
+}
+
+const handleCardClick = (event: MouseEvent) => {
+  if (isInSelectionMode.value) {
+    toggleSelection(event)
+    return
+  }
+  navigateToDetail()
 }
 
 // 单个项目选中切换
@@ -131,6 +167,101 @@ const handleRangeSelection = (currentId: string) => {
 const handleEdit = (event: MouseEvent) => {
   event.stopPropagation()
   emit('edit', props.modelValue)
+}
+
+// 打开信息弹窗
+const openInfo = async (event: MouseEvent) => {
+  event.stopPropagation()
+  if (!props.modelValue?.id) return
+  await open(MediumInfoDialog, {
+    props: {
+      mediumId: props.modelValue.id,
+      mediumType: props.modelValue.mediumType,
+    },
+    title: $t('page.mediums.actions.info'),
+    width: 520,
+  })
+}
+
+// 标记为已观看
+const markAsWatched = async (event: MouseEvent) => {
+  event.stopPropagation()
+  const id = props.modelValue?.id
+  if (!id) return
+  try {
+    const updateObj = {
+      mediumId: id,
+      progress: 1,
+      readingLastTime: new Date().toISOString(),
+      mediumType: props.modelValue.mediumType,
+    }
+
+    await mediumResourceApi.updateReadingProcess([updateObj])
+
+    // 更新本地状态
+    updateItemField({
+      id,
+      readingProgress: 1,
+      readingLastTime: new Date(),
+    })
+
+    emit('updated', props.modelValue)
+  } catch {
+    // 失败提示交由全局拦截器处理
+  }
+}
+
+// 标记为未观看
+const markAsUnwatched = async (event: MouseEvent) => {
+  event.stopPropagation()
+  const id = props.modelValue?.id
+  if (!id) return
+  try {
+    const updateObj = {
+      mediumId: id,
+      progress: 0,
+      readingLastTime: null,
+      mediumType: props.modelValue.mediumType,
+    }
+
+    await mediumResourceApi.updateReadingProcess([updateObj])
+
+    // 更新本地状态
+    updateItemField({
+      id,
+      readingProgress: 0,
+      readingLastTime: undefined,
+    })
+
+    emit('updated', props.modelValue)
+  } catch {
+    // 失败提示交由全局拦截器处理
+  }
+}
+
+// 删除 Medium
+const deleteMedium = async (event: MouseEvent) => {
+  event.stopPropagation()
+  const id = props.modelValue?.id
+  if (!id) return
+  const ok = await confirm({
+    title: $t('page.mediums.actions.deleteConfirmTitle'),
+    message: $t('page.mediums.actions.deleteConfirmMessage', {
+      title: props.modelValue?.title || id,
+    }),
+    danger: true,
+  })
+  if (!ok) return
+  try {
+    props.modelValue.mediumType === MediumType.Comic
+      ? await comicApi.delete(id)
+      : await videoApi.delete(id)
+    // 本地移除
+    const idx = items.value.findIndex((m) => m.id === id)
+    if (idx !== -1) items.value.splice(idx, 1)
+  } catch {
+    // 失败提示交由全局拦截器处理
+  }
 }
 
 // 标题、年份、相对时间（简化展示：优先使用 creationTime 与 lastModificationTime）
@@ -203,35 +334,27 @@ const cover = computed(() => {
 
 <template>
   <div
-    :style="zoomStyle"
-    class="text-foreground medium-card group relative select-none rounded-xl transition-colors"
-    :class="{
-      'cursor-pointer': isInSelectionMode,
-    }"
-    @click="isInSelectionMode ? toggleSelection($event) : null"
+    :style="cardStyleVars"
+    class="text-foreground medium-card group relative cursor-pointer select-none transition-colors"
+    @click="handleCardClick"
   >
     <!-- Cover -->
-    <div
-      class="relative overflow-hidden rounded-lg border transition-colors"
+    <MediumCoverCard
+      :src="cover"
+      class="relative border transition-colors"
       :class="{
         'group-hover:border-primary border-transparent': !isSelected,
-        'border-primary border-2': isSelected,
+        'border-primary border-4': isSelected,
       }"
     >
-      <img
-        loading="lazy"
-        v-if="cover"
-        :src="cover"
-        alt="cover"
-        class="cover w-full rounded-lg object-cover"
-      />
-      <div v-else class="bg-muted cover w-full rounded-lg"></div>
-
       <!-- Hover overlay -->
       <div
         v-if="!isInSelectionMode"
-        class="pointer-events-none absolute inset-0 hidden items-center justify-center gap-3 rounded-lg bg-black/40 group-hover:flex"
+        class="absolute inset-0 hidden items-center justify-center gap-3 rounded-lg group-hover:flex"
       >
+        <div
+          class="pointer-events-none absolute inset-0 rounded-lg bg-black/40"
+        ></div>
         <!-- 非选择模式：显示所有操作图标 -->
         <!-- left-bottom: edit icon -->
         <div class="pointer-events-auto absolute bottom-2 left-2 text-white/90">
@@ -244,7 +367,40 @@ const cover = computed(() => {
         <div
           class="pointer-events-auto absolute bottom-2 right-2 text-white/90"
         >
-          <CiMoreVertical class="hover:text-primary cursor-pointer text-2xl" />
+          <el-dropdown trigger="click" @click.stop>
+            <span class="inline-flex items-center" @click.stop @mousedown.stop>
+              <CiMoreVertical
+                class="hover:text-primary cursor-pointer text-2xl"
+              />
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item @click.stop="openInfo">
+                  {{ $t('page.mediums.actions.info') }}
+                </el-dropdown-item>
+                <el-dropdown-item
+                  v-if="!isCompleted"
+                  @click.stop="markAsWatched"
+                  class="min-w-[150px]"
+                >
+                  {{ $t('page.mediums.actions.markAsWatched') }}
+                </el-dropdown-item>
+                <el-dropdown-item
+                  v-if="isCompleted"
+                  @click.stop="markAsUnwatched"
+                  class="min-w-[150px]"
+                >
+                  {{ $t('page.mediums.actions.markAsUnwatched') }}
+                </el-dropdown-item>
+                <el-dropdown-item
+                  @click.stop="deleteMedium"
+                  class="min-w-[150px]"
+                >
+                  {{ $t('page.mediums.actions.delete') }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </div>
         <!-- center: play circle -->
         <div class="pointer-events-auto text-white">
@@ -295,11 +451,14 @@ const cover = computed(() => {
           }"
         ></div>
       </div>
-    </div>
+    </MediumCoverCard>
 
     <!-- Meta -->
     <div class="mt-3 space-y-1">
-      <div class="line-clamp-2 text-sm font-medium leading-snug">
+      <div
+        class="hover:text-primary line-clamp-2 cursor-pointer text-sm font-medium leading-snug"
+        @click.stop="navigateToDetail"
+      >
         {{ title }}
       </div>
       <div class="text-muted-foreground text-xs">{{ year }}</div>
@@ -313,12 +472,9 @@ const cover = computed(() => {
 <style scoped>
 .medium-card {
   /* 基础宽度：10rem（原 w-40），支持 0.8x ~ 1.6x 缩放 */
-  width: calc(10rem * clamp(0.8, var(--zoom, 1), 1.6));
-}
-
-.cover {
-  /* 基础高度：14rem（原 h-56），与宽度同比例缩放 */
-  height: calc(14rem * clamp(0.8, var(--zoom, 1), 1.6));
+  width: calc(
+    var(--cover-base-width, 10rem) * clamp(0.8, var(--cover-zoom, 1), 1.6)
+  );
 }
 
 .line-clamp-2 {

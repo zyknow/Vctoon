@@ -12,7 +12,6 @@ import { useMediumStore } from '#/store'
 import { ItemDisplayMode } from '#/store/typing'
 
 import MediumGridItem from './medium-grid-item.vue'
-import MediumListItem from './medium-list-item.vue'
 
 defineProps<{
   modelValue?: boolean
@@ -94,23 +93,6 @@ onBeforeUnmount(() => {
         :medium-type="loadType"
         v-for="item in items"
         :key="`grid-${item.id}`"
-        :model-value="item"
-        @edit="handleEdit"
-      />
-    </TransitionGroup>
-
-    <!-- List 模式动画容器 -->
-    <TransitionGroup
-      v-else
-      name="fade-slide"
-      tag="div"
-      :class="containerClass"
-      appear
-    >
-      <MediumListItem
-        :medium-type="loadType"
-        v-for="item in items"
-        :key="`list-${item.id}`"
         :model-value="item"
         @edit="handleEdit"
       />

@@ -27,11 +27,107 @@
       "descriptionPlaceholder": "Please enter description",
       "artists": "Artists",
       "artistsPlaceholder": "Please select artists",
+      "manualEntryHint": {
+        "artist": "Type a new artist name and press Enter to add it",
+        "tag": "Type a new tag name and press Enter to add it"
+      },
       "tags": "Tags",
       "tagsPlaceholder": "Please select tags",
       "cover": "Cover",
       "uploadCover": "Upload Cover",
-      "coverTip": "Supports JPG, PNG format, file size should not exceed 10MB"
+      "coverTip": "Supports JPG, PNG format, file size should not exceed 10MB",
+      "coverSelect": "Select Cover",
+      "coverSelectTip": "Click any comic image below to set as cover"
+    },
+    "selection": {
+      "selectedCount": "{count} selected",
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All",
+      "cancel": "Exit Selection",
+      "artistActions": {
+        "label": "Artist Links",
+        "add": "Add Artists",
+        "update": "Set Artists",
+        "remove": "Remove Artists"
+      },
+      "tagActions": {
+        "label": "Tag Links",
+        "add": "Add Tags",
+        "update": "Set Tags",
+        "remove": "Remove Tags"
+      },
+      "dialog": {
+        "title": {
+          "artist": {
+            "add": "Add Artists to Selected Media",
+            "remove": "Remove Artists from Selected Media",
+            "update": "Set Artists for Selected Media"
+          },
+          "tag": {
+            "add": "Add Tags to Selected Media",
+            "remove": "Remove Tags from Selected Media",
+            "update": "Set Tags for Selected Media"
+          }
+        },
+        "description": {
+          "artist": {
+            "add": "Choose the artists to append to every selected medium.",
+            "remove": "Choose the artists to remove from the selected media.",
+            "update": "Choose the artist list to apply to all selected media; leave empty to clear all artists."
+          },
+          "tag": {
+            "add": "Choose the tags to append to every selected medium.",
+            "remove": "Choose the tags to remove from the selected media.",
+            "update": "Choose the tag list to apply to all selected media; leave empty to clear all tags."
+          }
+        },
+        "placeholder": {
+          "artist": "Select artists",
+          "tag": "Select tags"
+        },
+        "hint": {
+          "artist": "Type a new artist name and press Enter to create it",
+          "tag": "Type a new tag name and press Enter to create it"
+        },
+        "confirm": {
+          "add": "Add",
+          "remove": "Remove",
+          "update": "Update"
+        },
+        "cancel": "Cancel",
+        "createSuccess": {
+          "artist": "Artist added: {name}",
+          "tag": "Tag added: {name}"
+        }
+      }
+    },
+    "detail": {
+      "title": "Media Detail",
+      "back": "Back",
+      "untitled": "Untitled",
+      "comicImages": "Comic Images",
+      "sortLabel": "Sort by {field} ({order})",
+      "sortFieldIndex": "Original order",
+      "sortFieldName": "Name",
+      "sortFieldSize": "File size",
+      "sortAsc": "Ascending",
+      "sortDesc": "Descending",
+      "selectAllImages": "Select all images",
+      "clearSelection": "Clear selection",
+      "deleteSelectedImages": "Delete selected images",
+      "deleteImagesTitle": "Delete Images",
+      "deleteImagesConfirm": "Delete the selected {count} images? This action cannot be undone.",
+      "videoNoSelection": "Video media only shows details and does not support multi-selection.",
+      "noComicImages": "No comic images available"
+    },
+    "actions": {
+      "info": "View Info",
+      "markAsWatched": "Mark as Watched",
+      "markAsUnwatched": "Mark as Unwatched",
+      "delete": "Delete",
+      "continueReading": "Continue Reading",
+      "restartReading": "Restart",
+      "rate": "Rate"
     }
   },
   "tag": {

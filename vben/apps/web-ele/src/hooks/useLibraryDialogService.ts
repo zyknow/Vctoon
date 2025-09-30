@@ -1,7 +1,6 @@
 import type { Library } from '@vben/api'
 
 import { libraryApi } from '@vben/api'
-import { useIsMobile } from '@vben/hooks'
 
 import { $t } from '#/locales'
 
@@ -26,7 +25,6 @@ import { useDialogService } from './useDialogService'
  */
 export function useLibraryDialogService() {
   const dialog = useDialogService()
-  const mobile = useIsMobile()
   const deduper = createEditDeduper<string, Library | undefined>()
 
   interface BaseOptions {
@@ -49,7 +47,6 @@ export function useLibraryDialogService() {
       width: options?.width || '600px',
       dialog: {
         closeOnClickModal: options?.closeOnClickModal ?? false,
-        fullscreen: mobile.isMobile.value,
         beforeClose,
       },
     })
@@ -107,7 +104,6 @@ export function useLibraryDialogService() {
       width: options?.width || '600px',
       dialog: {
         closeOnClickModal: options?.closeOnClickModal ?? false,
-        fullscreen: mobile.isMobile.value,
         beforeClose,
       },
     })
@@ -126,7 +122,6 @@ export function useLibraryDialogService() {
         width: options?.width || '600px',
         dialog: {
           closeOnClickModal: options?.closeOnClickModal ?? false,
-          fullscreen: mobile.isMobile.value,
         },
       },
     )

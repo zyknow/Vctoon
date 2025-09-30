@@ -1,7 +1,6 @@
 import type { Artist } from '@vben/api'
 
 import { artistApi } from '@vben/api'
-import { useIsMobile } from '@vben/hooks'
 
 import { $t } from '#/locales'
 
@@ -17,7 +16,6 @@ import CreateOrUpdateArtistDialog from '../views/artist/create-or-update-artist-
  */
 export function useArtistDialogService() {
   const dialog = useDialogService()
-  const mobile = useIsMobile()
   const deduper = createEditDeduper<string, Artist | undefined>()
 
   interface BaseOptions {
@@ -47,7 +45,6 @@ export function useArtistDialogService() {
       width: options?.width || '500px',
       dialog: {
         closeOnClickModal: options?.closeOnClickModal ?? false,
-        fullscreen: mobile.isMobile.value,
         beforeClose,
       },
     })
@@ -96,7 +93,6 @@ export function useArtistDialogService() {
       width: options?.width || '500px',
       dialog: {
         closeOnClickModal: options?.closeOnClickModal ?? false,
-        fullscreen: mobile.isMobile.value,
         beforeClose,
       },
     })

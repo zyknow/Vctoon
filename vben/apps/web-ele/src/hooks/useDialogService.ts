@@ -2,6 +2,7 @@ import type { Component } from 'vue'
 
 import { createApp, defineComponent, h, inject, provide, ref } from 'vue'
 
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 import { ElButton, ElDialog } from 'element-plus'
 
 import { $t } from '#/locales'
@@ -104,6 +105,17 @@ export function useDialogService() {
     } = params
 
     const visible = ref(true)
+
+    // 自动移动端全屏：若未显式指定 fullscreen，则根据 Tailwind 断点 md 以下判定
+    if (dialogOptions.fullscreen === undefined) {
+      try {
+        const bp = useBreakpoints(breakpointsTailwind)
+        const isMobile = bp.smaller('md')
+        if (isMobile.value) (dialogOptions as any).fullscreen = true
+      } catch {
+        // 忽略：环境不支持（SSR 等）则保持默认
+      }
+    }
     let container: HTMLElement | null = document.createElement('div')
     document.body.append(container)
 

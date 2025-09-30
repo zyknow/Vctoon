@@ -43,23 +43,24 @@ html .el-loading-mask {
   z-index: 1000;
 }
 
-.el-dropdown-menu__item:not(.is-disabled):focus, .el-dropdown-menu__item:not(.is-disabled):hover {
-    color: var(--el-text-color-regular);
-    background-color: var(--menu-item-hover-background-color) !important;
+.el-dropdown-menu__item:not(.is-disabled):focus,
+.el-dropdown-menu__item:not(.is-disabled):hover {
+  color: var(--el-text-color-regular);
+  background-color: var(--menu-item-hover-background-color) !important;
 }
 
 .medium-content {
-  @apply flex-1 min-h-0 overflow-auto pb-16;
+  @apply min-h-0 flex-1 overflow-auto pb-16;
 }
 
 .library-recommend {
-  @apply min-h-0 flex flex-1 flex-col gap-16 overflow-auto pb-16;
+  @apply flex min-h-0 flex-1 flex-col gap-16 overflow-auto pb-16;
 }
 
 .library-collection {
-  @apply  flex flex-1 flex-col overflow-auto pb-16;
+  @apply flex flex-1 flex-col overflow-auto pb-16;
 }
 
-.medium-toolbar{
+.medium-toolbar {
   @apply flex w-full flex-col;
 }
