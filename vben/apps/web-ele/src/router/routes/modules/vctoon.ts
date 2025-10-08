@@ -71,6 +71,18 @@ const routes: RouteRecordRaw[] = [
     path: '/security-logs',
     component: () => import('#/views/security-logs/index.vue'),
   },
+  {
+    component: () => import('#/views/comic/index.vue'),
+    meta: {
+      hideInBreadcrumb: true,
+      hideInMenu: true,
+      hideInTab: true,
+      noBasicLayout: true,
+      title: $t('page.comic.reader.title'),
+    },
+    name: 'ComicReader',
+    path: '/comic/:comicId/reader',
+  },
 ]
 
 export default routes

@@ -56,6 +56,15 @@
         "update": "Set Tags",
         "remove": "Remove Tags"
       },
+      "actions": {
+        "info": "View Info",
+        "markAsWatched": "Mark as Watched",
+        "markAsUnwatched": "Mark as Unwatched",
+        "delete": "Delete",
+        "continueReading": "Continue Reading",
+        "restartReading": "Restart",
+        "rate": "Rate"
+      },
       "dialog": {
         "title": {
           "artist": {
@@ -125,9 +134,96 @@
       "markAsWatched": "Mark as Watched",
       "markAsUnwatched": "Mark as Unwatched",
       "delete": "Delete",
+      "startReading": "Start Reading",
       "continueReading": "Continue Reading",
       "restartReading": "Restart",
       "rate": "Rate"
+    }
+  },
+  "comic": {
+    "reader": {
+      "title": "Comic Reader"
+    },
+    "actions": {
+      "back": "Back",
+      "settings": "Reader Settings",
+      "fullscreen": "Enter Fullscreen",
+      "exitFullscreen": "Exit Fullscreen",
+      "help": "Usage Tips",
+      "retry": "Retry",
+      "firstPage": "First Page",
+      "lastPage": "Last Page"
+    },
+    "states": {
+      "loading": "Loading comic...",
+      "error": "Failed to load comic",
+      "empty": "No comic images"
+    },
+    "messages": {
+      "help": "Tap the sides or top/bottom to turn pages, tap center to toggle controls.",
+      "loadFailed": "Unable to fetch comic data"
+    },
+    "settings": {
+      "dialogTitle": "Reader Settings",
+      "sections": {
+        "readingMode": "Reading Mode",
+        "image": "Image",
+        "experience": "Experience"
+      },
+      "fields": {
+        "readingDirection": "Reading Direction",
+        "displayMode": "Display Mode",
+        "zoomMode": "Zoom Mode",
+        "qualityPreset": "Quality Preset",
+        "customQualityWidth": "Custom Width",
+        "pageTransition": "Page Transition",
+        "backgroundColor": "Background Color",
+        "alwaysFullscreen": "Always Fullscreen"
+      },
+      "options": {
+        "direction": {
+          "ltr": "Left to Right",
+          "ltrDescription": "Turn pages by tapping or swiping right",
+          "rtl": "Right to Left",
+          "rtlDescription": "Turn pages by tapping or swiping left",
+          "ttb": "Top to Bottom",
+          "ttbDescription": "Scroll or tap downward to continue",
+          "btt": "Bottom to Top",
+          "bttDescription": "Scroll or tap upward to continue"
+        },
+        "display": {
+          "single": "Single Page",
+          "singleDescription": "Show one page at a time",
+          "double": "Double Page",
+          "doubleDescription": "Show two pages side by side",
+          "scroll": "Scroll",
+          "scrollDescription": "Browse all images in a continuous scroll"
+        },
+        "zoom": {
+          "fitScreen": "Fit Screen",
+          "fitScreenDescription": "Automatically adjust to the viewport",
+          "fitHeight": "Fit Height",
+          "fitHeightDescription": "Fill the height while keeping ratio",
+          "original": "Original Size",
+          "originalDescription": "Show at original resolution"
+        },
+        "quality": {
+          "quality720p": "720p",
+          "quality720pDescription": "Balanced quality with faster loading",
+          "quality1080p": "1080p",
+          "quality1080pDescription": "High definition for large screens",
+          "original": "Original",
+          "originalDescription": "Use original image size",
+          "custom": "Custom",
+          "customDescription": "Specify a maximum width manually"
+        }
+      },
+      "validation": {
+        "customQualityWidth": "Please enter a width of at least 256"
+      }
+    },
+    "placeholder": {
+      "untitled": "Untitled Comic"
     }
   },
   "tag": {

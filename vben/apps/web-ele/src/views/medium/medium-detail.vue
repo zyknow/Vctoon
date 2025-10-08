@@ -21,9 +21,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { comicApi, mediumResourceApi, MediumType, videoApi } from '@vben/api'
 import { Page } from '@vben/common-ui'
 import { useAppConfig, useIsMobile } from '@vben/hooks'
-import { CiStar, MdiCheckCircle, MdiPlayCircle, MdiRefresh } from '@vben/icons'
+import { CiStar, MdiPlayCircle, MdiRefresh } from '@vben/icons'
 
 import MediumCoverCard from '#/components/mediums/medium-cover-card.vue'
+import MediumSelectionIndicator from '#/components/mediums/medium-selection-indicator.vue'
 import MediumToolbarFirst from '#/components/mediums/medium-toolbar-first.vue'
 import MediumToolbarSecond from '#/components/mediums/medium-toolbar-second.vue'
 import { useDialogService } from '#/hooks/useDialogService'
@@ -146,6 +147,23 @@ const visibleComicImages = computed(() =>
 
 const descriptionText = computed(
   () => mediumData.value?.description?.trim() ?? '',
+)
+
+const hasReadingProgress = computed(() => {
+  const progress = mediumData.value?.readingProgress
+  return typeof progress === 'number' && progress > 0
+})
+
+const hasComicImages = computed(() => sortedComicImages.value.length > 0)
+const canReadComic = computed(() => isComic.value && hasComicImages.value)
+const canResumeComic = computed(
+  () => canReadComic.value && hasReadingProgress.value,
+)
+const startReadingDisabled = computed(
+  () => !canReadComic.value || comicImagesLoading.value,
+)
+const resumeReadingDisabled = computed(
+  () => !canResumeComic.value || comicImagesLoading.value,
 )
 
 const creationTimeText = computed(() => {
@@ -419,6 +437,40 @@ watch(
   { immediate: true },
 )
 
+const navigateToComicReader = (mode: 'restart' | 'resume') => {
+  if (!canReadComic.value) {
+    return
+  }
+  const id = mediumId.value
+  if (!id) {
+    return
+  }
+  if (mode === 'resume') {
+    void router.push({
+      name: 'ComicReader',
+      params: { comicId: id },
+      query: { mode },
+    })
+    return
+  }
+  void router.push({
+    name: 'ComicReader',
+    params: { comicId: id },
+  })
+}
+
+const handleContinueReading = () => {
+  navigateToComicReader('resume')
+}
+
+const handleRestartReading = () => {
+  navigateToComicReader('restart')
+}
+
+const handleStartReading = () => {
+  navigateToComicReader('restart')
+}
+
 const goBack = () => {
   router.back()
 }
@@ -552,21 +604,35 @@ const resolveComicImageUrl = (imageId: string) => {
 
             <!-- 操作按钮 -->
             <div class="flex flex-wrap gap-3">
+              <template v-if="hasReadingProgress">
+                <el-button
+                  size="large"
+                  type="primary"
+                  :icon="MdiPlayCircle"
+                  :disabled="resumeReadingDisabled"
+                  @click="handleContinueReading"
+                >
+                  {{ $t('page.mediums.actions.continueReading') }}
+                </el-button>
+                <el-button
+                  size="large"
+                  type="default"
+                  :icon="MdiRefresh"
+                  :disabled="resumeReadingDisabled"
+                  @click="handleRestartReading"
+                >
+                  {{ $t('page.mediums.actions.restartReading') }}
+                </el-button>
+              </template>
               <el-button
+                v-else
                 size="large"
                 type="primary"
                 :icon="MdiPlayCircle"
-                disabled
+                :disabled="startReadingDisabled"
+                @click="handleStartReading"
               >
-                {{ $t('page.mediums.actions.continueReading') }}
-              </el-button>
-              <el-button
-                size="large"
-                type="default"
-                :icon="MdiRefresh"
-                disabled
-              >
-                {{ $t('page.mediums.actions.restartReading') }}
+                {{ $t('page.mediums.actions.startReading') }}
               </el-button>
               <el-button size="large" type="default" :icon="CiStar" disabled>
                 {{ $t('page.mediums.actions.rate') }}
@@ -764,21 +830,12 @@ const resolveComicImageUrl = (imageId: string) => {
                     📄
                   </div>
                 </template>
-                <div
+                <MediumSelectionIndicator
                   class="absolute left-2 top-2"
+                  :selected="isImageSelected(image.id)"
+                  size="sm"
                   @click.stop="toggleImageSelection(image.id)"
-                >
-                  <div
-                    v-if="isImageSelected(image.id)"
-                    class="bg-primary flex h-7 w-7 items-center justify-center rounded-full text-white shadow-lg"
-                  >
-                    <MdiCheckCircle class="text-xl" />
-                  </div>
-                  <div
-                    v-else
-                    class="h-7 w-7 rounded-full border-2 border-white/90 bg-black/50 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-                  ></div>
-                </div>
+                />
                 <div
                   class="absolute right-2 top-2 rounded-full bg-black/70 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm"
                 >

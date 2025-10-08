@@ -38,6 +38,13 @@ export const CiUser = createIconifyIcon('ci:user')
 export const MdiScan = createIconifyIcon('mdi:qrcode-scan')
 export const MdiWave = createIconifyIcon('mdi:triangle-wave')
 export const MdiLoading = createIconifyIcon('mdi:loading')
+export const MdiArrowLeft = createIconifyIcon('mdi:arrow-left')
+export const MdiCog = createIconifyIcon('mdi:cog')
+export const MdiFullscreen = createIconifyIcon('mdi:fullscreen')
+export const MdiFullscreenExit = createIconifyIcon('mdi:fullscreen-exit')
+export const MdiHelpCircle = createIconifyIcon('mdi:help-circle-outline')
+export const MdiPageFirst = createIconifyIcon('mdi:page-first')
+export const MdiPageLast = createIconifyIcon('mdi:page-last')
 
 // Toolbar icons
 export const MdiPlus = createIconifyIcon('mdi:plus')

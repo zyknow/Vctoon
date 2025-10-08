@@ -10,7 +10,6 @@ import {
   CiEditPencilLine01,
   CiMoreVertical,
   MdiCheck,
-  MdiCheckCircle,
   MdiPlayCircle,
 } from '@vben/icons'
 import { formatDate } from '@vben/utils'
@@ -25,6 +24,7 @@ import { useMediumStore } from '#/store'
 
 import MediumCoverCard from './medium-cover-card.vue'
 import MediumInfoDialog from './medium-info-dialog.vue'
+import MediumSelectionIndicator from './medium-selection-indicator.vue'
 
 const props = defineProps<{
   modelValue: MediumGetListOutput
@@ -412,21 +412,11 @@ const cover = computed(() => {
 
       <!-- 选中状态圆圈 - 始终显示在左上角 -->
       <div class="absolute left-2 top-2" @click="toggleSelectionFromIcon">
-        <div
-          v-if="isSelected"
-          class="bg-primary flex h-5 w-5 cursor-pointer items-center justify-center rounded-full text-white"
-        >
-          <MdiCheckCircle class="text-xl" />
-        </div>
-        <div
-          v-else
-          style="border-width: 3px"
-          class="h-5 w-5 cursor-pointer rounded-full border-white/80 bg-transparent transition-opacity"
-          :class="{
-            'opacity-100': isInSelectionMode,
-            'opacity-0 group-hover:opacity-100': !isInSelectionMode,
-          }"
-        ></div>
+        <MediumSelectionIndicator
+          :selected="isSelected"
+          size="sm"
+          :visible="isInSelectionMode"
+        />
       </div>
 
       <!-- 完成标记 - 显示在右上角 -->
@@ -456,6 +446,7 @@ const cover = computed(() => {
     <!-- Meta -->
     <div class="mt-3 space-y-1">
       <div
+        :title="title"
         class="hover:text-primary line-clamp-2 cursor-pointer text-sm font-medium leading-snug"
         @click.stop="navigateToDetail"
       >
