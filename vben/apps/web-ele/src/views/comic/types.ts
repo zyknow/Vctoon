@@ -3,7 +3,12 @@ import type { ComicImage } from '@vben/api'
 export type ReadingDirection = 'btt' | 'ltr' | 'rtl' | 'ttb'
 export type DisplayMode = 'double' | 'scroll' | 'single'
 export type ZoomMode = 'fit-height' | 'fit-screen' | 'fit-width' | 'original'
-export type ComicQualityPreset = '720p' | '1080p' | 'custom' | 'original'
+export type ComicQualityPreset =
+  | '480p'
+  | '720p'
+  | '1080p'
+  | 'custom'
+  | 'original'
 
 export interface ComicViewerSettings {
   alwaysFullscreen: boolean

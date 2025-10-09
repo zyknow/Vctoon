@@ -43,6 +43,7 @@ export const MdiCog = createIconifyIcon('mdi:cog')
 export const MdiFullscreen = createIconifyIcon('mdi:fullscreen')
 export const MdiFullscreenExit = createIconifyIcon('mdi:fullscreen-exit')
 export const MdiHelpCircle = createIconifyIcon('mdi:help-circle-outline')
+export const MdiIncognito = createIconifyIcon('mdi:incognito')
 export const MdiPageFirst = createIconifyIcon('mdi:page-first')
 export const MdiPageLast = createIconifyIcon('mdi:page-last')
 

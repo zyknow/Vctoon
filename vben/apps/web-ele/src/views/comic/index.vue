@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
+import type { LocationQueryRaw } from 'vue-router'
 
 import type { Comic, ComicImage } from '@vben/api'
 
 import type { ComicViewerSettings } from './types'
 
-import { computed, nextTick, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { comicApi } from '@vben/api'
+import { comicApi, mediumResourceApi, MediumType } from '@vben/api'
 import { useAppConfig } from '@vben/hooks'
 import {
   MdiArrowLeft,
@@ -44,6 +45,22 @@ const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD)
 const viewerContainerRef = ref<HTMLElement | null>(null)
 const stageContainerRef = ref<HTMLElement | null>(null)
 const settingsDrawerVisible = ref(false)
+
+const showHelpOverlay = ref(false)
+let helpOverlayTimer: number | undefined
+const pendingPageFromRoute = ref<null | number>(null)
+const lastSyncedPage = ref<null | number>(null)
+
+const parseBooleanQuery = (value: unknown) => {
+  if (Array.isArray(value)) {
+    return value.some((item) => item === '1' || item === 'true')
+  }
+  return value === '1' || value === 'true'
+}
+
+const isIncognito = computed(() => parseBooleanQuery(route.query.incognito))
+
+const shouldTrackProgress = computed(() => !isIncognito.value)
 
 const storedSettings = useLocalStorage<ComicViewerSettings>(
   COMIC_VIEWER_STORAGE_KEY,
@@ -145,12 +162,105 @@ const totalSteps = computed(() => {
 
 const totalPages = computed(() => orderedImages.value.length)
 
+const parsePageQueryValue = (value: unknown) => {
+  const raw = Array.isArray(value) ? value[value.length - 1] : value
+  if (typeof raw !== 'string') {
+    return null
+  }
+  const parsed = Number.parseInt(raw, 10)
+  if (Number.isNaN(parsed) || parsed <= 0) {
+    return null
+  }
+  return parsed
+}
+
+const clampPage = (page: number) => {
+  if (totalPages.value <= 0) {
+    return 1
+  }
+  return Math.min(Math.max(page, 1), totalPages.value)
+}
+
+const pageToStep = (page: number) => {
+  const bounded = clampPage(page)
+  if (isScrollMode.value) {
+    return clampStep(bounded - 1)
+  }
+  if (isDoubleMode.value) {
+    return clampStep(Math.floor((bounded - 1) / 2))
+  }
+  return clampStep(bounded - 1)
+}
+
 const clampStep = (value: number) => {
   if (totalSteps.value === 0) {
     return 0
   }
   return Math.min(Math.max(value, 0), totalSteps.value - 1)
 }
+
+const getPageForStep = (step: number) => {
+  if (totalPages.value === 0) {
+    return 1
+  }
+  if (isScrollMode.value) {
+    return clampPage(step + 1)
+  }
+  if (isDoubleMode.value) {
+    return clampPage(step * 2 + 1)
+  }
+  return clampPage(step + 1)
+}
+
+let updatingFromRoute = false
+let updatingRoute = false
+
+const applyPageFromRoute = (page: number) => {
+  const bounded = clampPage(page)
+  updatingFromRoute = true
+  currentStep.value = pageToStep(bounded)
+  lastSyncedPage.value = bounded
+  void nextTick(() => {
+    updatingFromRoute = false
+  })
+}
+
+const tryApplyPendingPage = () => {
+  if (pendingPageFromRoute.value === null) {
+    return
+  }
+  if (totalPages.value === 0) {
+    return
+  }
+  const page = clampPage(pendingPageFromRoute.value)
+  if (page === lastSyncedPage.value && !updatingFromRoute) {
+    pendingPageFromRoute.value = null
+    return
+  }
+  pendingPageFromRoute.value = null
+  applyPageFromRoute(page)
+}
+
+watch(
+  () => route.query.page,
+  (pageQuery) => {
+    if (updatingRoute) {
+      return
+    }
+    const parsed = parsePageQueryValue(pageQuery)
+    if (parsed === null) {
+      pendingPageFromRoute.value = null
+      return
+    }
+    pendingPageFromRoute.value = parsed
+    tryApplyPendingPage()
+  },
+  { immediate: true },
+)
+
+watch([totalPages, () => pendingPageFromRoute.value], () => {
+  tryApplyPendingPage()
+})
 
 watch(totalSteps, () => {
   currentStep.value = clampStep(currentStep.value)
@@ -196,6 +306,9 @@ const currentImages = computed<ViewerImage[]>(() => {
 
 const resolvedQualityWidth = computed(() => {
   switch (settings.qualityPreset) {
+    case '480p': {
+      return 854
+    }
     case '720p': {
       return 1280
     }
@@ -313,7 +426,13 @@ const pageWrapperClass = computed(() => {
 })
 
 const stageClass = computed(() => {
-  const classes: string[] = ['relative', 'flex', 'h-full', 'w-full']
+  const classes: string[] = [
+    'relative',
+    'flex',
+    'h-full',
+    'w-full',
+    'stage-container',
+  ]
   if (isScrollMode.value) {
     classes.push('items-start', 'justify-start', 'overflow-auto')
     if (orientation.value === 'vertical') {
@@ -342,19 +461,136 @@ const stageClass = computed(() => {
   return classes.join(' ')
 })
 
-const pageDisplayText = computed(() => {
+const isHorizontalOrientation = computed(
+  () => orientation.value === 'horizontal',
+)
+
+const helpOverlaySegments = computed(() => {
+  const previousLabel = $t('page.comic.hints.previous')
+  const nextLabel = $t('page.comic.hints.next')
+  const toggleLabel = $t('page.comic.hints.toggleUi')
+
+  if (isHorizontalOrientation.value) {
+    return [
+      {
+        key: 'left',
+        label: isReverseFlow.value ? nextLabel : previousLabel,
+        position: 'left',
+      },
+      {
+        key: 'center',
+        label: toggleLabel,
+        position: 'center',
+      },
+      {
+        key: 'right',
+        label: isReverseFlow.value ? previousLabel : nextLabel,
+        position: 'right',
+      },
+    ] as const
+  }
+
+  return [
+    {
+      key: 'top',
+      label: isReverseFlow.value ? nextLabel : previousLabel,
+      position: 'top',
+    },
+    {
+      key: 'center',
+      label: toggleLabel,
+      position: 'center',
+    },
+    {
+      key: 'bottom',
+      label: isReverseFlow.value ? previousLabel : nextLabel,
+      position: 'bottom',
+    },
+  ] as const
+})
+
+const currentPageRange = computed(() => {
   if (totalPages.value === 0) {
-    return '0 / 0'
+    return { end: 0, start: 0 }
   }
   if (!isScrollMode.value && isDoubleMode.value) {
     const start = currentStep.value * 2 + 1
     const end = Math.min(start + 1, totalPages.value)
-    return start === end
-      ? `${start} / ${totalPages.value}`
-      : `${start}-${end} / ${totalPages.value}`
+    return { start, end }
   }
-  return `${Math.min(currentStep.value + 1, totalPages.value)} / ${totalPages.value}`
+  const page = Math.min(currentStep.value + 1, totalPages.value)
+  return { start: page, end: page }
 })
+
+const currentPageLabel = computed(() => {
+  const { start, end } = currentPageRange.value
+  if (start === 0 && end === 0) {
+    return '0'
+  }
+  return start === end ? `${start}` : `${start}-${end}`
+})
+
+const totalPagesLabel = computed(() => `${totalPages.value}`)
+
+const currentProgress = computed(() => {
+  if (totalPages.value === 0) {
+    return 0
+  }
+  const { end } = currentPageRange.value
+  return Math.min(Math.max(end / totalPages.value, 0), 1)
+})
+
+const currentProgressText = computed(() => {
+  const percentage = currentProgress.value * 100
+  if (!Number.isFinite(percentage)) {
+    return '0%'
+  }
+  return `${Math.round(percentage * 10) / 10}%`
+})
+
+let lastSavedProgress = -1
+let progressDirty = false
+
+const saveProgress = async () => {
+  if (!shouldTrackProgress.value) {
+    progressDirty = false
+    return
+  }
+  if (!progressDirty) {
+    return
+  }
+  const id = comicId.value
+  if (!id || totalPages.value === 0) {
+    return
+  }
+  const progress = Number.isFinite(currentProgress.value)
+    ? Number.parseFloat(currentProgress.value.toFixed(4))
+    : 0
+  if (!Number.isFinite(progress)) {
+    return
+  }
+  if (
+    progress >= 0 &&
+    lastSavedProgress >= 0 &&
+    Math.abs(progress - lastSavedProgress) < 0.001
+  ) {
+    return
+  }
+  try {
+    await mediumResourceApi.updateReadingProcess([
+      {
+        mediumId: id,
+        mediumType: MediumType.Comic,
+        progress,
+        readingLastTime: new Date().toISOString(),
+      },
+    ])
+    lastSavedProgress = progress
+    progressDirty = false
+  } catch (error) {
+    console.error('Failed to update reading progress', error)
+  }
+}
 
 const sliderMax = computed(() => Math.max(totalSteps.value - 1, 0))
 
@@ -545,6 +781,65 @@ watch(
   { flush: 'post' },
 )
 
+watch(
+  currentStep,
+  (step) => {
+    if (!updatingFromRoute && shouldTrackProgress.value) {
+      progressDirty = true
+    }
+    if (totalPages.value === 0) {
+      return
+    }
+    const canonicalPage = getPageForStep(step)
+    if (updatingFromRoute) {
+      lastSyncedPage.value = canonicalPage
+      return
+    }
+    if (lastSyncedPage.value === canonicalPage) {
+      return
+    }
+    lastSyncedPage.value = canonicalPage
+    const currentRoutePage = parsePageQueryValue(route.query.page)
+    const nextQuery: LocationQueryRaw = {
+      ...route.query,
+    }
+    if (canonicalPage <= 1) {
+      if (!('page' in route.query)) {
+        return
+      }
+      delete nextQuery.page
+    } else {
+      if (currentRoutePage === canonicalPage) {
+        return
+      }
+      nextQuery.page = String(canonicalPage)
+    }
+    updatingRoute = true
+    void router.replace({ query: nextQuery }).finally(() => {
+      updatingRoute = false
+    })
+  },
+  { flush: 'post' },
+)
+
+useEventListener(window, 'visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    void saveProgress()
+  }
+})
+
+useEventListener(window, 'pagehide', () => {
+  void saveProgress()
+})
+
+useEventListener(window, 'beforeunload', () => {
+  void saveProgress()
+})
+
+useEventListener(window, 'blur', () => {
+  void saveProgress()
+})
+
 const {
   isFullscreen,
   enter: enterFullscreen,
@@ -552,16 +847,43 @@ const {
   toggle,
 } = useFullscreen(viewerContainerRef)
 
+const forcedFullscreen = ref(false)
+
 watch(
   () => settings.alwaysFullscreen,
-  (value) => {
+  async (value) => {
     if (value) {
-      void enterFullscreen()
-    } else if (isFullscreen.value) {
-      void exitFullscreen()
+      if (isFullscreen.value) {
+        forcedFullscreen.value = false
+        return
+      }
+      forcedFullscreen.value = true
+      await enterFullscreen()
+    } else if (forcedFullscreen.value) {
+      if (isFullscreen.value) {
+        await exitFullscreen()
+      }
+      forcedFullscreen.value = false
     }
   },
   { immediate: true },
+)
+
+watch(
+  isFullscreen,
+  async (value) => {
+    if (!settings.alwaysFullscreen) {
+      forcedFullscreen.value = false
+      return
+    }
+    if (value) {
+      forcedFullscreen.value = false
+      return
+    }
+    forcedFullscreen.value = true
+    await enterFullscreen()
+  },
+  { flush: 'post' },
 )
 
 const comicTitle = computed(() => {
@@ -570,11 +892,42 @@ const comicTitle = computed(() => {
   )
 })
 
+let boundaryResetTimer: number | undefined
+let lastBoundaryNotice: 'first' | 'last' | null = null
+
+const showBoundaryNotice = (type: 'first' | 'last') => {
+  if (lastBoundaryNotice === type) {
+    return
+  }
+  if (boundaryResetTimer) {
+    window.clearTimeout(boundaryResetTimer)
+    boundaryResetTimer = undefined
+  }
+  lastBoundaryNotice = type
+  const messageKey =
+    type === 'first'
+      ? 'page.comic.messages.firstPage'
+      : 'page.comic.messages.lastPage'
+  ElMessage.warning($t(messageKey))
+  boundaryResetTimer = window.setTimeout(() => {
+    lastBoundaryNotice = null
+    boundaryResetTimer = undefined
+  }, 1500)
+}
+
 const goToPrevious = () => {
+  if (currentStep.value <= 0) {
+    showBoundaryNotice('first')
+    return
+  }
   currentStep.value = clampStep(currentStep.value - 1)
 }
 
 const goToNext = () => {
+  if (totalSteps.value === 0 || currentStep.value >= totalSteps.value - 1) {
+    showBoundaryNotice('last')
+    return
+  }
   currentStep.value = clampStep(currentStep.value + 1)
 }
 
@@ -582,11 +935,19 @@ const goToFirst = () => {
   if (totalSteps.value === 0) {
     return
   }
+  if (currentStep.value === 0) {
+    showBoundaryNotice('first')
+    return
+  }
   currentStep.value = 0
 }
 
 const goToLast = () => {
   if (totalSteps.value === 0) {
+    return
+  }
+  if (currentStep.value === totalSteps.value - 1) {
+    showBoundaryNotice('last')
     return
   }
   currentStep.value = totalSteps.value - 1
@@ -698,6 +1059,14 @@ const handleToggleFullscreen = async () => {
 
 const handleHelp = () => {
   ElMessage.info($t('page.comic.messages.help'))
+  showHelpOverlay.value = true
+  if (helpOverlayTimer) {
+    window.clearTimeout(helpOverlayTimer)
+  }
+  helpOverlayTimer = window.setTimeout(() => {
+    showHelpOverlay.value = false
+    helpOverlayTimer = undefined
+  }, 3200)
 }
 
 const fetchComic = async () => {
@@ -714,6 +1083,8 @@ const fetchComic = async () => {
       comicApi.getImagesByComicId(id),
     ])
     comicDetail.value = detail
+    lastSavedProgress = detail.readingProgress ?? 0
+    progressDirty = false
     imageElementMap.clear()
     images.value = (imageList ?? []).map((item, index) => ({
       ...item,
@@ -792,6 +1163,16 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
 const retry = async () => {
   await fetchComic()
 }
+
+onBeforeUnmount(() => {
+  if (helpOverlayTimer) {
+    window.clearTimeout(helpOverlayTimer)
+  }
+  if (boundaryResetTimer) {
+    window.clearTimeout(boundaryResetTimer)
+  }
+  void saveProgress()
+})
 </script>
 
 <template>
@@ -882,6 +1263,25 @@ const retry = async () => {
         :style="stageStyle"
         @click="handleStageClick"
       >
+        <transition name="fade-fast">
+          <div
+            v-if="showHelpOverlay"
+            class="touch-overlay pointer-events-none absolute inset-0 z-30"
+          >
+            <div
+              class="grid h-full w-full gap-2"
+              :class="isHorizontalOrientation ? 'grid-cols-3' : 'grid-rows-3'"
+            >
+              <div
+                v-for="segment in helpOverlaySegments"
+                :key="segment.key"
+                class="touch-overlay__segment flex flex-col items-center justify-center px-3 py-6 text-sm font-medium tracking-wide"
+              >
+                <span>{{ segment.label }}</span>
+              </div>
+            </div>
+          </div>
+        </transition>
         <template v-if="isScrollMode">
           <figure
             v-for="image in orderedImages"
@@ -942,8 +1342,11 @@ const retry = async () => {
             :show-tooltip="false"
             class="w-full max-w-3xl"
           />
-          <div class="text-xs text-white/80">
-            {{ pageDisplayText }}
+          <div class="flex items-center gap-2 text-xs text-white/80">
+            <span class="font-mono">{{ currentPageLabel }}</span>
+            <span class="text-white/50">/</span>
+            <span class="font-mono">{{ totalPagesLabel }}</span>
+            <span class="text-white/60">({{ currentProgressText }})</span>
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -998,6 +1401,26 @@ const retry = async () => {
   bottom: 0;
   left: 0;
   z-index: 20;
+}
+
+.stage-container {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.stage-container::-webkit-scrollbar {
+  display: none;
+}
+
+.touch-overlay {
+  backdrop-filter: blur(8px);
+}
+
+.touch-overlay__segment {
+  color: hsl(var(--foreground) / 92%);
+  background-color: hsl(var(--background) / 60%);
+  border: 1px solid hsl(var(--border) / 60%);
+  border-radius: 0.75rem;
 }
 
 @media (max-width: 768px) {

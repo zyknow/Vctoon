@@ -21,7 +21,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { comicApi, mediumResourceApi, MediumType, videoApi } from '@vben/api'
 import { Page } from '@vben/common-ui'
 import { useAppConfig, useIsMobile } from '@vben/hooks'
-import { CiStar, MdiPlayCircle, MdiRefresh } from '@vben/icons'
+import { CiStar, MdiIncognito, MdiPlayCircle, MdiRefresh } from '@vben/icons'
 
 import MediumCoverCard from '#/components/mediums/medium-cover-card.vue'
 import MediumSelectionIndicator from '#/components/mediums/medium-selection-indicator.vue'
@@ -144,6 +144,23 @@ const comicImageMaxWidth = computed(() =>
 const visibleComicImages = computed(() =>
   sortedComicImages.value.slice(0, visibleComicCount.value),
 )
+
+const totalComicPages = computed(() =>
+  isComic.value ? sortedComicImages.value.length : 0,
+)
+
+const resumePage = computed(() => {
+  const total = totalComicPages.value
+  if (total <= 0) {
+    return 1
+  }
+  const progress = mediumData.value?.readingProgress ?? 0
+  if (!progress || progress <= 0) {
+    return 1
+  }
+  const page = Math.ceil(progress * total)
+  return Math.min(Math.max(page, 1), total)
+})
 
 const descriptionText = computed(
   () => mediumData.value?.description?.trim() ?? '',
@@ -437,7 +454,12 @@ watch(
   { immediate: true },
 )
 
-const navigateToComicReader = (mode: 'restart' | 'resume') => {
+type ComicReaderMode = 'restart' | 'resume'
+
+const navigateToComicReader = (
+  mode: ComicReaderMode,
+  options: { incognito?: boolean; page?: number } = {},
+) => {
   if (!canReadComic.value) {
     return
   }
@@ -445,30 +467,42 @@ const navigateToComicReader = (mode: 'restart' | 'resume') => {
   if (!id) {
     return
   }
+  const query: Record<string, string> = {}
   if (mode === 'resume') {
-    void router.push({
-      name: 'ComicReader',
-      params: { comicId: id },
-      query: { mode },
-    })
-    return
+    query.mode = mode
+  }
+  if (options.page && options.page > 0) {
+    query.page = String(Math.max(1, Math.floor(options.page)))
+  }
+  if (options.incognito) {
+    query.incognito = '1'
   }
   void router.push({
     name: 'ComicReader',
     params: { comicId: id },
+    query,
   })
 }
 
 const handleContinueReading = () => {
-  navigateToComicReader('resume')
+  navigateToComicReader('resume', { page: resumePage.value })
 }
 
 const handleRestartReading = () => {
-  navigateToComicReader('restart')
+  navigateToComicReader('restart', { page: 1 })
 }
 
 const handleStartReading = () => {
-  navigateToComicReader('restart')
+  navigateToComicReader('restart', { page: 1 })
+}
+
+const handleIncognitoReading = () => {
+  if (startReadingDisabled.value) {
+    return
+  }
+  const mode: ComicReaderMode = hasReadingProgress.value ? 'resume' : 'restart'
+  const page = hasReadingProgress.value ? resumePage.value : 1
+  navigateToComicReader(mode, { incognito: true, page })
 }
 
 const goBack = () => {
@@ -623,6 +657,20 @@ const resolveComicImageUrl = (imageId: string) => {
                 >
                   {{ $t('page.mediums.actions.restartReading') }}
                 </el-button>
+                <el-button
+                  size="large"
+                  type="info"
+                  plain
+                  :icon="MdiIncognito"
+                  :disabled="startReadingDisabled"
+                  @click="handleIncognitoReading"
+                >
+                  {{
+                    isComic
+                      ? $t('page.mediums.actions.incognitoRead')
+                      : $t('page.mediums.actions.incognitoPlay')
+                  }}
+                </el-button>
               </template>
               <el-button
                 v-else
@@ -633,6 +681,21 @@ const resolveComicImageUrl = (imageId: string) => {
                 @click="handleStartReading"
               >
                 {{ $t('page.mediums.actions.startReading') }}
+              </el-button>
+              <el-button
+                v-if="!hasReadingProgress"
+                size="large"
+                type="info"
+                plain
+                :icon="MdiIncognito"
+                :disabled="startReadingDisabled"
+                @click="handleIncognitoReading"
+              >
+                {{
+                  isComic
+                    ? $t('page.mediums.actions.incognitoRead')
+                    : $t('page.mediums.actions.incognitoPlay')
+                }}
               </el-button>
               <el-button size="large" type="default" :icon="CiStar" disabled>
                 {{ $t('page.mediums.actions.rate') }}

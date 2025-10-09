@@ -141,6 +141,11 @@ const zoomModeOptions = computed<OptionItem<ZoomMode>[]>(() => [
 
 const qualityOptions = computed<OptionItem<ComicQualityPreset>[]>(() => [
   createOption(
+    '480p',
+    'page.comic.settings.options.quality.quality480p',
+    'page.comic.settings.options.quality.quality480pDescription',
+  ),
+  createOption(
     '720p',
     'page.comic.settings.options.quality.quality720p',
     'page.comic.settings.options.quality.quality720pDescription',

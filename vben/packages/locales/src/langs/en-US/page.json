@@ -137,6 +137,8 @@
       "startReading": "Start Reading",
       "continueReading": "Continue Reading",
       "restartReading": "Restart",
+      "incognitoRead": "Incognito Read",
+      "incognitoPlay": "Incognito Play",
       "rate": "Rate"
     }
   },
@@ -161,7 +163,14 @@
     },
     "messages": {
       "help": "Tap the sides or top/bottom to turn pages, tap center to toggle controls.",
-      "loadFailed": "Unable to fetch comic data"
+      "loadFailed": "Unable to fetch comic data",
+      "firstPage": "You are already on the first page",
+      "lastPage": "You are already on the last page"
+    },
+    "hints": {
+      "previous": "Previous Page",
+      "next": "Next Page",
+      "toggleUi": "Toggle Controls"
     },
     "settings": {
       "dialogTitle": "Reader Settings",
@@ -211,6 +220,8 @@
           "originalDescription": "Show at original resolution"
         },
         "quality": {
+          "quality480p": "480p",
+          "quality480pDescription": "Lower data usage, ideal for mobile",
           "quality720p": "720p",
           "quality720pDescription": "Balanced quality with faster loading",
           "quality1080p": "1080p",
