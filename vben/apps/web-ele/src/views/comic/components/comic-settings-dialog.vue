@@ -12,6 +12,7 @@ import { computed, reactive, watch } from 'vue'
 import { useIsMobile } from '@vben/hooks'
 
 import { $t } from '#/locales'
+import { useComicStore } from '#/store'
 
 defineOptions({
   name: 'ComicSettingsDrawer',
@@ -19,31 +20,32 @@ defineOptions({
 
 const props = defineProps<{
   modelValue: boolean
-  settings: ComicViewerSettings
 }>()
 
 const emit = defineEmits<{
   (event: 'update:modelValue', value: boolean): void
-  (event: 'update:settings', value: ComicViewerSettings): void
 }>()
 
 const { isMobile } = useIsMobile()
+
+const comicStore = useComicStore()
+const settings = comicStore.settings
 
 const drawerVisible = computed({
   get: () => props.modelValue,
   set: (value: boolean) => emit('update:modelValue', value),
 })
 
-const form = reactive<ComicViewerSettings>({ ...props.settings })
+const form = reactive<ComicViewerSettings>({ ...settings })
 
-let syncingFromParent = false
+let syncingFromStore = false
 
 watch(
-  () => props.settings,
+  settings,
   (value) => {
-    syncingFromParent = true
+    syncingFromStore = true
     Object.assign(form, value)
-    syncingFromParent = false
+    syncingFromStore = false
   },
   { deep: true },
 )
@@ -51,10 +53,10 @@ watch(
 watch(
   form,
   (value) => {
-    if (syncingFromParent) {
+    if (syncingFromStore) {
       return
     }
-    emit('update:settings', { ...value })
+    comicStore.setSettings({ ...value })
   },
   { deep: true },
 )

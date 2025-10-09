@@ -4,9 +4,7 @@ import type { LocationQueryRaw } from 'vue-router'
 
 import type { Comic, ComicImage } from '@vben/api'
 
-import type { ComicViewerSettings } from './types'
-
-import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { comicApi, mediumResourceApi, MediumType } from '@vben/api'
@@ -21,18 +19,14 @@ import {
   MdiPageLast,
 } from '@vben/icons'
 
-import { useEventListener, useFullscreen, useLocalStorage } from '@vueuse/core'
+import { useEventListener, useFullscreen } from '@vueuse/core'
 import { ElMessage } from 'element-plus'
 
 import { $t } from '#/locales'
+import { useComicStore } from '#/store'
 
 import ComicSettingsDialog from './components/comic-settings-dialog.vue'
-import {
-  COMIC_VIEWER_STORAGE_KEY,
-  DEFAULT_COMIC_VIEWER_SETTINGS,
-  isReverseDirection,
-  isVerticalDirection,
-} from './types'
+import { isReverseDirection, isVerticalDirection } from './types'
 
 defineOptions({ name: 'ComicReaderPage' })
 
@@ -62,45 +56,8 @@ const isIncognito = computed(() => parseBooleanQuery(route.query.incognito))
 
 const shouldTrackProgress = computed(() => !isIncognito.value)
 
-const storedSettings = useLocalStorage<ComicViewerSettings>(
-  COMIC_VIEWER_STORAGE_KEY,
-  DEFAULT_COMIC_VIEWER_SETTINGS,
-  { mergeDefaults: true },
-)
-
-const settings = reactive<ComicViewerSettings>({ ...storedSettings.value })
-
-watch(
-  settings,
-  (value) => {
-    storedSettings.value = { ...value }
-  },
-  { deep: true },
-)
-
-watch(
-  () => settings.customQualityWidth,
-  (value) => {
-    if (value < 256) {
-      settings.customQualityWidth = 256
-    }
-  },
-)
-
-watch(
-  () => settings.imageSpacing,
-  (value) => {
-    if (!Number.isFinite(value)) {
-      settings.imageSpacing = 0
-      return
-    }
-    if (value < 0) {
-      settings.imageSpacing = 0
-      return
-    }
-    settings.imageSpacing = Math.round(value)
-  },
-)
+const comicStore = useComicStore()
+const settings = comicStore.settings
 
 const comicDetail = ref<Comic | null>(null)
 const images = ref<ViewerImage[]>([])
@@ -1153,10 +1110,6 @@ const handleOpenSettings = () => {
   settingsDrawerVisible.value = true
 }
 
-const handleSettingsUpdate = (value: ComicViewerSettings) => {
-  Object.assign(settings, value)
-}
-
 const handleToggleFullscreen = async () => {
   await toggle()
 }
@@ -1468,11 +1421,7 @@ onBeforeUnmount(() => {
     </transition>
   </div>
 
-  <ComicSettingsDialog
-    v-model="settingsDrawerVisible"
-    :settings="settings"
-    @update:settings="handleSettingsUpdate"
-  />
+  <ComicSettingsDialog v-model="settingsDrawerVisible" />
 </template>
 
 <style scoped>
