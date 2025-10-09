@@ -8,12 +8,26 @@ import { defineStore } from 'pinia'
 import {
   COMIC_VIEWER_STORAGE_KEY,
   DEFAULT_COMIC_VIEWER_SETTINGS,
+  isVerticalDirection,
 } from '#/views/comic/types'
 
 export const useComicStore = defineStore('comic', () => {
   const settings = reactive<ComicViewerSettings>({
     ...DEFAULT_COMIC_VIEWER_SETTINGS,
   })
+
+  const normalizeSettings = (
+    value: ComicViewerSettings,
+  ): ComicViewerSettings => {
+    const next: ComicViewerSettings = { ...value }
+    const shouldForceFitHeight =
+      next.displayMode === 'scroll' &&
+      !isVerticalDirection(next.readingDirection)
+    if (shouldForceFitHeight) {
+      next.zoomMode = 'fit-height'
+    }
+    return next
+  }
 
   const storedSettings = useLocalStorage<ComicViewerSettings>(
     COMIC_VIEWER_STORAGE_KEY,
@@ -30,7 +44,7 @@ export const useComicStore = defineStore('comic', () => {
       return
     }
     syncingFromStorage = true
-    Object.assign(settings, value)
+    Object.assign(settings, normalizeSettings(value))
     syncingFromStorage = false
   }
 
@@ -50,7 +64,7 @@ export const useComicStore = defineStore('comic', () => {
       if (syncingFromStorage) {
         return
       }
-      storedSettings.value = { ...value }
+      storedSettings.value = normalizeSettings({ ...value })
     },
     { deep: true },
   )
@@ -80,16 +94,36 @@ export const useComicStore = defineStore('comic', () => {
   )
 
   function setSettings(value: ComicViewerSettings) {
-    Object.assign(settings, value)
+    Object.assign(settings, normalizeSettings(value))
   }
 
   function updateSettings(partial: Partial<ComicViewerSettings>) {
-    Object.assign(settings, partial)
+    const next: ComicViewerSettings = normalizeSettings({
+      ...settings,
+      ...partial,
+    })
+    Object.assign(settings, next)
   }
 
   function resetSettings() {
     setSettings({ ...DEFAULT_COMIC_VIEWER_SETTINGS })
   }
+
+  watch(
+    [
+      () => settings.displayMode,
+      () => settings.readingDirection,
+      () => settings.zoomMode,
+    ],
+    ([displayMode, readingDirection, zoomMode]) => {
+      const isHorizontalScroll =
+        displayMode === 'scroll' && !isVerticalDirection(readingDirection)
+      if (isHorizontalScroll && zoomMode !== 'fit-height') {
+        settings.zoomMode = 'fit-height'
+      }
+    },
+    { immediate: true },
+  )
 
   return {
     resetSettings,

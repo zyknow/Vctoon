@@ -14,6 +14,8 @@ import { useIsMobile } from '@vben/hooks'
 import { $t } from '#/locales'
 import { useComicStore } from '#/store'
 
+import { isVerticalDirection } from '../types'
+
 defineOptions({
   name: 'ComicSettingsDrawer',
 })
@@ -141,6 +143,28 @@ const zoomModeOptions = computed<OptionItem<ZoomMode>[]>(() => [
   ),
 ])
 
+const isScrollMode = computed(() => form.displayMode === 'scroll')
+const isHorizontalOrientation = computed(
+  () => !isVerticalDirection(form.readingDirection),
+)
+
+const availableZoomOptions = computed(() => {
+  if (isScrollMode.value && isHorizontalOrientation.value) {
+    return zoomModeOptions.value.filter((item) => item.value === 'fit-height')
+  }
+  return zoomModeOptions.value
+})
+
+watch(
+  [isScrollMode, isHorizontalOrientation],
+  ([scroll, horizontal]) => {
+    if (scroll && horizontal && form.zoomMode !== 'fit-height') {
+      form.zoomMode = 'fit-height'
+    }
+  },
+  { immediate: true },
+)
+
 const qualityOptions = computed<OptionItem<ComicQualityPreset>[]>(() => [
   createOption(
     '480p',
@@ -215,7 +239,12 @@ const isCustomQuality = computed(() => form.qualityPreset === 'custom')
               :label="$t('page.comic.settings.fields.displayMode')"
               class="m-0"
             >
-              <el-select v-model="form.displayMode" class="w-full">
+              <el-select
+                v-model="form.displayMode"
+                class="w-full"
+                placement="bottom-start"
+                :fallback-placements="[]"
+              >
                 <el-option
                   v-for="item in displayModeOptions"
                   :key="item.value"
@@ -244,7 +273,7 @@ const isCustomQuality = computed(() => form.qualityPreset === 'custom')
             <el-form-item :label="$t('page.comic.settings.fields.zoomMode')">
               <el-select v-model="form.zoomMode" class="w-full">
                 <el-option
-                  v-for="item in zoomModeOptions"
+                  v-for="item in availableZoomOptions"
                   :key="item.value"
                   :label="item.label"
                   :value="item.value"
@@ -280,11 +309,11 @@ const isCustomQuality = computed(() => form.qualityPreset === 'custom')
             </el-form-item>
 
             <el-form-item
+              v-if="isCustomQuality"
               :label="$t('page.comic.settings.fields.customQualityWidth')"
             >
               <el-input-number
                 v-model="form.customQualityWidth"
-                :disabled="!isCustomQuality"
                 :max="8192"
                 :min="256"
                 :step="64"

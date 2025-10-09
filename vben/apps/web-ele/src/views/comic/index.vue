@@ -41,7 +41,7 @@ const stageContainerRef = ref<HTMLElement | null>(null)
 const settingsDrawerVisible = ref(false)
 
 const showHelpOverlay = ref(false)
-let helpOverlayTimer: number | undefined
+const helpOverlayKey = ref(0)
 const pendingPageFromRoute = ref<null | number>(null)
 const lastSyncedPage = ref<null | number>(null)
 
@@ -464,6 +464,14 @@ const helpOverlaySegments = computed(() => {
       position: 'bottom',
     },
   ] as const
+})
+
+const helpOverlayDismissText = computed(() => {
+  const text = $t('page.comic.messages.helpDismiss')
+  if (text && text !== 'page.comic.messages.helpDismiss') {
+    return text
+  }
+  return '点击任意位置关闭'
 })
 
 const currentPageRange = computed(() => {
@@ -1102,7 +1110,8 @@ const handleStageClick = (event: MouseEvent) => {
   handleRegionClick('center')
 }
 
-const handleBack = () => {
+const handleBack = async () => {
+  await saveProgress()
   router.back()
 }
 
@@ -1114,16 +1123,19 @@ const handleToggleFullscreen = async () => {
   await toggle()
 }
 
-const handleHelp = () => {
+const handleHelp = async () => {
   ElMessage.info($t('page.comic.messages.help'))
-  showHelpOverlay.value = true
-  if (helpOverlayTimer) {
-    window.clearTimeout(helpOverlayTimer)
-  }
-  helpOverlayTimer = window.setTimeout(() => {
+  if (showHelpOverlay.value) {
     showHelpOverlay.value = false
-    helpOverlayTimer = undefined
-  }, 3200)
+    await nextTick()
+  }
+
+  helpOverlayKey.value += 1
+  showHelpOverlay.value = true
+}
+
+const handleHelpOverlayClose = () => {
+  showHelpOverlay.value = false
 }
 
 const fetchComic = async () => {
@@ -1222,9 +1234,6 @@ const retry = async () => {
 }
 
 onBeforeUnmount(() => {
-  if (helpOverlayTimer) {
-    window.clearTimeout(helpOverlayTimer)
-  }
   if (boundaryResetTimer) {
     window.clearTimeout(boundaryResetTimer)
   }
@@ -1291,6 +1300,34 @@ onBeforeUnmount(() => {
       </header>
     </transition>
 
+    <transition name="fade-fast">
+      <div
+        v-if="showHelpOverlay"
+        :key="helpOverlayKey"
+        class="touch-overlay absolute inset-0 z-40 flex flex-col"
+        role="presentation"
+        @click.stop="handleHelpOverlayClose"
+      >
+        <div
+          class="touch-overlay__grid grid flex-1 gap-2"
+          :class="isHorizontalOrientation ? 'grid-cols-3' : 'grid-rows-3'"
+        >
+          <div
+            v-for="segment in helpOverlaySegments"
+            :key="segment.key"
+            class="touch-overlay__segment flex flex-col items-center justify-center px-4 py-8 text-base font-medium tracking-wide"
+          >
+            <span>{{ segment.label }}</span>
+          </div>
+        </div>
+        <div
+          class="touch-overlay__footer px-4 pb-6 text-center text-sm text-white/80"
+        >
+          {{ helpOverlayDismissText }}
+        </div>
+      </div>
+    </transition>
+
     <div class="viewer-main relative flex-1 overflow-hidden">
       <div
         v-if="isLoading"
@@ -1320,25 +1357,6 @@ onBeforeUnmount(() => {
         :style="stageStyle"
         @click="handleStageClick"
       >
-        <transition name="fade-fast">
-          <div
-            v-if="showHelpOverlay"
-            class="touch-overlay pointer-events-none absolute inset-0 z-30"
-          >
-            <div
-              class="grid h-full w-full gap-2"
-              :class="isHorizontalOrientation ? 'grid-cols-3' : 'grid-rows-3'"
-            >
-              <div
-                v-for="segment in helpOverlaySegments"
-                :key="segment.key"
-                class="touch-overlay__segment flex flex-col items-center justify-center px-3 py-6 text-sm font-medium tracking-wide"
-              >
-                <span>{{ segment.label }}</span>
-              </div>
-            </div>
-          </div>
-        </transition>
         <template v-if="isScrollMode">
           <figure
             v-for="image in orderedImages"
@@ -1466,7 +1484,15 @@ onBeforeUnmount(() => {
 }
 
 .touch-overlay {
+  display: flex;
+  cursor: pointer;
+  background-color: hsl(var(--background) / 80%);
   backdrop-filter: blur(8px);
+}
+
+.touch-overlay__grid,
+.touch-overlay__footer {
+  pointer-events: none;
 }
 
 .touch-overlay__segment {
