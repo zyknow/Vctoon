@@ -689,15 +689,69 @@ const updateStepFromScroll = () => {
     return
   }
 
+  const containerRect = container.getBoundingClientRect()
   const isVertical = orientation.value === 'vertical'
   const centerPosition = isVertical
-    ? container.scrollTop + container.clientHeight / 2
-    : container.scrollLeft + container.clientWidth / 2
+    ? containerRect.top + containerRect.height / 2
+    : containerRect.left + containerRect.width / 2
+
+  const edgeThreshold = isVertical
+    ? Math.max(containerRect.height * 0.08, 32)
+    : Math.max(containerRect.width * 0.08, 32)
 
   let closestIndex = currentStep.value
   let closestDistance = Number.POSITIVE_INFINITY
 
+  const firstImage = orderedImages.value[0]
+  const lastIndex = orderedImages.value.length - 1
+  const lastImage = lastIndex >= 0 ? orderedImages.value[lastIndex] : undefined
+
+  if (firstImage) {
+    const element = imageElementMap.get(firstImage.id)
+    if (element) {
+      const rect = element.getBoundingClientRect()
+      let distanceToStart: number
+      if (isVertical) {
+        distanceToStart = isReverseFlow.value
+          ? Math.abs(containerRect.bottom - rect.bottom)
+          : Math.abs(rect.top - containerRect.top)
+      } else {
+        distanceToStart = isReverseFlow.value
+          ? Math.abs(containerRect.right - rect.right)
+          : Math.abs(rect.left - containerRect.left)
+      }
+      if (distanceToStart <= edgeThreshold) {
+        closestIndex = 0
+        closestDistance = 0
+      }
+    }
+  }
+
+  if (lastImage) {
+    const element = imageElementMap.get(lastImage.id)
+    if (element) {
+      const rect = element.getBoundingClientRect()
+      let distanceToEnd: number
+      if (isVertical) {
+        distanceToEnd = isReverseFlow.value
+          ? Math.abs(rect.top - containerRect.top)
+          : Math.abs(containerRect.bottom - rect.bottom)
+      } else {
+        distanceToEnd = isReverseFlow.value
+          ? Math.abs(rect.left - containerRect.left)
+          : Math.abs(containerRect.right - rect.right)
+      }
+      if (distanceToEnd <= edgeThreshold) {
+        closestIndex = lastIndex
+        closestDistance = 0
+      }
+    }
+  }
+
   for (let index = 0; index < orderedImages.value.length; index += 1) {
+    if (closestDistance === 0 && (index === 0 || index === lastIndex)) {
+      continue
+    }
     const item = orderedImages.value[index]
     if (!item) {
       continue
@@ -707,9 +761,10 @@ const updateStepFromScroll = () => {
       continue
     }
 
+    const rect = element.getBoundingClientRect()
     const elementCenter = isVertical
-      ? element.offsetTop + element.clientHeight / 2
-      : element.offsetLeft + element.clientWidth / 2
+      ? rect.top + rect.height / 2
+      : rect.left + rect.width / 2
 
     const distance = Math.abs(elementCenter - centerPosition)
 
@@ -720,8 +775,20 @@ const updateStepFromScroll = () => {
   }
 
   if (closestIndex !== currentStep.value) {
+    const previousStep = currentStep.value
+    const nextStep = clampStep(closestIndex)
+    if (totalSteps.value > 0) {
+      if (nextStep === 0 && previousStep !== 0) {
+        showBoundaryNotice('first')
+      } else if (
+        nextStep === totalSteps.value - 1 &&
+        previousStep !== totalSteps.value - 1
+      ) {
+        showBoundaryNotice('last')
+      }
+    }
     isSyncingFromScroll.value = true
-    currentStep.value = clampStep(closestIndex)
+    currentStep.value = nextStep
     requestAnimationFrame(() => {
       isSyncingFromScroll.value = false
     })
@@ -756,16 +823,46 @@ useEventListener(
   stageContainerRef,
   'wheel',
   (event: WheelEvent) => {
-    if (!isScrollMode.value || orientation.value !== 'horizontal') {
-      return
-    }
-    event.preventDefault()
     const container = stageContainerRef.value
     if (!container) {
       return
     }
-    const behavior: ScrollBehavior = settings.pageTransition ? 'smooth' : 'auto'
-    container.scrollBy({ left: event.deltaY, behavior })
+
+    if (isScrollMode.value) {
+      if (orientation.value !== 'horizontal') {
+        return
+      }
+      event.preventDefault()
+      const behavior: ScrollBehavior = settings.pageTransition
+        ? 'smooth'
+        : 'auto'
+      container.scrollBy({ left: event.deltaY, behavior })
+      return
+    }
+
+    const primaryDelta =
+      Math.abs(event.deltaY) >= Math.abs(event.deltaX)
+        ? event.deltaY
+        : event.deltaX
+
+    if (!primaryDelta) {
+      return
+    }
+
+    event.preventDefault()
+
+    const forward = primaryDelta > 0
+    if (isReverseFlow.value) {
+      if (forward) {
+        goToPrevious()
+      } else {
+        goToNext()
+      }
+    } else if (forward) {
+      goToNext()
+    } else {
+      goToPrevious()
+    }
   },
   { passive: false },
 )
@@ -784,11 +881,14 @@ watch(
 watch(
   currentStep,
   (step) => {
-    if (!updatingFromRoute && shouldTrackProgress.value) {
-      progressDirty = true
-    }
     if (totalPages.value === 0) {
       return
+    }
+    if (pendingPageFromRoute.value !== null) {
+      return
+    }
+    if (!updatingFromRoute && shouldTrackProgress.value) {
+      progressDirty = true
     }
     const canonicalPage = getPageForStep(step)
     if (updatingFromRoute) {
@@ -908,7 +1008,11 @@ const showBoundaryNotice = (type: 'first' | 'last') => {
     type === 'first'
       ? 'page.comic.messages.firstPage'
       : 'page.comic.messages.lastPage'
-  ElMessage.warning($t(messageKey))
+  ElMessage.warning({
+    message: $t(messageKey),
+    duration: 1800,
+    grouping: true,
+  })
   boundaryResetTimer = window.setTimeout(() => {
     lastBoundaryNotice = null
     boundaryResetTimer = undefined

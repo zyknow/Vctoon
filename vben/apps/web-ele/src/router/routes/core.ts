@@ -2,8 +2,6 @@ import type { RouteRecordRaw } from 'vue-router'
 
 import { preferences } from '@vben/preferences'
 
-import { $t } from '#/locales'
-
 const BasicLayout = () => import('#/layouts/basic.vue')
 /** 全局404页面 */
 const fallbackNotFoundRoute: RouteRecordRaw = {
@@ -34,18 +32,7 @@ const coreRoutes: RouteRecordRaw[] = [
     name: 'Root',
     path: '/',
     redirect: preferences.app.defaultHomePath,
-    children: [
-      {
-        component: () => import('#/views/medium/medium-detail.vue'),
-        meta: {
-          hideInBreadcrumb: true,
-          hideInMenu: true,
-          title: $t('page.mediums.detail.title'),
-        },
-        name: 'MediumDetail',
-        path: 'medium/:type/:mediumId',
-      },
-    ],
+    children: [],
   },
 ]
 

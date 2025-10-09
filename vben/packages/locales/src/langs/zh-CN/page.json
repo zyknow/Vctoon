@@ -118,7 +118,8 @@
       "deleteImagesTitle": "删除图片",
       "deleteImagesConfirm": "确认删除选中的 {count} 张图片吗？此操作不可恢复。",
       "videoNoSelection": "视频仅展示详情信息，不支持多选操作。",
-      "noComicImages": "暂无漫画图片"
+      "noComicImages": "暂无漫画图片",
+      "videoComingSoon": "视频播放功能即将上线，敬请期待。"
     },
     "actions": {
       "info": "查看信息",
@@ -126,6 +127,7 @@
       "markAsUnwatched": "标记未读",
       "delete": "删除",
       "startReading": "开始阅读",
+      "startPlaying": "开始播放",
       "continueReading": "继续阅读",
       "restartReading": "重新阅读",
       "incognitoRead": "无痕阅读",

@@ -108,6 +108,21 @@ const navigateToDetail = () => {
   })
 }
 
+const navigateToPrimaryAction = () => {
+  const id = props.modelValue?.id
+  if (!id) return
+  if (mediumType.value === MediumType.Comic) {
+    const query: Record<string, string> = { mode: 'resume' }
+    void router.push({
+      name: 'ComicReader',
+      params: { comicId: id },
+      query,
+    })
+    return
+  }
+  navigateToDetail()
+}
+
 const handleCardClick = (event: MouseEvent) => {
   if (isInSelectionMode.value) {
     toggleSelection(event)
@@ -406,6 +421,7 @@ const cover = computed(() => {
         <div class="pointer-events-auto text-white">
           <MdiPlayCircle
             class="hover:text-primary cursor-pointer text-6xl drop-shadow"
+            @click.stop="navigateToPrimaryAction"
           />
         </div>
       </div>

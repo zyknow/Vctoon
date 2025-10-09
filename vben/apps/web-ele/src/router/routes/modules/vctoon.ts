@@ -83,6 +83,16 @@ const routes: RouteRecordRaw[] = [
     name: 'ComicReader',
     path: '/comic/:comicId/reader',
   },
+  {
+    component: () => import('#/views/medium/medium-detail.vue'),
+    meta: {
+      hideInBreadcrumb: true,
+      hideInMenu: true,
+      title: $t('page.mediums.detail.title'),
+    },
+    name: 'MediumDetail',
+    path: 'medium/:type/:mediumId',
+  },
 ]
 
 export default routes

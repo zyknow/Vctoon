@@ -127,7 +127,8 @@
       "deleteImagesTitle": "Delete Images",
       "deleteImagesConfirm": "Delete the selected {count} images? This action cannot be undone.",
       "videoNoSelection": "Video media only shows details and does not support multi-selection.",
-      "noComicImages": "No comic images available"
+      "noComicImages": "No comic images available",
+      "videoComingSoon": "Video playback is coming soon. Stay tuned."
     },
     "actions": {
       "info": "View Info",
@@ -135,6 +136,7 @@
       "markAsUnwatched": "Mark as Unwatched",
       "delete": "Delete",
       "startReading": "Start Reading",
+      "startPlaying": "Start Playing",
       "continueReading": "Continue Reading",
       "restartReading": "Restart",
       "incognitoRead": "Incognito Read",
