@@ -2,7 +2,7 @@ import type { ComicImage } from '@vben/api'
 
 export type ReadingDirection = 'btt' | 'ltr' | 'rtl' | 'ttb'
 export type DisplayMode = 'double' | 'scroll' | 'single'
-export type ZoomMode = 'fit-height' | 'fit-screen' | 'original'
+export type ZoomMode = 'fit-height' | 'fit-screen' | 'fit-width' | 'original'
 export type ComicQualityPreset = '720p' | '1080p' | 'custom' | 'original'
 
 export interface ComicViewerSettings {
@@ -10,6 +10,7 @@ export interface ComicViewerSettings {
   backgroundColor: string
   customQualityWidth: number
   displayMode: DisplayMode
+  imageSpacing: number
   pageTransition: boolean
   qualityPreset: ComicQualityPreset
   readingDirection: ReadingDirection
@@ -24,6 +25,7 @@ export const DEFAULT_COMIC_VIEWER_SETTINGS: ComicViewerSettings = {
   zoomMode: 'fit-screen',
   qualityPreset: '1080p',
   customQualityWidth: 1920,
+  imageSpacing: 24,
   pageTransition: true,
   backgroundColor: '#000000',
   alwaysFullscreen: false,

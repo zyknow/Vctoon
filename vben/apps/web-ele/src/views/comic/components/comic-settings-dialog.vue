@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { FormInstance, FormRules } from 'element-plus'
-
 import type {
   ComicQualityPreset,
   ComicViewerSettings,
@@ -9,20 +7,57 @@ import type {
   ZoomMode,
 } from '../types'
 
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, watch } from 'vue'
 
-import { useDialogContext } from '#/hooks/useDialogService'
+import { useIsMobile } from '@vben/hooks'
+
 import { $t } from '#/locales'
 
 defineOptions({
-  name: 'ComicSettingsDialog',
+  name: 'ComicSettingsDrawer',
 })
 
-const props = defineProps<{ initialSettings: ComicViewerSettings }>()
+const props = defineProps<{
+  modelValue: boolean
+  settings: ComicViewerSettings
+}>()
 
-const { close, resolve } = useDialogContext<ComicViewerSettings>()
-const formRef = ref<FormInstance>()
-const form = reactive<ComicViewerSettings>({ ...props.initialSettings })
+const emit = defineEmits<{
+  (event: 'update:modelValue', value: boolean): void
+  (event: 'update:settings', value: ComicViewerSettings): void
+}>()
+
+const { isMobile } = useIsMobile()
+
+const drawerVisible = computed({
+  get: () => props.modelValue,
+  set: (value: boolean) => emit('update:modelValue', value),
+})
+
+const form = reactive<ComicViewerSettings>({ ...props.settings })
+
+let syncingFromParent = false
+
+watch(
+  () => props.settings,
+  (value) => {
+    syncingFromParent = true
+    Object.assign(form, value)
+    syncingFromParent = false
+  },
+  { deep: true },
+)
+
+watch(
+  form,
+  (value) => {
+    if (syncingFromParent) {
+      return
+    }
+    emit('update:settings', { ...value })
+  },
+  { deep: true },
+)
 
 type OptionItem<T extends string> = {
   description: string
@@ -93,6 +128,11 @@ const zoomModeOptions = computed<OptionItem<ZoomMode>[]>(() => [
     'page.comic.settings.options.zoom.fitHeightDescription',
   ),
   createOption(
+    'fit-width',
+    'page.comic.settings.options.zoom.fitWidth',
+    'page.comic.settings.options.zoom.fitWidthDescription',
+  ),
+  createOption(
     'original',
     'page.comic.settings.options.zoom.original',
     'page.comic.settings.options.zoom.originalDescription',
@@ -123,184 +163,185 @@ const qualityOptions = computed<OptionItem<ComicQualityPreset>[]>(() => [
 ])
 
 const isCustomQuality = computed(() => form.qualityPreset === 'custom')
-
-const validateCustomQuality = (
-  _rule: unknown,
-  value: number,
-  callback: (error?: Error) => void,
-) => {
-  if (!isCustomQuality.value) {
-    callback()
-    return
-  }
-  if (typeof value !== 'number' || Number.isNaN(value) || value < 256) {
-    callback(new Error($t('page.comic.settings.validation.customQualityWidth')))
-    return
-  }
-  callback()
-}
-
-const rules: FormRules<ComicViewerSettings> = {
-  customQualityWidth: [
-    {
-      trigger: 'change',
-      validator: validateCustomQuality,
-    },
-    {
-      trigger: 'blur',
-      validator: validateCustomQuality,
-    },
-  ],
-}
-
-const handleCancel = () => {
-  close()
-}
-
-const handleConfirm = async () => {
-  const formInstance = formRef.value
-  if (formInstance) {
-    const valid = await formInstance.validate().catch(() => false)
-    if (!valid) {
-      return
-    }
-  }
-  const result: ComicViewerSettings = { ...form }
-  resolve(result)
-}
 </script>
 
 <template>
-  <div class="flex flex-col gap-6">
-    <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
-      <section class="flex flex-col gap-4">
-        <h3 class="text-base font-semibold">
-          {{ $t('page.comic.settings.sections.readingMode') }}
-        </h3>
-        <el-form-item
-          :label="$t('page.comic.settings.fields.readingDirection')"
+  <el-drawer
+    v-model="drawerVisible"
+    :append-to-body="true"
+    :destroy-on-close="true"
+    :modal="true"
+    :size="isMobile ? '100%' : '420px'"
+    :title="$t('page.comic.settings.dialogTitle')"
+    direction="rtl"
+  >
+    <div class="flex flex-col gap-6">
+      <el-form :model="form" label-position="top" class="flex flex-col gap-6">
+        <section
+          class="border-border/60 bg-background/70 rounded-xl border p-5 shadow-sm backdrop-blur"
         >
-          <el-radio-group
-            v-model="form.readingDirection"
-            class="flex flex-wrap gap-2"
-          >
-            <el-radio-button
-              v-for="item in readingDirectionOptions"
-              :key="item.value"
-              :label="item.value"
+          <h3 class="mb-4 text-base font-semibold">
+            {{ $t('page.comic.settings.sections.readingMode') }}
+          </h3>
+          <div class="grid gap-4 md:grid-cols-2">
+            <el-form-item
+              :label="$t('page.comic.settings.fields.readingDirection')"
+              class="m-0"
             >
-              <span class="flex flex-col items-center gap-1">
-                <span>{{ item.label }}</span>
-                <span class="text-muted-foreground text-xs">
-                  {{ item.description }}
-                </span>
-              </span>
-            </el-radio-button>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item :label="$t('page.comic.settings.fields.displayMode')">
-          <el-radio-group
-            v-model="form.displayMode"
-            class="flex flex-wrap gap-2"
-          >
-            <el-radio-button
-              v-for="item in displayModeOptions"
-              :key="item.value"
-              :label="item.value"
+              <el-select v-model="form.readingDirection" class="w-full">
+                <el-option
+                  v-for="item in readingDirectionOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                >
+                  <div class="flex flex-col">
+                    <span>{{ item.label }}</span>
+                    <span class="text-muted-foreground text-xs">
+                      {{ item.description }}
+                    </span>
+                  </div>
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item
+              :label="$t('page.comic.settings.fields.displayMode')"
+              class="m-0"
             >
-              <span class="flex flex-col items-center gap-1">
-                <span>{{ item.label }}</span>
-                <span class="text-muted-foreground text-xs">
-                  {{ item.description }}
-                </span>
-              </span>
-            </el-radio-button>
-          </el-radio-group>
-        </el-form-item>
-      </section>
+              <el-select v-model="form.displayMode" class="w-full">
+                <el-option
+                  v-for="item in displayModeOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                >
+                  <div class="flex flex-col">
+                    <span>{{ item.label }}</span>
+                    <span class="text-muted-foreground text-xs">
+                      {{ item.description }}
+                    </span>
+                  </div>
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </div>
+        </section>
 
-      <el-divider />
+        <section
+          class="border-border/60 bg-background/70 rounded-xl border p-5 shadow-sm backdrop-blur"
+        >
+          <h3 class="mb-4 text-base font-semibold">
+            {{ $t('page.comic.settings.sections.image') }}
+          </h3>
+          <div class="grid gap-4">
+            <el-form-item :label="$t('page.comic.settings.fields.zoomMode')">
+              <el-select v-model="form.zoomMode" class="w-full">
+                <el-option
+                  v-for="item in zoomModeOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                >
+                  <div class="flex flex-col">
+                    <span>{{ item.label }}</span>
+                    <span class="text-muted-foreground text-xs">
+                      {{ item.description }}
+                    </span>
+                  </div>
+                </el-option>
+              </el-select>
+            </el-form-item>
 
-      <section class="flex flex-col gap-4">
-        <h3 class="text-base font-semibold">
-          {{ $t('page.comic.settings.sections.image') }}
-        </h3>
-        <el-form-item :label="$t('page.comic.settings.fields.zoomMode')">
-          <el-radio-group v-model="form.zoomMode" class="flex flex-wrap gap-2">
-            <el-radio-button
-              v-for="item in zoomModeOptions"
-              :key="item.value"
-              :label="item.value"
+            <el-form-item
+              :label="$t('page.comic.settings.fields.qualityPreset')"
             >
-              <span class="flex flex-col items-center gap-1">
-                <span>{{ item.label }}</span>
-                <span class="text-muted-foreground text-xs">
-                  {{ item.description }}
-                </span>
-              </span>
-            </el-radio-button>
-          </el-radio-group>
-        </el-form-item>
+              <el-select v-model="form.qualityPreset" class="w-full">
+                <el-option
+                  v-for="item in qualityOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                >
+                  <div class="flex flex-col">
+                    <span>{{ item.label }}</span>
+                    <span class="text-muted-foreground text-xs">
+                      {{ item.description }}
+                    </span>
+                  </div>
+                </el-option>
+              </el-select>
+            </el-form-item>
 
-        <el-form-item :label="$t('page.comic.settings.fields.qualityPreset')">
-          <el-select v-model="form.qualityPreset" class="w-full">
-            <el-option
-              v-for="item in qualityOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+            <el-form-item
+              :label="$t('page.comic.settings.fields.customQualityWidth')"
             >
-              <div class="flex flex-col">
-                <span>{{ item.label }}</span>
-                <span class="text-muted-foreground text-xs">
-                  {{ item.description }}
-                </span>
+              <el-input-number
+                v-model="form.customQualityWidth"
+                :disabled="!isCustomQuality"
+                :max="8192"
+                :min="256"
+                :step="64"
+                class="w-full"
+                controls-position="right"
+              />
+            </el-form-item>
+
+            <el-form-item
+              :label="$t('page.comic.settings.fields.imageSpacing')"
+              class="mb-0"
+            >
+              <div class="flex w-full items-center gap-4">
+                <el-slider
+                  v-model="form.imageSpacing"
+                  :min="0"
+                  :max="96"
+                  :step="2"
+                  class="flex-1"
+                />
+                <el-input-number
+                  v-model="form.imageSpacing"
+                  :min="0"
+                  :max="96"
+                  :step="2"
+                  size="small"
+                />
               </div>
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item
-          :label="$t('page.comic.settings.fields.customQualityWidth')"
-          prop="customQualityWidth"
+            </el-form-item>
+          </div>
+        </section>
+
+        <section
+          class="border-border/60 bg-background/70 rounded-xl border p-5 shadow-sm backdrop-blur"
         >
-          <el-input-number
-            v-model="form.customQualityWidth"
-            :disabled="!isCustomQuality"
-            :max="8192"
-            :min="256"
-            :step="64"
-            class="w-full"
-          />
-        </el-form-item>
-      </section>
-
-      <el-divider />
-
-      <section class="flex flex-col gap-4">
-        <h3 class="text-base font-semibold">
-          {{ $t('page.comic.settings.sections.experience') }}
-        </h3>
-        <el-form-item :label="$t('page.comic.settings.fields.pageTransition')">
-          <el-switch v-model="form.pageTransition" />
-        </el-form-item>
-        <el-form-item :label="$t('page.comic.settings.fields.backgroundColor')">
-          <el-color-picker v-model="form.backgroundColor" :show-alpha="false" />
-        </el-form-item>
-        <el-form-item
-          :label="$t('page.comic.settings.fields.alwaysFullscreen')"
-        >
-          <el-switch v-model="form.alwaysFullscreen" />
-        </el-form-item>
-      </section>
-    </el-form>
-
-    <div class="flex justify-end gap-3">
-      <el-button @click="handleCancel">
-        {{ $t('common.cancel') }}
-      </el-button>
-      <el-button type="primary" @click="handleConfirm">
-        {{ $t('common.confirm') }}
-      </el-button>
+          <h3 class="mb-4 text-base font-semibold">
+            {{ $t('page.comic.settings.sections.experience') }}
+          </h3>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <el-form-item
+              :label="$t('page.comic.settings.fields.pageTransition')"
+              class="m-0"
+            >
+              <el-switch v-model="form.pageTransition" />
+            </el-form-item>
+            <el-form-item
+              :label="$t('page.comic.settings.fields.alwaysFullscreen')"
+              class="m-0"
+            >
+              <el-switch v-model="form.alwaysFullscreen" />
+            </el-form-item>
+            <el-form-item
+              :label="$t('page.comic.settings.fields.backgroundColor')"
+              class="m-0"
+            >
+              <el-color-picker
+                v-model="form.backgroundColor"
+                :predefine="['#000000', '#0f172a', '#111827', '#1f2937']"
+                :show-alpha="false"
+              />
+            </el-form-item>
+          </div>
+        </section>
+      </el-form>
     </div>
-  </div>
+  </el-drawer>
 </template>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { CSSProperties } from 'vue'
+
 import type { Comic, ComicImage } from '@vben/api'
 
 import type { ComicViewerSettings } from './types'
@@ -21,7 +23,6 @@ import {
 import { useEventListener, useFullscreen, useLocalStorage } from '@vueuse/core'
 import { ElMessage } from 'element-plus'
 
-import { useDialogService } from '#/hooks/useDialogService'
 import { $t } from '#/locales'
 
 import ComicSettingsDialog from './components/comic-settings-dialog.vue'
@@ -39,10 +40,10 @@ type ViewerImage = ComicImage & { order: number }
 const route = useRoute()
 const router = useRouter()
 const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD)
-const { open } = useDialogService()
 
 const viewerContainerRef = ref<HTMLElement | null>(null)
 const stageContainerRef = ref<HTMLElement | null>(null)
+const settingsDrawerVisible = ref(false)
 
 const storedSettings = useLocalStorage<ComicViewerSettings>(
   COMIC_VIEWER_STORAGE_KEY,
@@ -69,6 +70,21 @@ watch(
   },
 )
 
+watch(
+  () => settings.imageSpacing,
+  (value) => {
+    if (!Number.isFinite(value)) {
+      settings.imageSpacing = 0
+      return
+    }
+    if (value < 0) {
+      settings.imageSpacing = 0
+      return
+    }
+    settings.imageSpacing = Math.round(value)
+  },
+)
+
 const comicDetail = ref<Comic | null>(null)
 const images = ref<ViewerImage[]>([])
 const isLoading = ref(false)
@@ -88,6 +104,22 @@ const isReverseFlow = computed(() =>
 
 const isDoubleMode = computed(() => settings.displayMode === 'double')
 const isScrollMode = computed(() => settings.displayMode === 'scroll')
+
+const imageMaxHeight = computed(() => {
+  return '100vh'
+})
+
+const stageStyle = computed<CSSProperties>(() => {
+  const spacing = Math.max(0, settings.imageSpacing)
+
+  return {
+    gap: `${spacing}px`,
+    padding: '0px',
+  }
+})
+
+const isSyncingFromScroll = ref(false)
+let scrollSyncTimer: number | undefined
 
 const orderedImages = computed<ViewerImage[]>(() => {
   const list = [...images.value]
@@ -186,23 +218,78 @@ const viewerStyle = computed(() => ({
 const imageClass = computed(() => {
   const classes: string[] = [
     'select-none',
-    'object-contain',
     'transition-transform',
     'duration-200',
+    'viewer-image',
   ]
+
   if (isScrollMode.value) {
-    classes.push('w-full')
-  } else {
-    classes.push('max-h-[85vh]')
+    if (orientation.value === 'vertical') {
+      classes.push('w-full')
+    } else {
+      classes.push('h-full')
+    }
   }
-  if (settings.zoomMode === 'fit-height') {
-    classes.push('h-full', 'w-auto')
-  } else if (settings.zoomMode === 'original') {
-    classes.push('h-auto', 'w-auto')
-  } else {
-    classes.push('max-w-full')
-  }
+
   return classes.join(' ')
+})
+
+const imageStyle = computed<CSSProperties>(() => {
+  const style: CSSProperties = {
+    objectFit: 'contain',
+    maxHeight: imageMaxHeight.value,
+    maxWidth: '100%',
+  }
+
+  if (isScrollMode.value) {
+    if (orientation.value === 'vertical') {
+      style.width = '100%'
+      style.height = 'auto'
+      style.maxWidth = '100%'
+      style.maxHeight = 'none'
+    } else {
+      style.height = imageMaxHeight.value
+      style.width = 'auto'
+      style.maxHeight = imageMaxHeight.value
+      style.maxWidth = 'none'
+    }
+  } else {
+    style.maxWidth = '100%'
+    style.height = 'auto'
+    style.width = 'auto'
+  }
+
+  switch (settings.zoomMode) {
+    case 'fit-height': {
+      style.height = imageMaxHeight.value
+      style.maxHeight = imageMaxHeight.value
+      style.width = 'auto'
+      style.maxWidth = 'none'
+      break
+    }
+    case 'fit-width': {
+      style.width = '100%'
+      style.maxWidth = '100%'
+      style.height = 'auto'
+      style.maxHeight = 'none'
+      break
+    }
+    case 'original': {
+      style.objectFit = 'initial'
+      style.maxWidth = 'none'
+      style.maxHeight = 'none'
+      style.width = 'auto'
+      style.height = 'auto'
+      break
+    }
+    default: {
+      style.maxWidth = '100%'
+      style.maxHeight = imageMaxHeight.value
+      break
+    }
+  }
+
+  return style
 })
 
 const pageWrapperClass = computed(() => {
@@ -226,30 +313,31 @@ const pageWrapperClass = computed(() => {
 })
 
 const stageClass = computed(() => {
-  const classes: string[] = [
-    'relative',
-    'flex',
-    'h-full',
-    'w-full',
-    'items-center',
-    'justify-center',
-    'gap-6',
-  ]
+  const classes: string[] = ['relative', 'flex', 'h-full', 'w-full']
   if (isScrollMode.value) {
-    classes.push('overflow-auto', 'p-6')
+    classes.push('items-start', 'justify-start', 'overflow-auto')
     if (orientation.value === 'vertical') {
       classes.push(isReverseFlow.value ? 'flex-col-reverse' : 'flex-col')
     } else {
       classes.push(isReverseFlow.value ? 'flex-row-reverse' : 'flex-row')
     }
-  } else if (isDoubleMode.value) {
-    if (orientation.value === 'vertical') {
-      classes.push('flex-col')
-    } else {
-      classes.push('flex-row')
-    }
   } else {
-    classes.push('flex-col')
+    classes.push('items-center', 'justify-center')
+    if (settings.zoomMode === 'original') {
+      classes.push('overflow-auto')
+    } else {
+      classes.push('overflow-hidden')
+    }
+
+    if (isDoubleMode.value) {
+      if (orientation.value === 'vertical') {
+        classes.push('flex-col')
+      } else {
+        classes.push('flex-row')
+      }
+    } else {
+      classes.push('flex-col')
+    }
   }
   return classes.join(' ')
 })
@@ -270,8 +358,35 @@ const pageDisplayText = computed(() => {
 
 const sliderMax = computed(() => Math.max(totalSteps.value - 1, 0))
 
+const sliderValue = computed<number>({
+  get() {
+    if (sliderMax.value === 0) {
+      return 0
+    }
+    return isReverseFlow.value
+      ? sliderMax.value - currentStep.value
+      : currentStep.value
+  },
+  set(value) {
+    const normalized = Number.isFinite(value) ? Math.round(value) : 0
+    const bounded = clampStep(normalized)
+    const target = isReverseFlow.value ? sliderMax.value - bounded : bounded
+    currentStep.value = clampStep(target)
+  },
+})
+
 const resolveImageUrl = (imageId: string) => {
-  const width = resolvedQualityWidth.value ?? 0
+  const width = resolvedQualityWidth.value
+
+  if (!width) {
+    const template = comicApi.url.getComicImage.replace(
+      '?maxWidth={maxWidth}',
+      '',
+    )
+    const requestUrl = template.format({ comicImageId: imageId })
+    return `${apiURL}${requestUrl}`
+  }
+
   const requestUrl = comicApi.url.getComicImage.format({
     comicImageId: imageId,
     maxWidth: width,
@@ -296,27 +411,139 @@ const scrollToStep = async (step: number) => {
   if (!isScrollMode.value) {
     return
   }
+  isSyncingFromScroll.value = true
   await nextTick()
   const image = orderedImages.value[step]
   if (!image) {
+    isSyncingFromScroll.value = false
     return
   }
   const target = imageElementMap.get(image.id)
   if (!target) {
+    isSyncingFromScroll.value = false
     return
   }
+  const behavior: ScrollBehavior = settings.pageTransition ? 'smooth' : 'auto'
   target.scrollIntoView({
-    behavior: 'smooth',
+    behavior,
     block: 'center',
     inline: 'center',
   })
+
+  if (scrollSyncTimer) {
+    window.clearTimeout(scrollSyncTimer)
+  }
+  scrollSyncTimer = window.setTimeout(
+    () => {
+      isSyncingFromScroll.value = false
+      scrollSyncTimer = undefined
+    },
+    behavior === 'smooth' ? 360 : 0,
+  )
+}
+
+const updateStepFromScroll = () => {
+  const container = stageContainerRef.value
+  if (
+    !container ||
+    !isScrollMode.value ||
+    isSyncingFromScroll.value ||
+    orderedImages.value.length === 0
+  ) {
+    return
+  }
+
+  const isVertical = orientation.value === 'vertical'
+  const centerPosition = isVertical
+    ? container.scrollTop + container.clientHeight / 2
+    : container.scrollLeft + container.clientWidth / 2
+
+  let closestIndex = currentStep.value
+  let closestDistance = Number.POSITIVE_INFINITY
+
+  for (let index = 0; index < orderedImages.value.length; index += 1) {
+    const item = orderedImages.value[index]
+    if (!item) {
+      continue
+    }
+    const element = imageElementMap.get(item.id)
+    if (!element) {
+      continue
+    }
+
+    const elementCenter = isVertical
+      ? element.offsetTop + element.clientHeight / 2
+      : element.offsetLeft + element.clientWidth / 2
+
+    const distance = Math.abs(elementCenter - centerPosition)
+
+    if (distance < closestDistance) {
+      closestDistance = distance
+      closestIndex = index
+    }
+  }
+
+  if (closestIndex !== currentStep.value) {
+    isSyncingFromScroll.value = true
+    currentStep.value = clampStep(closestIndex)
+    requestAnimationFrame(() => {
+      isSyncingFromScroll.value = false
+    })
+  }
 }
 
 watch(currentStep, (step) => {
-  if (isScrollMode.value) {
-    void scrollToStep(step)
+  if (!isScrollMode.value) {
+    return
+  }
+  if (isSyncingFromScroll.value) {
+    return
+  }
+  void scrollToStep(step)
+})
+
+watch(isScrollMode, (value) => {
+  imageElementMap.clear()
+  if (value) {
+    requestAnimationFrame(updateStepFromScroll)
   }
 })
+
+useEventListener(stageContainerRef, 'scroll', () => {
+  if (!isScrollMode.value) {
+    return
+  }
+  requestAnimationFrame(updateStepFromScroll)
+})
+
+useEventListener(
+  stageContainerRef,
+  'wheel',
+  (event: WheelEvent) => {
+    if (!isScrollMode.value || orientation.value !== 'horizontal') {
+      return
+    }
+    event.preventDefault()
+    const container = stageContainerRef.value
+    if (!container) {
+      return
+    }
+    const behavior: ScrollBehavior = settings.pageTransition ? 'smooth' : 'auto'
+    container.scrollBy({ left: event.deltaY, behavior })
+  },
+  { passive: false },
+)
+
+watch(
+  [isScrollMode, orientation],
+  () => {
+    if (!isScrollMode.value) {
+      return
+    }
+    requestAnimationFrame(updateStepFromScroll)
+  },
+  { flush: 'post' },
+)
 
 const {
   isFullscreen,
@@ -418,22 +645,51 @@ const handleRegionClick = (
   toggleUi()
 }
 
+const handleStageClick = (event: MouseEvent) => {
+  const container = stageContainerRef.value
+  if (!container) {
+    return
+  }
+
+  const rect = container.getBoundingClientRect()
+  if (rect.width === 0 || rect.height === 0) {
+    handleRegionClick('center')
+    return
+  }
+
+  const x = (event.clientX - rect.left) / rect.width
+  const y = (event.clientY - rect.top) / rect.height
+
+  if (x < 1 / 3) {
+    handleRegionClick('left')
+    return
+  }
+  if (x > 2 / 3) {
+    handleRegionClick('right')
+    return
+  }
+  if (y < 1 / 3) {
+    handleRegionClick('top')
+    return
+  }
+  if (y > 2 / 3) {
+    handleRegionClick('bottom')
+    return
+  }
+
+  handleRegionClick('center')
+}
+
 const handleBack = () => {
   router.back()
 }
 
-const handleOpenSettings = async () => {
-  const result = await open(ComicSettingsDialog, {
-    props: { initialSettings: { ...settings } },
-    title: $t('page.comic.settings.dialogTitle'),
-    width: 520,
-    dialog: {
-      closeOnClickModal: false,
-    },
-  })
-  if (result) {
-    Object.assign(settings, result)
-  }
+const handleOpenSettings = () => {
+  settingsDrawerVisible.value = true
+}
+
+const handleSettingsUpdate = (value: ComicViewerSettings) => {
+  Object.assign(settings, value)
 }
 
 const handleToggleFullscreen = async () => {
@@ -458,6 +714,7 @@ const fetchComic = async () => {
       comicApi.getImagesByComicId(id),
     ])
     comicDetail.value = detail
+    imageElementMap.clear()
     images.value = (imageList ?? []).map((item, index) => ({
       ...item,
       order: index,
@@ -618,7 +875,13 @@ const retry = async () => {
       >
         {{ $t('page.comic.states.empty') }}
       </div>
-      <div v-else ref="stageContainerRef" :class="stageClass">
+      <div
+        v-else
+        ref="stageContainerRef"
+        :class="stageClass"
+        :style="stageStyle"
+        @click="handleStageClick"
+      >
         <template v-if="isScrollMode">
           <figure
             v-for="image in orderedImages"
@@ -629,6 +892,7 @@ const retry = async () => {
             <img
               :alt="image.name ?? image.id"
               :class="imageClass"
+              :style="imageStyle"
               :src="resolveImageUrl(image.id)"
               loading="lazy"
             />
@@ -643,52 +907,12 @@ const retry = async () => {
             <img
               :alt="image.name ?? image.id"
               :class="imageClass"
+              :style="imageStyle"
               :src="resolveImageUrl(image.id)"
               loading="lazy"
             />
           </figure>
         </template>
-
-        <div
-          class="interaction-layer pointer-events-none absolute inset-0 grid grid-cols-3 grid-rows-3"
-        >
-          <button
-            class="pointer-events-auto border-none bg-transparent"
-            @click="handleRegionClick('top')"
-          ></button>
-          <button
-            class="pointer-events-auto border-none bg-transparent"
-            @click="handleRegionClick('top')"
-          ></button>
-          <button
-            class="pointer-events-auto border-none bg-transparent"
-            @click="handleRegionClick('top')"
-          ></button>
-          <button
-            class="pointer-events-auto border-none bg-transparent"
-            @click="handleRegionClick('left')"
-          ></button>
-          <button
-            class="pointer-events-auto border-none bg-transparent"
-            @click="handleRegionClick('center')"
-          ></button>
-          <button
-            class="pointer-events-auto border-none bg-transparent"
-            @click="handleRegionClick('right')"
-          ></button>
-          <button
-            class="pointer-events-auto border-none bg-transparent"
-            @click="handleRegionClick('bottom')"
-          ></button>
-          <button
-            class="pointer-events-auto border-none bg-transparent"
-            @click="handleRegionClick('bottom')"
-          ></button>
-          <button
-            class="pointer-events-auto border-none bg-transparent"
-            @click="handleRegionClick('bottom')"
-          ></button>
-        </div>
       </div>
     </div>
 
@@ -710,7 +934,7 @@ const retry = async () => {
         </div>
         <div class="flex flex-1 flex-col items-center gap-2 px-6">
           <el-slider
-            v-model="currentStep"
+            v-model="sliderValue"
             :disabled="totalSteps === 0"
             :max="sliderMax"
             :min="0"
@@ -736,6 +960,12 @@ const retry = async () => {
       </footer>
     </transition>
   </div>
+
+  <ComicSettingsDialog
+    v-model="settingsDrawerVisible"
+    :settings="settings"
+    @update:settings="handleSettingsUpdate"
+  />
 </template>
 
 <style scoped>
@@ -754,9 +984,20 @@ const retry = async () => {
   backdrop-filter: blur(12px);
 }
 
-.viewer-page img {
-  border-radius: 0.75rem;
-  box-shadow: 0 20px 45px rgb(0 0 0 / 30%);
+.viewer-header {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 20;
+}
+
+.viewer-footer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
 }
 
 @media (max-width: 768px) {

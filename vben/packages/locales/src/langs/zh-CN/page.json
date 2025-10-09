@@ -167,6 +167,7 @@
         "zoomMode": "缩放模式",
         "qualityPreset": "画质预设",
         "customQualityWidth": "自定义宽度",
+        "imageSpacing": "图片间距",
         "pageTransition": "页间过渡动画",
         "backgroundColor": "背景颜色",
         "alwaysFullscreen": "始终全屏"
@@ -195,6 +196,8 @@
           "fitScreenDescription": "根据当前窗口自动调整大小",
           "fitHeight": "适应高度",
           "fitHeightDescription": "高度铺满，宽度按比例缩放",
+          "fitWidth": "适应宽度",
+          "fitWidthDescription": "宽度铺满可视区域",
           "original": "原始尺寸",
           "originalDescription": "显示原图尺寸，可滚动查看"
         },

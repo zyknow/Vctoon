@@ -176,6 +176,7 @@
         "zoomMode": "Zoom Mode",
         "qualityPreset": "Quality Preset",
         "customQualityWidth": "Custom Width",
+        "imageSpacing": "Image Gap",
         "pageTransition": "Page Transition",
         "backgroundColor": "Background Color",
         "alwaysFullscreen": "Always Fullscreen"
@@ -204,6 +205,8 @@
           "fitScreenDescription": "Automatically adjust to the viewport",
           "fitHeight": "Fit Height",
           "fitHeightDescription": "Fill the height while keeping ratio",
+          "fitWidth": "Fit Width",
+          "fitWidthDescription": "Stretch to fill the available width",
           "original": "Original Size",
           "originalDescription": "Show at original resolution"
         },
