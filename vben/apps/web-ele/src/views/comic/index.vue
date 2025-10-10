@@ -93,6 +93,7 @@ const stageStyle = computed<CSSProperties>(() => {
 })
 
 const isSyncingFromScroll = ref(false)
+const pendingScrollStep = ref<null | number>(null)
 let scrollSyncTimer: number | undefined
 
 const orderedImages = computed<ViewerImage[]>(() => {
@@ -505,14 +506,6 @@ const currentProgress = computed(() => {
   return Math.min(Math.max(end / totalPages.value, 0), 1)
 })
 
-const currentProgressText = computed(() => {
-  const percentage = currentProgress.value * 100
-  if (!Number.isFinite(percentage)) {
-    return '0%'
-  }
-  return `${Math.round(percentage * 10) / 10}%`
-})
-
 let lastSavedProgress = -1
 let progressDirty = false
 
@@ -571,8 +564,12 @@ const sliderValue = computed<number>({
   set(value) {
     const normalized = Number.isFinite(value) ? Math.round(value) : 0
     const bounded = clampStep(normalized)
-    const target = isReverseFlow.value ? sliderMax.value - bounded : bounded
-    currentStep.value = clampStep(target)
+    const reversedTarget = isReverseFlow.value
+      ? sliderMax.value - bounded
+      : bounded
+    const targetStep = clampStep(reversedTarget)
+    pendingScrollStep.value = isScrollMode.value ? targetStep : null
+    currentStep.value = targetStep
   },
 })
 
@@ -851,6 +848,20 @@ watch(
     }
     if (pendingPageFromRoute.value !== null) {
       return
+    }
+    if (isScrollMode.value) {
+      const hasPending = pendingScrollStep.value !== null
+      if (hasPending || !isSyncingFromScroll.value) {
+        const targetStep = clampStep(
+          hasPending && pendingScrollStep.value !== null
+            ? pendingScrollStep.value
+            : step,
+        )
+        pendingScrollStep.value = null
+        void scrollToStep(targetStep)
+      }
+    } else {
+      pendingScrollStep.value = null
     }
     if (!updatingFromRoute && shouldTrackProgress.value) {
       progressDirty = true
@@ -1407,7 +1418,7 @@ onBeforeUnmount(() => {
             />
           </el-tooltip>
         </div>
-        <div class="flex flex-1 flex-col items-center gap-2 px-6">
+        <div class="flex flex-1 flex-row items-center gap-8 px-6">
           <el-slider
             v-model="sliderValue"
             :disabled="totalSteps === 0"
@@ -1415,15 +1426,15 @@ onBeforeUnmount(() => {
             :min="0"
             :step="1"
             :show-tooltip="false"
-            class="w-full max-w-3xl"
+            class="w-full"
           />
           <div class="flex items-center gap-2 text-xs text-white/80">
             <span class="font-mono">{{ currentPageLabel }}</span>
             <span class="text-white/50">/</span>
             <span class="font-mono">{{ totalPagesLabel }}</span>
-            <span class="text-white/60">({{ currentProgressText }})</span>
           </div>
         </div>
+
         <div class="flex items-center gap-2">
           <el-tooltip :content="$t('page.comic.actions.lastPage')">
             <el-button

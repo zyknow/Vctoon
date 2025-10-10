@@ -437,9 +437,16 @@ const navigateToComicReader = (
   if (mode === 'resume') {
     query.mode = mode
   }
-  if (options.page && options.page > 0) {
-    query.page = String(Math.max(1, Math.floor(options.page)))
-  }
+  const resolvedPage = (() => {
+    if (options.page && options.page > 0) {
+      return options.page
+    }
+    if (mode === 'resume') {
+      return resumePage.value
+    }
+    return 1
+  })()
+  query.page = String(Math.max(1, Math.floor(resolvedPage || 1)))
   if (options.incognito) {
     query.incognito = '1'
   }
