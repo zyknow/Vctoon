@@ -62,6 +62,7 @@ const hasImage = computed(() => Boolean(props.src))
     <img
       v-if="hasImage"
       :alt="props.alt"
+      decoding="async"
       :loading="props.loading"
       :src="props.src"
       class="medium-cover-card__image"

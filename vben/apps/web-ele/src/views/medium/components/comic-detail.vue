@@ -774,11 +774,11 @@ const resolveComicImageUrl = (imageId: string) => {
                 :alt="image.name || image.id"
                 :preserve-ratio="true"
                 :src="resolveComicImageUrl(image.id)"
-                class="group relative cursor-pointer select-none border transition-all duration-200"
+                class="group relative cursor-pointer select-none border-2"
                 fit="contain"
                 :class="
                   isImageSelected(image.id)
-                    ? 'border-primary border-4 shadow-lg'
+                    ? 'border-primary ring-primary shadow-lg ring-2'
                     : 'border-border hover:shadow-md'
                 "
                 @click="toggleImageSelection(image.id, $event)"
