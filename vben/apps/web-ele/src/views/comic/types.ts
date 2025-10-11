@@ -28,7 +28,7 @@ export const DEFAULT_COMIC_VIEWER_SETTINGS: ComicViewerSettings = {
   readingDirection: 'rtl',
   displayMode: 'single',
   zoomMode: 'fit-screen',
-  qualityPreset: '1080p',
+  qualityPreset: 'original',
   customQualityWidth: 1920,
   imageSpacing: 24,
   pageTransition: true,
