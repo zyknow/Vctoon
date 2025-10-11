@@ -108,11 +108,28 @@ const navigateToDetail = () => {
   })
 }
 
-const navigateToPrimaryAction = () => {
+const navigateToPrimaryAction = async () => {
   const id = props.modelValue?.id
   if (!id) return
   if (mediumType.value === MediumType.Comic) {
-    const query: Record<string, string> = { mode: 'resume' }
+    // 计算应跳转的页码：优先根据阅读进度与总页数推算，失败则回退到第 1 页
+    let page = 1
+    try {
+      const progress = props.modelValue?.readingProgress ?? 0
+      if (progress > 0 && progress < 1) {
+        const images = await comicApi.getImagesByComicId(id)
+        const total = Array.isArray(images) ? images.length : 0
+        if (total > 0) {
+          const calc = Math.ceil(progress * total)
+          page = Math.min(Math.max(calc, 1), total)
+        }
+      }
+    } catch {
+      // 忽略错误，保持回退到第 1 页
+      page = 1
+    }
+
+    const query: Record<string, string> = { mode: 'resume', page: String(page) }
     void router.push({
       name: 'ComicReader',
       params: { comicId: id },
