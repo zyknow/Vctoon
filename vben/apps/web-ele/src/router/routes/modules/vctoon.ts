@@ -26,7 +26,7 @@ const routes: RouteRecordRaw[] = [
     },
     name: 'Library',
     path: '/library',
-    component: () => import('#/views/library/library-main.vue'),
+    component: () => null,
   },
   {
     meta: {
