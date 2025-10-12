@@ -47,6 +47,11 @@ interface MenuRecordRaw extends MenuRecordBadgeRaw {
    */
   icon?: Component | string
   /**
+  * 菜单是否可选
+  * @default true
+  */
+  selectable?: boolean
+  /**
    * 菜单标题渲染函数
    */
   menuTitleComponent?: Component

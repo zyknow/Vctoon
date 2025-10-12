@@ -40,6 +40,7 @@ const hasChildren = computed(() => {
     :badge-type="menu.badgeType"
     :badge-variants="menu.badgeVariants"
     :icon="menu.icon"
+    :disabled="menu.selectable === false"
     :path="menu.path"
   >
     <template #title>
@@ -54,6 +55,7 @@ const hasChildren = computed(() => {
     :key="`${menu.path}_sub`"
     :active-icon="menu.activeIcon"
     :icon="menu.icon"
+    :disabled="menu.selectable === false"
     :path="menu.path"
   >
     <template #content>

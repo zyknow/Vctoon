@@ -40,7 +40,16 @@ function useNavigation() {
   const navigation = async (path: string) => {
     try {
       const route = routeMetaMap.get(path)
-      const { openInNewWindow = false, query = {}, link } = route?.meta ?? {}
+      const {
+        menuSelectable = true,
+        openInNewWindow = false,
+        query = {},
+        link,
+      } = route?.meta ?? {}
+
+      if (!menuSelectable) {
+        return
+      }
 
       // 检查是否有外链
       if (link && typeof link === 'string') {

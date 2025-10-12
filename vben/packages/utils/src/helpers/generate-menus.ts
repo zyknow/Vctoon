@@ -42,8 +42,11 @@ function generateMenus(
       icon,
       link,
       order,
+      menuSelectable,
       title = '',
     } = meta
+
+    const selectable = menuSelectable ?? true
 
     // 确保菜单名称不为空
     const name = (title || routeName || '') as string
@@ -75,6 +78,8 @@ function generateMenus(
       parent: route.parent,
       parents: route.parents,
       path: resultPath,
+      selectable,
+      disabled: selectable === false,
       show: !meta.hideInMenu,
       menuTitleComponent: meta.menuTitleComponent,
       children: resultChildren,

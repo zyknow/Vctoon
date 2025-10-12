@@ -22,6 +22,7 @@ const routes: RouteRecordRaw[] = [
       order: 100,
       title: $t('page.library.title'),
       menuTitleComponent: LibraryTitleComponent,
+      menuSelectable: false,
     },
     name: 'Library',
     path: '/library',

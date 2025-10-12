@@ -102,6 +102,11 @@ interface RouteMeta {
    */
   menuTitleComponent?: RendererElement
   /**
+   * 菜单是否可选
+   * @default true
+   */
+  menuSelectable?: boolean
+  /**
    * 菜单可以看到，但是访问会被重定向到403
    */
   menuVisibleWithForbidden?: boolean

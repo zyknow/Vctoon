@@ -399,17 +399,21 @@ $namespace: vben;
     padding 0.15s ease,
     border-color 0.15s ease;
 
-  &.is-disabled {
-    cursor: not-allowed;
-    background: none !important;
-    opacity: 0.25;
+  &.is-disabled,
+  &.is-disabled:hover,
+  &.is-disabled:focus {
+    cursor: default !important;
+    background: var(--menu-item-background-color) !important;
+    opacity: 1;
+    color: var(--menu-item-color) !important;
+    transition: none;
   }
 
   .#{$namespace}-menu__icon {
     transition: transform 0.25s;
   }
 
-  &:hover {
+  &:not(.is-disabled):hover {
     .#{$namespace}-menu__icon {
       transform: scale(1.2);
     }
@@ -763,7 +767,7 @@ $namespace: vben;
     }
   }
 
-  &:not(.is-active):hover {
+  &:not(.is-active):not(.is-disabled):hover {
     color: var(--menu-item-hover-color);
     text-decoration: none;
     cursor: pointer;
@@ -853,8 +857,7 @@ $namespace: vben;
     padding-right: 12px !important;
   }
 
-  // &:not(.is-active):hover {
-  &:hover {
+  &:not(.is-disabled):hover {
     color: var(--menu-submenu-hover-color);
     text-decoration: none;
     cursor: pointer;
