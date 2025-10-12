@@ -380,8 +380,9 @@ const cover = computed(() => {
       }"
     >
       <!-- Hover overlay -->
+      <!-- 保留下拉菜单实例，避免退出选择模式时大规模重新挂载导致卡顿 -->
       <div
-        v-if="!isInSelectionMode"
+        v-show="!isInSelectionMode"
         class="absolute inset-0 hidden items-center justify-center gap-3 rounded-lg group-hover:flex"
       >
         <div
