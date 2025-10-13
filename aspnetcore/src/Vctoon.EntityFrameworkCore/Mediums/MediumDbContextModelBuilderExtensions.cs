@@ -21,7 +21,7 @@ public static class MediumDbContextModelBuilderExtensions
             b.ToTable(VctoonConsts.DbTablePrefix + "Videos", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
 
-            b.HasMany(x => x.Processes).WithOne().HasForeignKey(x => x.VideoId);
+            b.HasMany(x => x.Processes).WithOne().HasForeignKey(x => x.VideoId).OnDelete(DeleteBehavior.Cascade);
             /* Configure more properties here */
         });
 
@@ -31,7 +31,7 @@ public static class MediumDbContextModelBuilderExtensions
             b.ToTable(VctoonConsts.DbTablePrefix + "Comics", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
 
-            b.HasMany(x => x.Processes).WithOne().HasForeignKey(x => x.ComicId);
+            b.HasMany(x => x.Processes).WithOne().HasForeignKey(x => x.ComicId).OnDelete(DeleteBehavior.Cascade);
             /* Configure more properties here */
         });
     }
