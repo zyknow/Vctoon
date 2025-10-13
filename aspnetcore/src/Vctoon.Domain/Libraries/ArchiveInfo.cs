@@ -35,5 +35,6 @@ public class ArchiveInfo : Entity<Guid>
     {
         Check.NotNullOrWhiteSpace(path, nameof(path));
         Path = path;
+        Extension = System.IO.Path.GetExtension(path).ToLowerInvariant();
     }
 }
