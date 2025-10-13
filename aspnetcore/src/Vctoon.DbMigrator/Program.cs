@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
+using Serilog.Sinks.SystemConsole.Themes;
 
 namespace Vctoon.DbMigrator;
 
@@ -22,7 +23,7 @@ internal class Program
 #endif
             .Enrich.FromLogContext()
             .WriteTo.Async(c => c.File("Logs/logs.txt"))
-            .WriteTo.Async(c => c.Console())
+            .WriteTo.Async(c => c.Console(theme: AnsiConsoleTheme.Sixteen))
             .CreateLogger();
 
         await CreateHostBuilder(args).RunConsoleAsync();
