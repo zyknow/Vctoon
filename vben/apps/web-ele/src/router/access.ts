@@ -36,7 +36,7 @@ async function generateAccess(options: GenerateMenuAndRoutesOptions) {
         (x) =>
           ({
             meta: {
-              keepAlive: false,
+              keepAlive: true,
               order: 1001,
               title: x.name,
               menuTitleComponent: LibraryTitleComponent,

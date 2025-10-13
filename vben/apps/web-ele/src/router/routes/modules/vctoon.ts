@@ -26,7 +26,7 @@ const routes: RouteRecordRaw[] = [
     },
     name: 'Library',
     path: '/library',
-    component: () => null,
+    children: [],
   },
   {
     meta: {
