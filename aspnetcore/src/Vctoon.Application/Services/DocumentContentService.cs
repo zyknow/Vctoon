@@ -51,22 +51,13 @@ public class DocumentContentService : IDocumentContentService, ITransientDepende
     {
         ArgumentException.ThrowIfNullOrEmpty(pdfPath);
 
-        var entered = false;
-        try
-        {
-            await PdfRenderSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-            entered = true;
-
-            using var docReader = DocLib.Instance.GetDocReader(pdfPath, PdfPageDimensions);
-            return docReader.GetPageCount();
-        }
-        finally
-        {
-            if (entered)
+        return await WithPdfRenderLockAsync(
+            () =>
             {
-                PdfRenderSemaphore.Release();
-            }
-        }
+                using var docReader = DocLib.Instance.GetDocReader(pdfPath, PdfPageDimensions);
+                return docReader.GetPageCount();
+            },
+            cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Stream> RenderPdfPageAsync(
@@ -77,43 +68,11 @@ public class DocumentContentService : IDocumentContentService, ITransientDepende
     {
         ArgumentException.ThrowIfNullOrEmpty(pdfPath);
 
-        byte[] rawBytes = null!;
-        int width = 0;
-        int height = 0;
+        var renderResult = await WithPdfRenderLockAsync(
+            () => RenderPdfPageInternal(pdfPath, pageIndex),
+            cancellationToken).ConfigureAwait(false);
 
-        var entered = false;
-        try
-        {
-            await PdfRenderSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-            entered = true;
-
-            using var docReader = DocLib.Instance.GetDocReader(pdfPath, PdfPageDimensions);
-
-            if (pageIndex < 0 || pageIndex >= docReader.GetPageCount())
-            {
-                throw new ArgumentOutOfRangeException(nameof(pageIndex));
-            }
-
-            using var pageReader = docReader.GetPageReader(pageIndex);
-            width = pageReader.GetPageWidth();
-            height = pageReader.GetPageHeight();
-
-            rawBytes = pageReader.GetImage(RenderFlags.RenderAnnotations);
-        }
-        finally
-        {
-            if (entered)
-            {
-                PdfRenderSemaphore.Release();
-            }
-        }
-
-        if (rawBytes is null || width <= 0 || height <= 0)
-        {
-            throw new InvalidOperationException("Failed to render PDF page.");
-        }
-
-        using var image = Image.LoadPixelData<Bgra32>(rawBytes, width, height);
+        using var image = Image.LoadPixelData<Bgra32>(renderResult.Pixels, renderResult.Width, renderResult.Height);
         return await EncodeImageAsync(image, maxImageWidth, cancellationToken).ConfigureAwait(false);
     }
 
@@ -183,7 +142,7 @@ public class DocumentContentService : IDocumentContentService, ITransientDepende
                 seen.Add(canonicalPath);
             }
 
-            return results.OrderBy(x => x.Index).ToList();
+            return results;
         }
     }
 
@@ -306,7 +265,7 @@ public class DocumentContentService : IDocumentContentService, ITransientDepende
         }));
 
         var output = new MemoryStream();
-    await image.SaveAsync(output, new PngEncoder(), cancellationToken).ConfigureAwait(false);
+        await image.SaveAsync(output, new PngEncoder(), cancellationToken).ConfigureAwait(false);
         output.Position = 0;
         source.Dispose();
         return output;
@@ -327,9 +286,44 @@ public class DocumentContentService : IDocumentContentService, ITransientDepende
         }
 
         var output = new MemoryStream();
-    await image.SaveAsync(output, new PngEncoder(), cancellationToken).ConfigureAwait(false);
+        await image.SaveAsync(output, new PngEncoder(), cancellationToken).ConfigureAwait(false);
         output.Position = 0;
         return output;
+    }
+
+    private static async Task<TResult> WithPdfRenderLockAsync<TResult>(Func<TResult> action, CancellationToken cancellationToken)
+    {
+        await PdfRenderSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            return action();
+        }
+        finally
+        {
+            PdfRenderSemaphore.Release();
+        }
+    }
+
+    private static PdfRenderResult RenderPdfPageInternal(string pdfPath, int pageIndex)
+    {
+        using var docReader = DocLib.Instance.GetDocReader(pdfPath, PdfPageDimensions);
+
+        if (pageIndex < 0 || pageIndex >= docReader.GetPageCount())
+        {
+            throw new ArgumentOutOfRangeException(nameof(pageIndex));
+        }
+
+        using var pageReader = docReader.GetPageReader(pageIndex);
+        var width = pageReader.GetPageWidth();
+        var height = pageReader.GetPageHeight();
+        var rawBytes = pageReader.GetImage(RenderFlags.RenderAnnotations);
+
+        if (rawBytes is null || width <= 0 || height <= 0)
+        {
+            throw new InvalidOperationException("Failed to render PDF page.");
+        }
+
+        return new PdfRenderResult(rawBytes, width, height);
     }
 
     private static string ResolveEpubPath(string basePath, string relativePath)
@@ -381,4 +375,5 @@ public class DocumentContentService : IDocumentContentService, ITransientDepende
     {
         return path.Replace('\\', '/');
     }
+    private readonly record struct PdfRenderResult(byte[] Pixels, int Width, int Height);
 }
