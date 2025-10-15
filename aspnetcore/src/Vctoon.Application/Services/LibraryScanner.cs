@@ -18,7 +18,7 @@ public class LibraryScanner(
 {
     private static readonly Lock LockObject = new();
 
-    private readonly int _maxDegreeOfParallelism = 1;
+    private readonly int _maxDegreeOfParallelism = 8;
 
     public static List<Guid> ScanningLibraryIds { get; set; } = [];
 
@@ -77,10 +77,10 @@ public class LibraryScanner(
 
         foreach (var libraryPath in library.Paths)
         {
-            await semaphore.WaitAsync();
-
             var task = Task.Run(async () =>
             {
+                await semaphore.WaitAsync();
+
                 try
                 {
                     using (var uow = unitOfWorkManager.Begin(true))
@@ -88,7 +88,7 @@ public class LibraryScanner(
                         await using var scope = uow.ServiceProvider.CreateAsyncScope();
                         var libraryScanner = scope.ServiceProvider.GetRequiredService<LibraryScanner>();
                         // do not auto save
-                        await libraryScanner.ScanningLibraryPathFileAsync(library, libraryPath, true);
+                        await libraryScanner.ScanningLibraryPathFileAsync(library, libraryPath, false);
                     }
                 }
                 catch (Exception e)
