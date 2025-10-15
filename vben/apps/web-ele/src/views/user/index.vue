@@ -8,23 +8,77 @@ import type {
   UpdateIdentityUserInput,
 } from '@vben/api'
 
-import { reactive, ref, watch } from 'vue'
+import { reactive, ref } from 'vue'
 
 import { userApi } from '@vben/api'
 import { Page } from '@vben/common-ui'
 import { useIsMobile } from '@vben/hooks'
+import { CiAddPlus } from '@vben/icons'
 
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 import { $t } from '#/locales'
+
+type SortDirection = 'ascending' | 'descending'
+
+interface UserTableColumn {
+  prop: string
+  label: string
+  width?: number
+  minWidth?: number
+  fixed?: 'right'
+  sortable?: 'custom'
+  sortField?: string
+  align?: 'center' | 'left' | 'right'
+}
+
+interface SortChangeContext {
+  prop?: string
+  order?: null | SortDirection
+}
+
+const serverSortFieldMap = {
+  userName: 'UserName',
+  name: 'Name',
+  email: 'Email',
+  phoneNumber: 'PhoneNumber',
+  isActive: 'IsActive',
+  emailConfirmed: 'EmailConfirmed',
+  phoneNumberConfirmed: 'PhoneNumberConfirmed',
+  creationTime: 'CreationTime',
+} as const
+
+interface TableSortState {
+  prop: keyof typeof serverSortFieldMap
+  order: SortDirection
+}
+
+const defaultSort: TableSortState = {
+  prop: 'creationTime',
+  order: 'descending',
+}
+
+const toSortingString = (
+  prop: string,
+  order: SortDirection,
+): string | undefined => {
+  const target = serverSortFieldMap[prop as keyof typeof serverSortFieldMap]
+  if (!target) return undefined
+  const direction = order === 'ascending' ? 'asc' : 'desc'
+  return `${target} ${direction}`
+}
+
 // 响应式数据
 const loading = ref(false)
-const mobile = useIsMobile()
+const { isMobile } = useIsMobile()
 // 用户列表数据
 const users = ref<IdentityUser[]>([])
 const total = ref(0)
 const currentPage = ref(1)
 const pageSize = ref(10)
+const sorting = ref<string | undefined>(
+  toSortingString(defaultSort.prop, defaultSort.order),
+)
 
 // 搜索表单
 const searchForm = reactive({
@@ -32,32 +86,69 @@ const searchForm = reactive({
 })
 
 // 表格列定义
-const columns = [
-  { prop: 'userName', label: $t('page.user.table.userName'), width: 120 },
-  { prop: 'name', label: $t('page.user.table.name'), width: 120 },
-  { prop: 'email', label: $t('page.user.table.email'), width: 200 },
-  { prop: 'phoneNumber', label: $t('page.user.table.phoneNumber'), width: 130 },
-  { prop: 'isActive', label: $t('page.user.table.status'), width: 80 },
+const columns: UserTableColumn[] = [
+  {
+    prop: 'userName',
+    label: $t('page.user.table.userName'),
+    minWidth: 160,
+    sortable: 'custom',
+    sortField: serverSortFieldMap.userName,
+  },
+  {
+    prop: 'name',
+    label: $t('page.user.table.name'),
+    minWidth: 160,
+    sortable: 'custom',
+    sortField: serverSortFieldMap.name,
+  },
+  {
+    prop: 'email',
+    label: $t('page.user.table.email'),
+    minWidth: 220,
+    sortable: 'custom',
+    sortField: serverSortFieldMap.email,
+  },
+  {
+    prop: 'phoneNumber',
+    label: $t('page.user.table.phoneNumber'),
+    minWidth: 160,
+    sortable: 'custom',
+    sortField: serverSortFieldMap.phoneNumber,
+  },
+  {
+    prop: 'isActive',
+    label: $t('page.user.table.status'),
+    width: 120,
+    sortable: 'custom',
+    sortField: serverSortFieldMap.isActive,
+  },
   {
     prop: 'emailConfirmed',
     label: $t('page.user.table.emailConfirmed'),
-    width: 100,
+    width: 140,
+    sortable: 'custom',
+    sortField: serverSortFieldMap.emailConfirmed,
   },
   {
     prop: 'phoneNumberConfirmed',
     label: $t('page.user.table.phoneNumberConfirmed'),
-    width: 100,
+    width: 160,
+    sortable: 'custom',
+    sortField: serverSortFieldMap.phoneNumberConfirmed,
   },
   {
     prop: 'creationTime',
     label: $t('page.user.table.creationTime'),
-    width: 160,
+    minWidth: 200,
+    sortable: 'custom',
+    sortField: serverSortFieldMap.creationTime,
   },
   {
     prop: 'actions',
     label: $t('page.user.table.actions'),
-    width: 200,
+    width: 220,
     fixed: 'right',
+    align: 'center',
   },
 ]
 
@@ -196,10 +287,13 @@ const editRules: FormRules<UpdateIdentityUserInput> = {
 const loadUsers = async () => {
   try {
     loading.value = true
-    const params = {
+    const params: FilterPageRequest = {
       skipCount: (currentPage.value - 1) * pageSize.value,
       maxResultCount: pageSize.value,
       filter: searchForm.filter || undefined,
+    }
+    if (sorting.value) {
+      params.sorting = sorting.value
     }
 
     const result = await userApi.getPage(params)
@@ -211,6 +305,36 @@ const loadUsers = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const handleSortChange = ({ prop, order }: SortChangeContext) => {
+  if (!prop || !order) {
+    sorting.value = undefined
+    if (currentPage.value !== 1) {
+      currentPage.value = 1
+    }
+    loadUsers()
+    return
+  }
+
+  sorting.value = toSortingString(prop, order)
+  if (currentPage.value !== 1) {
+    currentPage.value = 1
+  }
+  loadUsers()
+}
+
+const handlePageSizeChange = (size: number) => {
+  pageSize.value = size
+  if (currentPage.value !== 1) {
+    currentPage.value = 1
+  }
+  loadUsers()
+}
+
+const handleCurrentChange = (page: number) => {
+  currentPage.value = page
+  loadUsers()
 }
 
 const loadAvailableRoles = async () => {
@@ -375,122 +499,147 @@ const formatConfirmed = (confirmed: boolean | undefined) => {
   return confirmed ? $t('page.user.status.yes') : $t('page.user.status.no')
 }
 
-// 监听分页变化
-watch([currentPage, pageSize], () => {
-  loadUsers()
-})
-
 // 初始化
 loadUsers()
 loadAvailableRoles()
 </script>
 
 <template>
-  <Page class="user-management">
-    <!-- 搜索区域 -->
-    <el-card class="search-card" shadow="never">
-      <el-form :model="searchForm" inline>
-        <el-form-item :label="$t('page.user.search.filter')">
-          <el-input
-            v-model="searchForm.filter"
-            :placeholder="$t('page.user.search.filterPlaceholder')"
-            clearable
-            style="width: 300px"
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">
-            {{ $t('page.user.search.search') }}
-          </el-button>
-          <el-button @click="handleReset">
-            {{ $t('page.user.search.reset') }}
-          </el-button>
-        </el-form-item>
-        <el-form-item>
+  <Page content-class="flex flex-col gap-4">
+    <div class="border-border bg-card rounded-xl border px-6 py-4 shadow-sm">
+      <div
+        class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between"
+      >
+        <el-form
+          :model="searchForm"
+          :inline="!isMobile"
+          :label-position="isMobile ? 'top' : 'left'"
+          class="flex flex-wrap items-end gap-4"
+        >
+          <el-form-item :label="$t('page.user.search.filter')" class="!mb-0">
+            <el-input
+              v-model="searchForm.filter"
+              :placeholder="$t('page.user.search.filterPlaceholder')"
+              clearable
+              class="w-full sm:w-72"
+              @keyup.enter="handleSearch"
+            />
+          </el-form-item>
+          <el-form-item class="!mb-0">
+            <div class="flex flex-wrap gap-2">
+              <el-button type="primary" @click="handleSearch">
+                {{ $t('page.user.search.search') }}
+              </el-button>
+              <el-button @click="handleReset">
+                {{ $t('page.user.search.reset') }}
+              </el-button>
+            </div>
+          </el-form-item>
+        </el-form>
+        <div class="flex justify-end">
           <el-button type="primary" @click="handleCreate">
-            <span class="icon-[ci:add-plus] text-xl"></span>
+            <template #icon>
+              <CiAddPlus class="text-lg" />
+            </template>
             {{ $t('page.user.actions.create') }}
           </el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
-
-    <!-- 用户列表 -->
-    <el-card class="table-card" shadow="never">
-      <el-table v-loading="loading" :data="users" stripe style="width: 100%">
-        <el-table-column
-          v-for="column in columns"
-          :key="column.prop"
-          :prop="column.prop"
-          :label="column.label"
-          :width="column.width"
-          :fixed="column.fixed"
+        </div>
+      </div>
+    </div>
+    <div class="border-border bg-card rounded-xl border shadow-sm">
+      <div class="overflow-x-auto">
+        <el-table
+          v-loading="loading"
+          :data="users"
+          border
+          stripe
+          class="min-w-[960px]"
+          :size="isMobile ? 'small' : 'default'"
+          :row-key="(row) => row.id"
+          :default-sort="defaultSort"
+          @sort-change="handleSortChange"
         >
-          <template v-if="column.prop === 'isActive'" #default="{ row }">
-            <el-tag :type="row.isActive ? 'success' : 'danger'">
-              {{ formatStatus(row.isActive) }}
-            </el-tag>
-          </template>
-          <template
-            v-else-if="column.prop === 'emailConfirmed'"
-            #default="{ row }"
+          <el-table-column
+            v-for="column in columns"
+            :key="column.prop"
+            :prop="column.prop"
+            :label="column.label"
+            :width="column.width"
+            :min-width="column.minWidth"
+            :fixed="column.fixed"
+            :sortable="column.sortable ?? false"
+            :align="column.align || 'left'"
+            :show-overflow-tooltip="column.prop !== 'actions'"
           >
-            <el-tag :type="row.emailConfirmed ? 'success' : 'info'">
-              {{ formatConfirmed(row.emailConfirmed) }}
-            </el-tag>
-          </template>
-          <template
-            v-else-if="column.prop === 'phoneNumberConfirmed'"
-            #default="{ row }"
-          >
-            <el-tag :type="row.phoneNumberConfirmed ? 'success' : 'info'">
-              {{ formatConfirmed(row.phoneNumberConfirmed) }}
-            </el-tag>
-          </template>
-          <template
-            v-else-if="column.prop === 'creationTime'"
-            #default="{ row }"
-          >
-            {{ formatDate(row.creationTime) }}
-          </template>
-          <template v-else-if="column.prop === 'actions'" #default="{ row }">
-            <el-button type="primary" size="small" @click="handleEdit(row)">
-              {{ $t('page.user.table.edit') }}
-            </el-button>
-            <el-button
-              type="warning"
-              size="small"
-              @click="handleRoleManage(row)"
+            <template v-if="column.prop === 'isActive'" #default="{ row }">
+              <el-tag :type="row.isActive ? 'success' : 'danger'">
+                {{ formatStatus(row.isActive) }}
+              </el-tag>
+            </template>
+            <template
+              v-else-if="column.prop === 'emailConfirmed'"
+              #default="{ row }"
             >
-              {{ $t('page.user.table.role') }}
-            </el-button>
-            <el-button type="danger" size="small" @click="handleDelete(row)">
-              {{ $t('page.user.table.delete') }}
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <!-- 分页 -->
-      <div class="pagination-container">
+              <el-tag :type="row.emailConfirmed ? 'success' : 'info'">
+                {{ formatConfirmed(row.emailConfirmed) }}
+              </el-tag>
+            </template>
+            <template
+              v-else-if="column.prop === 'phoneNumberConfirmed'"
+              #default="{ row }"
+            >
+              <el-tag :type="row.phoneNumberConfirmed ? 'success' : 'info'">
+                {{ formatConfirmed(row.phoneNumberConfirmed) }}
+              </el-tag>
+            </template>
+            <template
+              v-else-if="column.prop === 'creationTime'"
+              #default="{ row }"
+            >
+              {{ formatDate(row.creationTime) }}
+            </template>
+            <template v-else-if="column.prop === 'actions'" #default="{ row }">
+              <div class="flex flex-wrap justify-center gap-2">
+                <el-button type="primary" size="small" @click="handleEdit(row)">
+                  {{ $t('page.user.table.edit') }}
+                </el-button>
+                <el-button
+                  type="warning"
+                  size="small"
+                  @click="handleRoleManage(row)"
+                >
+                  {{ $t('page.user.table.role') }}
+                </el-button>
+                <el-button
+                  type="danger"
+                  size="small"
+                  @click="handleDelete(row)"
+                >
+                  {{ $t('page.user.table.delete') }}
+                </el-button>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <div class="border-border/60 flex justify-end border-t px-6 py-4">
         <el-pagination
           :current-page="currentPage"
           :page-size="pageSize"
           :page-sizes="[10, 20, 50, 100]"
           :total="total"
           layout="total, sizes, prev, pager, next, jumper"
-          @size-change="loadUsers"
-          @current-change="loadUsers"
+          @size-change="handlePageSizeChange"
+          @current-change="handleCurrentChange"
         />
       </div>
-    </el-card>
+    </div>
 
-    <!-- 创建用户对话框 -->
     <el-dialog
       v-model="createDialogVisible"
       :title="$t('page.user.create.title')"
       :close-on-click-modal="false"
-      :fullscreen="mobile.isMobile.value"
+      :fullscreen="isMobile"
       width="600px"
     >
       <el-form
@@ -587,12 +736,11 @@ loadAvailableRoles()
       </template>
     </el-dialog>
 
-    <!-- 编辑用户对话框 -->
     <el-dialog
       v-model="editDialogVisible"
       :title="$t('page.user.edit.title')"
       :close-on-click-modal="false"
-      :fullscreen="mobile.isMobile.value"
+      :fullscreen="isMobile"
       width="600px"
     >
       <el-form
@@ -668,22 +816,21 @@ loadAvailableRoles()
       </template>
     </el-dialog>
 
-    <!-- 角色管理对话框 -->
     <el-dialog
       v-model="roleDialogVisible"
       :title="$t('page.user.role.title')"
       :close-on-click-modal="false"
-      :fullscreen="mobile.isMobile.value"
+      :fullscreen="isMobile"
       width="500px"
     >
-      <div class="role-management">
-        <p class="user-info">
-          {{ $t('page.user.role.userInfo')
-          }}<strong>{{ currentUser?.userName }}</strong>
+      <div class="space-y-4">
+        <p class="text-foreground text-base font-medium">
+          {{ $t('page.user.role.userInfo') }}
+          <span class="text-primary ml-1">{{ currentUser?.userName }}</span>
         </p>
-        <el-divider />
-        <el-form label-width="100px">
-          <el-form-item :label="$t('page.user.role.assignRoles')">
+        <el-divider class="!my-0" />
+        <el-form label-width="120px">
+          <el-form-item :label="$t('page.user.role.assignRoles')" class="!mb-0">
             <el-select
               v-model="selectedRoles"
               multiple
@@ -712,36 +859,3 @@ loadAvailableRoles()
     </el-dialog>
   </Page>
 </template>
-
-<style scoped>
-.search-card,
-.table-card {
-  margin-bottom: 20px;
-}
-
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.role-management .user-info {
-  margin: 0;
-  font-size: 16px;
-}
-
-@media (max-width: 768px) {
-  .user-management {
-    padding: 10px;
-  }
-
-  .search-card .el-form {
-    flex-direction: column;
-  }
-
-  .search-card .el-form-item {
-    margin-right: 0;
-    margin-bottom: 10px;
-  }
-}
-</style>
