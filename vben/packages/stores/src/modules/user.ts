@@ -4,7 +4,13 @@ import type { Artist, Tag } from '@vben/api'
 import type { Library } from '../../../api/src/vctoon/library/typing'
 
 // eslint-disable-next-line no-restricted-imports
-import { artistApi, dataChangedHub, libraryApi, tagApi } from '@vben/api'
+import {
+  artistApi,
+  dataChangedHub,
+  libraryApi,
+  tagApi,
+  useOidcManager,
+} from '@vben/api'
 
 import { acceptHMRUpdate, defineStore } from 'pinia'
 
@@ -115,8 +121,14 @@ export const useUserStore = defineStore('core-user', {
     async reloadAllUserData() {
       try {
         await dataChangedHub.start()
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error starting dataChangedHub:', error)
+        if (error.message.includes("Status code '401'")) {
+          // 401 错误，说明登录态过期，触发重新登录
+          const oidcManager = useOidcManager()
+          await oidcManager.manager.signinRedirect()
+          return
+        }
         throw error
       }
 

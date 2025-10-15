@@ -1,4 +1,5 @@
-﻿using SharpCompress.Archives;
+﻿using System.Globalization;
+using SharpCompress.Archives;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using Volo.Abp;
@@ -6,8 +7,17 @@ using Size = SixLabors.ImageSharp.Size;
 
 namespace Vctoon.ImageProviders;
 
-public class ImageRealFileProvider : IImageProvider, ITransientDependency
+public class ImageRealFileProvider(IDocumentContentService documentContentService) : IImageProvider, ITransientDependency
 {
+    private static readonly HashSet<string> ArchiveExtensions =
+        new([".zip", ".rar", ".cbr", ".cbz", ".7z", ".cb7"], StringComparer.OrdinalIgnoreCase);
+
+    private static readonly HashSet<string> PdfExtensions =
+        new([".pdf"], StringComparer.OrdinalIgnoreCase);
+
+    private static readonly HashSet<string> EpubExtensions =
+        new([".epub"], StringComparer.OrdinalIgnoreCase);
+
     public async Task<Stream> GetImageStreamAsync(string path, int? maxImageWidth = null)
     {
         if (path.IsNullOrWhiteSpace())
@@ -31,6 +41,26 @@ public class ImageRealFileProvider : IImageProvider, ITransientDependency
         if (imagePath.IsNullOrWhiteSpace())
         {
             throw new BusinessException("imagePath is empty");
+        }
+
+        var extension = Path.GetExtension(archivePath).ToLowerInvariant();
+
+        if (PdfExtensions.Contains(extension))
+        {
+            var pageIndex = ParsePdfPageKey(imagePath);
+            return await documentContentService.RenderPdfPageAsync(archivePath, pageIndex, maxImageWidth)
+                .ConfigureAwait(false);
+        }
+
+        if (EpubExtensions.Contains(extension))
+        {
+            return await documentContentService.GetEpubImageStreamAsync(archivePath, imagePath, maxImageWidth)
+                .ConfigureAwait(false);
+        }
+
+        if (!ArchiveExtensions.Contains(extension))
+        {
+            throw new BusinessException($"Unsupported archive extension '{extension}'.");
         }
 
         await using var archiveSteam = File.OpenRead(archivePath);
@@ -79,5 +109,23 @@ public class ImageRealFileProvider : IImageProvider, ITransientDependency
         await resizedImage.SaveAsJpegAsync(resizedStream);
         resizedStream.Position = 0;
         return resizedStream;
+    }
+
+    private static int ParsePdfPageKey(string key)
+    {
+        const string prefix = "pdf-page-";
+
+        if (!key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new BusinessException($"Invalid PDF page token '{key}'.");
+        }
+
+        var numeric = key.AsSpan(prefix.Length);
+        if (!int.TryParse(numeric, NumberStyles.Integer, CultureInfo.InvariantCulture, out var index))
+        {
+            throw new BusinessException($"Invalid PDF page token '{key}'.");
+        }
+
+        return index;
     }
 }

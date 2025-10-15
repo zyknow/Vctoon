@@ -273,6 +273,16 @@
       "cancel": "Cancel"
     }
   },
+  "comic": {
+    "settings": {
+      "fields": {
+        "preloadCount": "Preload Count"
+      },
+      "options": {
+        "preloadCount": "Preload {count} pages"
+      }
+    }
+  },
   "securityLogs": {
     "title": "Security Logs",
     "viewMode": {

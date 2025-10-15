@@ -78,6 +78,7 @@ const isReverseFlow = computed(() =>
 
 const isDoubleMode = computed(() => settings.displayMode === 'double')
 const isScrollMode = computed(() => settings.displayMode === 'scroll')
+const preloadCount = computed(() => Math.max(0, settings.preloadCount ?? 0))
 
 const imageMaxHeight = computed(() => {
   return '100vh'
@@ -172,6 +173,7 @@ const getPageForStep = (step: number) => {
 
 let updatingFromRoute = false
 let updatingRoute = false
+let isInitializing = false
 
 const applyPageFromRoute = (page: number) => {
   const bounded = clampPage(page)
@@ -363,25 +365,38 @@ const imageStyle = computed<CSSProperties>(() => {
   return style
 })
 
-const pageWrapperClass = computed(() => {
-  const classes: string[] = [
-    'viewer-page',
-    'flex',
-    'items-center',
-    'justify-center',
-  ]
-  if (isScrollMode.value || orientation.value === 'vertical') {
+const resolvePageWrapperClass = (index: number, length: number): string => {
+  const classes: string[] = ['viewer-page', 'flex', 'items-center', 'm-0']
+
+  const hasPairedImage = length >= 2
+
+  if (isScrollMode.value) {
+    if (orientation.value === 'vertical') {
+      classes.push('w-full')
+    } else {
+      classes.push('flex-none')
+    }
+  } else if (orientation.value === 'vertical') {
     classes.push('w-full')
   }
-  if (
-    !isScrollMode.value &&
-    isDoubleMode.value &&
-    orientation.value === 'horizontal'
-  ) {
-    classes.push('flex-1')
+
+  if (!isScrollMode.value && isDoubleMode.value) {
+    if (orientation.value === 'horizontal') {
+      classes.push('flex-1')
+      if (hasPairedImage) {
+        classes.push(index % 2 === 0 ? 'justify-end' : 'justify-start')
+      }
+    } else if (hasPairedImage) {
+      classes.push(index % 2 === 0 ? 'justify-end' : 'justify-start')
+    }
   }
+
+  if (!classes.some((item) => item.startsWith('justify-'))) {
+    classes.push('justify-center')
+  }
+
   return classes.join(' ')
-})
+}
 
 const stageClass = computed(() => {
   const classes: string[] = [
@@ -592,20 +607,248 @@ const resolveImageUrl = (imageId: string) => {
   return `${apiURL}${requestUrl}`
 }
 
+const placeholderImageSrc =
+  'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAAAAAAALAAAAAABAAEAAAIBRAA7'
+
+const visibleImageIds = ref<Record<string, boolean>>({})
+const preloadedImageIds = new Set<string>()
+const imagePreloadMap = new Map<string, HTMLImageElement>()
+const intersectionObserverMap = new Map<string, IntersectionObserver>()
+
+const isImageVisible = (imageId: string) =>
+  visibleImageIds.value[imageId] === true
+
+const preloadImageResource = (imageId: string) => {
+  if (preloadedImageIds.has(imageId) || isImageVisible(imageId)) {
+    preloadedImageIds.add(imageId)
+    return
+  }
+  if (typeof window === 'undefined') {
+    return
+  }
+  const src = resolveImageUrl(imageId)
+  if (!src) {
+    return
+  }
+  const image = new window.Image()
+  image.decoding = 'async'
+  if ('loading' in image) {
+    image.loading = 'eager'
+  }
+  image.src = src
+  const remove = () => {
+    imagePreloadMap.delete(imageId)
+  }
+  image.addEventListener('load', remove, { once: true })
+  image.addEventListener('error', remove, { once: true })
+  imagePreloadMap.set(imageId, image)
+  preloadedImageIds.add(imageId)
+}
+
+const destroyIntersectionObserver = (imageId: string) => {
+  const observer = intersectionObserverMap.get(imageId)
+  if (!observer) {
+    return
+  }
+  observer.disconnect()
+  intersectionObserverMap.delete(imageId)
+}
+
+const markImageVisible = (imageId: string) => {
+  if (isImageVisible(imageId)) {
+    preloadedImageIds.add(imageId)
+    return
+  }
+  visibleImageIds.value = {
+    ...visibleImageIds.value,
+    [imageId]: true,
+  }
+  preloadedImageIds.add(imageId)
+  destroyIntersectionObserver(imageId)
+}
+
+const setupIntersectionObserver = (imageId: string, element: HTMLElement) => {
+  if (!isScrollMode.value || isImageVisible(imageId)) {
+    markImageVisible(imageId)
+    return
+  }
+  destroyIntersectionObserver(imageId)
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting || entry.intersectionRatio > 0) {
+          markImageVisible(imageId)
+        }
+      })
+    },
+    {
+      root: stageContainerRef.value ?? null,
+      rootMargin: '400px 400px 400px 400px',
+      threshold: 0.02,
+    },
+  )
+  intersectionObserverMap.set(imageId, observer)
+  observer.observe(element)
+}
+
+const getImageSrc = (imageId: string) => {
+  if (isImageVisible(imageId)) {
+    return resolveImageUrl(imageId)
+  }
+  return placeholderImageSrc
+}
+
 const imageElementMap = new Map<string, HTMLElement>()
 
 const assignImageRef = (imageId: string, el: HTMLElement | null) => {
-  if (isScrollMode.value && el) {
-    imageElementMap.set(imageId, el)
+  if (!el) {
+    imageElementMap.delete(imageId)
+    destroyIntersectionObserver(imageId)
     return
   }
 
-  if (!el) {
-    imageElementMap.delete(imageId)
+  imageElementMap.set(imageId, el)
+
+  if (isScrollMode.value) {
+    setupIntersectionObserver(imageId, el)
+    if (pendingScrollStep.value !== null) {
+      const targetIndex = orderedImages.value.findIndex(
+        (item) => item.id === imageId,
+      )
+      if (targetIndex === pendingScrollStep.value) {
+        requestAnimationFrame(() => {
+          const step = clampStep(pendingScrollStep.value ?? targetIndex)
+          pendingScrollStep.value = null
+          void scrollToStep(step)
+        })
+      }
+    }
+    return
+  }
+
+  markImageVisible(imageId)
+}
+
+const getCurrentContentRange = () => {
+  const listLength = orderedImages.value.length
+  if (listLength === 0) {
+    return null
+  }
+  if (isScrollMode.value) {
+    const index = clampStep(currentStep.value)
+    const bounded = Math.min(index, listLength - 1)
+    return { end: bounded, start: bounded }
+  }
+  if (isDoubleMode.value) {
+    const startIndex = Math.min(currentStep.value * 2, listLength - 1)
+    const visibleLength = Math.min(
+      currentImages.value.length,
+      Math.max(listLength - startIndex, 0),
+    )
+    const endIndex =
+      visibleLength > 0 ? startIndex + visibleLength - 1 : startIndex
+    return { end: endIndex, start: startIndex }
+  }
+  const index = Math.min(currentStep.value, listLength - 1)
+  return { end: index, start: index }
+}
+
+const preloadUpcomingImages = () => {
+  const count = preloadCount.value
+  if (count <= 0) {
+    return
+  }
+  const list = orderedImages.value
+  if (list.length === 0) {
+    return
+  }
+  const range = getCurrentContentRange()
+  if (!range) {
+    return
+  }
+  const startIndex = range.end + 1
+  if (startIndex >= list.length) {
+    return
+  }
+  const endIndex = Math.min(range.end + count, list.length - 1)
+  for (let index = startIndex; index <= endIndex; index += 1) {
+    const item = list[index]
+    if (!item) {
+      continue
+    }
+    if (isScrollMode.value) {
+      markImageVisible(item.id)
+    } else {
+      preloadImageResource(item.id)
+    }
   }
 }
 
-const scrollToStep = async (step: number) => {
+watch(
+  currentImages,
+  (list) => {
+    if (isScrollMode.value) {
+      return
+    }
+    list.forEach((item) => {
+      markImageVisible(item.id)
+    })
+    preloadUpcomingImages()
+  },
+  { immediate: true },
+)
+
+watch(
+  [currentStep, orderedImages, preloadCount, isScrollMode, isDoubleMode],
+  () => {
+    preloadUpcomingImages()
+  },
+  { immediate: true },
+)
+
+watch(resolvedQualityWidth, () => {
+  preloadedImageIds.clear()
+  imagePreloadMap.clear()
+  preloadUpcomingImages()
+})
+
+watch(isScrollMode, (value) => {
+  if (!value) {
+    intersectionObserverMap.forEach((observer) => observer.disconnect())
+    intersectionObserverMap.clear()
+    currentImages.value.forEach((item) => {
+      markImageVisible(item.id)
+    })
+    return
+  }
+
+  orderedImages.value.forEach((item) => {
+    const element = imageElementMap.get(item.id)
+    if (element) {
+      setupIntersectionObserver(item.id, element)
+    }
+  })
+})
+
+watch(
+  () => stageContainerRef.value,
+  () => {
+    if (!isScrollMode.value) {
+      return
+    }
+    const entries = [...intersectionObserverMap.entries()]
+    entries.forEach(([imageId, observer]) => {
+      observer.disconnect()
+      intersectionObserverMap.delete(imageId)
+      const element = imageElementMap.get(imageId)
+      if (element) {
+        setupIntersectionObserver(imageId, element)
+      }
+    })
+  },
+)
+
+const scrollToStep = async (step: number, attempt: number = 0) => {
   if (!isScrollMode.value) {
     return
   }
@@ -619,8 +862,15 @@ const scrollToStep = async (step: number) => {
   const target = imageElementMap.get(image.id)
   if (!target) {
     isSyncingFromScroll.value = false
+    pendingScrollStep.value = step
+    if (attempt < 5) {
+      requestAnimationFrame(() => {
+        void scrollToStep(step, attempt + 1)
+      })
+    }
     return
   }
+  pendingScrollStep.value = null
   const behavior: ScrollBehavior = settings.pageTransition ? 'smooth' : 'auto'
   target.scrollIntoView({
     behavior,
@@ -635,6 +885,13 @@ const scrollToStep = async (step: number) => {
     () => {
       isSyncingFromScroll.value = false
       scrollSyncTimer = undefined
+      if (pendingScrollStep.value !== null) {
+        const targetStep = clampStep(pendingScrollStep.value)
+        pendingScrollStep.value = null
+        requestAnimationFrame(() => {
+          void scrollToStep(targetStep)
+        })
+      }
     },
     behavior === 'smooth' ? 360 : 0,
   )
@@ -863,10 +1120,14 @@ watch(
     } else {
       pendingScrollStep.value = null
     }
+    const canonicalPage = getPageForStep(step)
+    if (isInitializing) {
+      lastSyncedPage.value = canonicalPage
+      return
+    }
     if (!updatingFromRoute && shouldTrackProgress.value) {
       progressDirty = true
     }
-    const canonicalPage = getPageForStep(step)
     if (updatingFromRoute) {
       lastSyncedPage.value = canonicalPage
       return
@@ -1155,6 +1416,9 @@ const fetchComic = async () => {
     loadError.value = $t('page.comic.messages.loadFailed')
     return
   }
+  lastSyncedPage.value = null
+  pendingScrollStep.value = null
+  isInitializing = true
   isLoading.value = true
   loadError.value = null
   try {
@@ -1166,14 +1430,35 @@ const fetchComic = async () => {
     lastSavedProgress = detail.readingProgress ?? 0
     progressDirty = false
     imageElementMap.clear()
+    visibleImageIds.value = {}
+    preloadedImageIds.clear()
+    imagePreloadMap.clear()
+    intersectionObserverMap.forEach((observer) => observer.disconnect())
+    intersectionObserverMap.clear()
     images.value = (imageList ?? []).map((item, index) => ({
       ...item,
       order: index,
     }))
     currentStep.value = 0
+    await nextTick()
+    tryApplyPendingPage()
+    await nextTick()
+    requestAnimationFrame(() => {
+      if (!isScrollMode.value) {
+        return
+      }
+      const targetStep = clampStep(currentStep.value)
+      pendingScrollStep.value = targetStep
+      void scrollToStep(targetStep)
+    })
     if (isScrollMode.value) {
       await nextTick()
-      void scrollToStep(0)
+      const hasRoutePage =
+        pendingPageFromRoute.value !== null ||
+        parsePageQueryValue(route.query.page) !== null
+      if (!hasRoutePage) {
+        void scrollToStep(0)
+      }
     }
   } catch (error) {
     const message =
@@ -1182,6 +1467,7 @@ const fetchComic = async () => {
     ElMessage.error($t('page.comic.messages.loadFailed'))
   } finally {
     isLoading.value = false
+    isInitializing = false
   }
 }
 
@@ -1245,6 +1531,10 @@ const retry = async () => {
 }
 
 onBeforeUnmount(() => {
+  intersectionObserverMap.forEach((observer) => observer.disconnect())
+  intersectionObserverMap.clear()
+  imagePreloadMap.clear()
+  preloadedImageIds.clear()
   if (boundaryResetTimer) {
     window.clearTimeout(boundaryResetTimer)
   }
@@ -1370,31 +1660,31 @@ onBeforeUnmount(() => {
       >
         <template v-if="isScrollMode">
           <figure
-            v-for="image in orderedImages"
+            v-for="(image, index) in orderedImages"
             :key="image.id"
             :ref="(el) => assignImageRef(image.id, el as HTMLElement | null)"
-            :class="pageWrapperClass"
+            :class="resolvePageWrapperClass(index, orderedImages.length)"
           >
             <img
               :alt="image.name ?? image.id"
               :class="imageClass"
               :style="imageStyle"
-              :src="resolveImageUrl(image.id)"
+              :src="getImageSrc(image.id)"
               loading="lazy"
             />
           </figure>
         </template>
         <template v-else>
           <figure
-            v-for="image in currentImages"
+            v-for="(image, index) in currentImages"
             :key="image.id"
-            :class="pageWrapperClass"
+            :class="resolvePageWrapperClass(index, currentImages.length)"
           >
             <img
               :alt="image.name ?? image.id"
               :class="imageClass"
               :style="imageStyle"
-              :src="resolveImageUrl(image.id)"
+              :src="getImageSrc(image.id)"
               loading="lazy"
             />
           </figure>

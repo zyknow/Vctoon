@@ -1,5 +1,7 @@
-﻿using SharpCompress.Archives;
+﻿using System.Globalization;
+using SharpCompress.Archives;
 using Vctoon.Mediums;
+using Vctoon.Services;
 
 namespace Vctoon.Handlers;
 
@@ -7,11 +9,15 @@ public class ComicScanHandler(
     IComicImageRepository comicImageRepository,
     IArchiveInfoRepository archiveInfoRepository,
     CoverSaver coverSaver,
-    IComicRepository comicRepository)
+    IComicRepository comicRepository,
+    IDocumentContentService documentContentService)
     : VctoonService, IMediumScanHandler
 {
     public readonly HashSet<string> ArchiveExtensions =
         new([".zip", ".rar", ".cbr", ".cbz", ".7z", ".cb7"], StringComparer.OrdinalIgnoreCase);
+
+    public readonly HashSet<string> PdfExtensions = new([".pdf"], StringComparer.OrdinalIgnoreCase);
+    public readonly HashSet<string> EpubExtensions = new([".epub"], StringComparer.OrdinalIgnoreCase);
 
     // TODO:  get extensions from settings
     public readonly List<string> ImageExtensions =
@@ -35,14 +41,20 @@ public class ComicScanHandler(
 
         await ScanImageByLibraryPathAsync(libraryPath, imageFilePaths, true);
 
-        var archiveFilePaths =
-            filePaths.Where(x => ArchiveExtensions.Contains(Path.GetExtension(x))).ToList();
+        var archiveLikeFilePaths = filePaths
+            .Where(x =>
+            {
+                var extension = Path.GetExtension(x);
+                return ArchiveExtensions.Contains(extension) || PdfExtensions.Contains(extension) ||
+                       EpubExtensions.Contains(extension);
+            })
+            .ToList();
 
         var deleteArchiveIds =
             await AsyncExecuter.ToListAsync(
                 (await archiveInfoRepository.GetQueryableAsync())
                 .Where(x => x.LibraryPathId == libraryPath.Id)
-                .Where(x => !archiveFilePaths.Contains(x.Path))
+                .Where(x => !archiveLikeFilePaths.Contains(x.Path))
                 .Select(x => x.Id));
 
         if (!deleteArchiveIds.IsNullOrEmpty())
@@ -50,12 +62,29 @@ public class ComicScanHandler(
             await archiveInfoRepository.DeleteManyAsync(deleteArchiveIds, true);
         }
 
-        foreach (var archiveFilePath in archiveFilePaths)
+        foreach (var archiveFilePath in archiveLikeFilePaths)
         {
-            var archiveInfo =
-                await ScanArchiveInfoDirectoryStructureAsync(archiveFilePath, libraryPath.Id);
+            var extension = Path.GetExtension(archiveFilePath).ToLowerInvariant();
 
-            await ScanImageByArchiveInfoAsync(archiveInfo, libraryPath.LibraryId);
+            if (ArchiveExtensions.Contains(extension))
+            {
+                var archiveInfo =
+                    await ScanArchiveInfoDirectoryStructureAsync(archiveFilePath, libraryPath.Id);
+
+                await ScanImageByArchiveInfoAsync(archiveInfo, libraryPath.LibraryId);
+                continue;
+            }
+
+            var documentInfo = await EnsureArchiveInfoAsync(archiveFilePath, libraryPath.Id);
+
+            if (PdfExtensions.Contains(extension))
+            {
+                await ScanPdfAsync(documentInfo, libraryPath.LibraryId);
+            }
+            else if (EpubExtensions.Contains(extension))
+            {
+                await ScanEpubAsync(documentInfo, libraryPath.LibraryId);
+            }
         }
     }
 
@@ -111,6 +140,284 @@ public class ComicScanHandler(
     {
         return archiveInfo.LastResolveTime is null ||
                File.GetLastWriteTimeUtc(archiveInfo.Path) > archiveInfo.LastResolveTime;
+    }
+
+    protected virtual async Task<ArchiveInfo> EnsureArchiveInfoAsync(string documentPath, Guid libraryPathId)
+    {
+        var query = await archiveInfoRepository.WithDetailsAsync(x => x.Paths);
+        var archiveInfo = await AsyncExecuter.FirstOrDefaultAsync(query,
+            x => x.Path == documentPath && x.LibraryPathId == libraryPathId);
+
+        var fileInfo = new FileInfo(documentPath);
+
+        if (archiveInfo is null)
+        {
+            archiveInfo = new ArchiveInfo(GuidGenerator.Create(), documentPath, fileInfo.Length, libraryPathId,
+                fileInfo.LastWriteTimeUtc, null);
+            archiveInfo.Paths.Add(new ArchiveInfoPath(GuidGenerator.Create(), null, archiveInfo.Id));
+            await archiveInfoRepository.InsertAsync(archiveInfo, true);
+        }
+        else
+        {
+            archiveInfo.Size = fileInfo.Length;
+            archiveInfo.LastModifyTime = fileInfo.LastWriteTimeUtc;
+
+            if (archiveInfo.Paths.All(x => x.Path != null))
+            {
+                archiveInfo.Paths.Add(new ArchiveInfoPath(GuidGenerator.Create(), null, archiveInfo.Id));
+            }
+
+            await archiveInfoRepository.UpdateAsync(archiveInfo, true);
+        }
+
+        return archiveInfo;
+    }
+
+    protected virtual async Task ScanPdfAsync(ArchiveInfo archiveInfo, Guid libraryId)
+    {
+        var archivePaths = archiveInfo.Paths.ToDictionary(x => x.Path ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+        var rootPath = EnsureRootArchivePath(archiveInfo, archivePaths);
+
+        var archivePathIds = archiveInfo.Paths.Select(x => x.Id).ToList();
+
+        var existingQuery = (await comicImageRepository.GetQueryableAsync())
+            .Where(x => x.ArchiveInfoPathId.HasValue && archivePathIds.Contains(x.ArchiveInfoPathId.Value));
+
+        var existingImages = await AsyncExecuter.ToListAsync(existingQuery);
+        var existingPaths = existingImages.Select(x => x.Path).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var pageCount = await documentContentService.GetPdfPageCountAsync(archiveInfo.Path);
+
+        var targetKeys = Enumerable.Range(0, pageCount).Select(FormatPdfPageKey).ToList();
+
+        var deleteImages = existingImages.Where(x => !targetKeys.Contains(x.Path)).ToList();
+
+        if (!deleteImages.IsNullOrEmpty())
+        {
+            await comicImageRepository.DeleteManyAsync(deleteImages.Select(x => x.Id), true);
+        }
+
+        var addImageEntities = new List<ComicImage>();
+
+        foreach (var (key, pageIndex) in targetKeys.Select((value, idx) => (value, idx)))
+        {
+            if (existingPaths.Contains(key))
+            {
+                continue;
+            }
+
+            var name = $"Page {(pageIndex + 1).ToString("D4", CultureInfo.InvariantCulture)}";
+
+            addImageEntities.Add(new ComicImage(
+                GuidGenerator.Create(),
+                name,
+                key,
+                ".png",
+                0,
+                Guid.Empty,
+                libraryId,
+                archiveInfoPathId: rootPath.Id));
+        }
+
+        var newComics = new List<Comic>();
+
+        if (!addImageEntities.IsNullOrEmpty())
+        {
+            foreach (var group in addImageEntities.GroupBy(x => Path.GetDirectoryName(x.Path)))
+            {
+                var mediumId = existingImages
+                    .FirstOrDefault(x => Path.GetDirectoryName(x.Path) == group.Key)
+                    ?.ComicId;
+
+                if (mediumId == null || mediumId == Guid.Empty)
+                {
+                    var title = Path.GetFileNameWithoutExtension(archiveInfo.Path) ?? archiveInfo.Path;
+                    await using var coverStream = await documentContentService.RenderPdfPageAsync(archiveInfo.Path, 0)
+                        .ConfigureAwait(false);
+                    var cover = await coverSaver.SaveAsync(coverStream).ConfigureAwait(false);
+                    var comic = new Comic(GuidGenerator.Create(), title, cover, libraryId);
+                    newComics.Add(comic);
+                    mediumId = comic.Id;
+                }
+
+                foreach (var imageFile in group)
+                {
+                    imageFile.ComicId = mediumId.Value;
+                }
+            }
+
+            if (!newComics.IsNullOrEmpty())
+            {
+                await comicRepository.InsertManyAsync(newComics, true);
+            }
+
+            await comicImageRepository.InsertManyAsync(addImageEntities, true);
+        }
+
+        archiveInfo.LastResolveTime = DateTime.UtcNow;
+        await archiveInfoRepository.UpdateAsync(archiveInfo, true);
+    }
+
+    protected virtual async Task ScanEpubAsync(ArchiveInfo archiveInfo, Guid libraryId)
+    {
+        var pathCache = archiveInfo.Paths.ToDictionary(x => x.Path ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+        var rootPath = EnsureRootArchivePath(archiveInfo, pathCache);
+
+        var archivePathIds = archiveInfo.Paths.Select(x => x.Id).ToList();
+
+        var existingQuery = (await comicImageRepository.GetQueryableAsync())
+            .Where(x => x.ArchiveInfoPathId.HasValue && archivePathIds.Contains(x.ArchiveInfoPathId.Value));
+
+        var existingImages = await AsyncExecuter.ToListAsync(existingQuery);
+        var existingPaths = existingImages.Select(x => x.Path).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var manifest = await documentContentService.GetEpubImageManifestAsync(archiveInfo.Path);
+        var manifestLookup = manifest.ToDictionary(x => x.Path, StringComparer.OrdinalIgnoreCase);
+
+        var deleteImages = existingImages.Where(x => !manifestLookup.ContainsKey(x.Path)).ToList();
+
+        if (!deleteImages.IsNullOrEmpty())
+        {
+            await comicImageRepository.DeleteManyAsync(deleteImages.Select(x => x.Id), true);
+        }
+
+        var addImageEntities = new List<ComicImage>();
+
+        foreach (var descriptor in manifest)
+        {
+            if (existingPaths.Contains(descriptor.Path))
+            {
+                continue;
+            }
+
+            var directoryKey = GetDirectoryKey(descriptor.Path);
+            var archivePath = directoryKey is null
+                ? rootPath
+                : GetOrAddArchivePath(archiveInfo, directoryKey, pathCache);
+
+            var extension = ResolveImageExtension(descriptor.Path, descriptor.ContentType);
+            var fileName = Path.GetFileName(descriptor.Path);
+
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                fileName = $"Page {(descriptor.Index + 1).ToString("D4", CultureInfo.InvariantCulture)}{extension}";
+            }
+
+            addImageEntities.Add(new ComicImage(
+                GuidGenerator.Create(),
+                fileName,
+                descriptor.Path,
+                extension,
+                0,
+                Guid.Empty,
+                libraryId,
+                archiveInfoPathId: archivePath.Id));
+        }
+
+        var newComics = new List<Comic>();
+
+        if (!addImageEntities.IsNullOrEmpty())
+        {
+            foreach (var group in addImageEntities.GroupBy(x => Path.GetDirectoryName(x.Path)))
+            {
+                var mediumId = existingImages
+                    .FirstOrDefault(x => Path.GetDirectoryName(x.Path) == group.Key)
+                    ?.ComicId;
+
+                if (mediumId == null || mediumId == Guid.Empty)
+                {
+                    var title = Path.GetFileNameWithoutExtension(archiveInfo.Path) ?? archiveInfo.Path;
+                    var coverDescriptor = manifestLookup.GetValueOrDefault(group.First().Path) ?? manifest.First();
+                    await using var coverStream = await documentContentService
+                        .GetEpubImageStreamAsync(archiveInfo.Path, coverDescriptor.Path)
+                        .ConfigureAwait(false);
+                    var cover = await coverSaver.SaveAsync(coverStream).ConfigureAwait(false);
+                    var comic = new Comic(GuidGenerator.Create(), title, cover, libraryId);
+                    newComics.Add(comic);
+                    mediumId = comic.Id;
+                }
+
+                foreach (var image in group)
+                {
+                    image.ComicId = mediumId.Value;
+                }
+            }
+
+            if (!newComics.IsNullOrEmpty())
+            {
+                await comicRepository.InsertManyAsync(newComics, true);
+            }
+
+            await comicImageRepository.InsertManyAsync(addImageEntities, true);
+        }
+
+        archiveInfo.LastResolveTime = DateTime.UtcNow;
+        await archiveInfoRepository.UpdateAsync(archiveInfo, true);
+    }
+
+    private ArchiveInfoPath EnsureRootArchivePath(ArchiveInfo archiveInfo, IDictionary<string, ArchiveInfoPath>? cache = null)
+    {
+        var root = archiveInfo.Paths.FirstOrDefault(x => x.Path == null);
+
+        if (root is null)
+        {
+            root = new ArchiveInfoPath(GuidGenerator.Create(), null, archiveInfo.Id);
+            archiveInfo.Paths.Add(root);
+        }
+
+        cache?.TryAdd(string.Empty, root);
+        return root;
+    }
+
+    private ArchiveInfoPath GetOrAddArchivePath(
+        ArchiveInfo archiveInfo,
+        string directoryKey,
+        IDictionary<string, ArchiveInfoPath> cache)
+    {
+        directoryKey = directoryKey.Replace('\\', '/');
+
+        if (cache.TryGetValue(directoryKey, out var existing))
+        {
+            return existing;
+        }
+
+        var archivePath = new ArchiveInfoPath(GuidGenerator.Create(), directoryKey, archiveInfo.Id);
+        archiveInfo.Paths.Add(archivePath);
+        cache[directoryKey] = archivePath;
+        return archivePath;
+    }
+
+    private static string FormatPdfPageKey(int pageIndex)
+    {
+        return $"pdf-page-{pageIndex.ToString("D6", CultureInfo.InvariantCulture)}";
+    }
+
+    private static string? GetDirectoryKey(string entryKey)
+    {
+        var normalized = entryKey.Replace('\\', '/');
+        var lastSlash = normalized.LastIndexOf('/');
+
+        return lastSlash < 0 ? null : normalized[..(lastSlash + 1)];
+    }
+
+    private static string ResolveImageExtension(string path, string? contentType)
+    {
+        var extension = Path.GetExtension(path);
+
+        if (!string.IsNullOrWhiteSpace(extension))
+        {
+            return extension;
+        }
+
+        return contentType?.ToLowerInvariant() switch
+        {
+            "image/png" => ".png",
+            "image/webp" => ".webp",
+            "image/gif" => ".gif",
+            "image/bmp" => ".bmp",
+            "image/svg+xml" => ".svg",
+            _ => ".jpg"
+        };
     }
 
 
@@ -198,18 +505,8 @@ public class ComicScanHandler(
 
         var addImages = imageEntries.Where(x => !repImages.Select(a => a.Path).Contains(x.Key)).ToList();
 
-        // 工具函数：标准化归档内目录key，使用'/'并保留末尾'/'
-        static string? GetDirKeyFromEntryKey(string entryKey)
-        {
-            var key = entryKey.Replace('\\', '/');
-            var lastSlash = key.LastIndexOf('/');
-            if (lastSlash < 0)
-            {
-                return null; // 根目录文件
-            }
-            // 包含末尾'/'，以匹配大多数归档目录条目格式
-            return key.Substring(0, lastSlash + 1);
-        }
+        var pathCache = archiveInfo.Paths.ToDictionary(x => x.Path ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+        var rootPath = EnsureRootArchivePath(archiveInfo, pathCache);
 
         var addImageEntities = new List<ComicImage>(addImages.Count);
 
@@ -220,31 +517,10 @@ public class ComicScanHandler(
             {
                 continue; // 跳过无效条目
             }
-            var dirKey = GetDirKeyFromEntryKey(addKey);
-
-            Guid archiveInfoPathId;
-            if (dirKey is null)
-            {
-                // 根目录
-                var rootPath = archiveInfo.Paths.FirstOrDefault(x => x.Path == null);
-                if (rootPath is null)
-                {
-                    rootPath = new ArchiveInfoPath(GuidGenerator.Create(), null, archiveInfo.Id);
-                    archiveInfo.Paths.Add(rootPath);
-                }
-                archiveInfoPathId = rootPath.Id;
-            }
-            else
-            {
-                var dirPath = archiveInfo.Paths.FirstOrDefault(x => x.Path == dirKey);
-                if (dirPath is null)
-                {
-                    // 归档中可能没有显式的目录条目，这里按需创建
-                    dirPath = new ArchiveInfoPath(GuidGenerator.Create(), dirKey, archiveInfo.Id);
-                    archiveInfo.Paths.Add(dirPath);
-                }
-                archiveInfoPathId = dirPath.Id;
-            }
+            var dirKey = GetDirectoryKey(addKey);
+            var archiveInfoPath = dirKey is null
+                ? rootPath
+                : GetOrAddArchivePath(archiveInfo, dirKey, pathCache);
 
             addImageEntities.Add(new ComicImage(
                 GuidGenerator.Create(),
@@ -254,7 +530,7 @@ public class ComicScanHandler(
                 addImage.Size,
                 Guid.Empty,
                 libraryId,
-                archiveInfoPathId: archiveInfoPathId));
+                archiveInfoPathId: archiveInfoPath.Id));
         }
 
         List<Comic> comics = [];

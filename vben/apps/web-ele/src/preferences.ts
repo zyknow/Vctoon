@@ -11,8 +11,8 @@ export const overridesPreferences = defineOverridesPreferences({
     name: import.meta.env.VITE_APP_TITLE,
   },
   tabbar: {
-    enable: true,
-    persist: true,
+    enable: false,
+    persist: false,
   },
   theme: {
     builtinType: 'yellow',

@@ -5,8 +5,8 @@ import type {
   RouteLocationNormalizedLoadedGeneric,
 } from 'vue-router'
 
-import { computed } from 'vue'
-import { RouterView } from 'vue-router'
+import { computed, watch } from 'vue'
+import { RouterView, useRoute } from 'vue-router'
 
 import { preferences, usePreferences } from '@vben/preferences'
 import { storeToRefs, useTabbarStore } from '@vben/stores'
@@ -19,6 +19,31 @@ const tabbarStore = useTabbarStore()
 const { keepAlive } = usePreferences()
 
 const { getCachedTabs, getExcludeCachedTabs } = storeToRefs(tabbarStore)
+const currentRoute = useRoute()
+
+const shouldSyncTabs = computed(
+  () => keepAlive.value && !preferences.tabbar.enable,
+)
+
+watch(
+  () => ({
+    enabled: shouldSyncTabs.value,
+    fullPath: currentRoute.fullPath,
+  }),
+  ({ enabled }) => {
+    if (!enabled) {
+      return
+    }
+    const meta =
+      currentRoute.matched?.[currentRoute.matched.length - 1]?.meta ||
+      currentRoute.meta
+    tabbarStore.addTab({
+      ...currentRoute,
+      meta,
+    })
+  },
+  { immediate: true },
+)
 
 /**
  * 是否使用动画

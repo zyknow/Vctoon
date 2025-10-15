@@ -54,6 +54,7 @@ public class ComicAppService(
             {
                 x.Id,
                 x.Path,
+                x.Extension,
                 x.ArchiveInfoPathId,
                 x.LibraryId,
                 x.LibraryPathId
@@ -64,12 +65,12 @@ public class ComicAppService(
         {
             throw new UserFriendlyException("Image file not found");
         }
-//TODO: 非部署情况下img标签不会携带cookie，无法鉴权
+        //TODO: 非部署情况下img标签不会携带cookie，无法鉴权
 #if !DEBUG
         await CheckCurrentUserLibraryPermissionAsync(imageFile.LibraryId, x => x.CanView);
 #endif
 
-        var contentType = ConverterHelper.MapToRemoteContentType(imageFile.Path);
+        var contentType = ConverterHelper.MapToRemoteContentType(imageFile.Extension);
 
         if (imageFile.LibraryPathId is not null)
         {

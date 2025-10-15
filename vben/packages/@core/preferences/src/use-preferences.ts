@@ -119,12 +119,10 @@ function usePreferences() {
   })
 
   /**
-   * @zh_CN 是否开启keep-alive
-   * 在tabs可见以及开启keep-alive的情况下才开启
+   * @zh_CN 是否开启 keep-alive
+   * 即使隐藏 tabbar，也可根据路由 meta.keepAlive 参与缓存
    */
-  const keepAlive = computed(
-    () => preferences.tabbar.enable && preferences.tabbar.keepAlive,
-  )
+  const keepAlive = computed(() => preferences.tabbar.keepAlive)
 
   /**
    * @zh_CN 登录注册页面布局是否为左侧

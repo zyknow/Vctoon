@@ -275,6 +275,16 @@
       "cancel": "取消"
     }
   },
+  "comic": {
+    "settings": {
+      "fields": {
+        "preloadCount": "预加载数量"
+      },
+      "options": {
+        "preloadCount": "预加载 {count} 页"
+      }
+    }
+  },
   "securityLogs": {
     "title": "安全日志",
     "viewMode": {

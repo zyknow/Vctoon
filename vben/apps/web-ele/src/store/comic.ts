@@ -26,6 +26,13 @@ export const useComicStore = defineStore('comic', () => {
     if (shouldForceFitHeight) {
       next.zoomMode = 'fit-height'
     }
+    const preloadFallback = DEFAULT_COMIC_VIEWER_SETTINGS.preloadCount
+    if (Number.isFinite(next.preloadCount)) {
+      const normalized = Math.max(0, Math.round(next.preloadCount))
+      next.preloadCount = normalized
+    } else {
+      next.preloadCount = preloadFallback
+    }
     return next
   }
 
@@ -90,6 +97,21 @@ export const useComicStore = defineStore('comic', () => {
         return
       }
       settings.imageSpacing = Math.round(value)
+    },
+  )
+
+  watch(
+    () => settings.preloadCount,
+    (value) => {
+      const fallback = DEFAULT_COMIC_VIEWER_SETTINGS.preloadCount
+      if (Number.isFinite(value)) {
+        const normalized = Math.max(0, Math.round(value))
+        if (normalized !== value) {
+          settings.preloadCount = normalized
+        }
+        return
+      }
+      settings.preloadCount = fallback
     },
   )
 

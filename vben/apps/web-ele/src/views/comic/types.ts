@@ -10,12 +10,15 @@ export type ComicQualityPreset =
   | 'custom'
   | 'original'
 
+export const DEFAULT_COMIC_PRELOAD_COUNTS = [3, 5, 10, 20] as const
+
 export interface ComicViewerSettings {
   alwaysFullscreen: boolean
   backgroundColor: string
   customQualityWidth: number
   displayMode: DisplayMode
   imageSpacing: number
+  preloadCount: number
   pageTransition: boolean
   qualityPreset: ComicQualityPreset
   readingDirection: ReadingDirection
@@ -31,6 +34,7 @@ export const DEFAULT_COMIC_VIEWER_SETTINGS: ComicViewerSettings = {
   qualityPreset: 'original',
   customQualityWidth: 1920,
   imageSpacing: 24,
+  preloadCount: DEFAULT_COMIC_PRELOAD_COUNTS[1],
   pageTransition: true,
   backgroundColor: '#000000',
   alwaysFullscreen: false,

@@ -14,7 +14,7 @@ import { useIsMobile } from '@vben/hooks'
 import { $t } from '#/locales'
 import { useComicStore } from '#/store'
 
-import { isVerticalDirection } from '../types'
+import { DEFAULT_COMIC_PRELOAD_COUNTS, isVerticalDirection } from '../types'
 
 defineOptions({
   name: 'ComicSettingsDrawer',
@@ -194,6 +194,13 @@ const qualityOptions = computed<OptionItem<ComicQualityPreset>[]>(() => [
 ])
 
 const isCustomQuality = computed(() => form.qualityPreset === 'custom')
+
+const preloadCountOptions = computed(() =>
+  DEFAULT_COMIC_PRELOAD_COUNTS.map((count) => ({
+    label: $t('page.comic.settings.options.preloadCount', { count }),
+    value: count,
+  })),
+)
 </script>
 
 <template>
@@ -342,6 +349,20 @@ const isCustomQuality = computed(() => form.qualityPreset === 'custom')
                   size="small"
                 />
               </div>
+            </el-form-item>
+
+            <el-form-item
+              :label="$t('page.comic.settings.fields.preloadCount')"
+              class="mb-0"
+            >
+              <el-select v-model="form.preloadCount" class="w-full">
+                <el-option
+                  v-for="item in preloadCountOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
             </el-form-item>
           </div>
         </section>
