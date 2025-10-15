@@ -1,0 +1,36 @@
+{
+  // 使用 IntelliSense 了解相关属性。
+  // 悬停以查看现有属性的描述。
+  // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "coreclr",
+      "request": "launch",
+      "name": "Vctoon.Web (CoreCLR)",
+      "program": "${workspaceFolder}/src/Vctoon.Web/bin/Debug/net9.0/Vctoon.Web.dll",
+      "cwd": "${workspaceFolder}/src/Vctoon.Web",
+      "console": "integratedTerminal",
+      "preLaunchTask": "build-web",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:44364"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    },
+    {
+      "type": "dotnet",
+      "request": "launch",
+      "name": "Vctoon.Web (Dotnet 项目)",
+      "projectPath": "${workspaceFolder}/src/Vctoon.Web/Vctoon.Web.csproj",
+      "preLaunchTask": "build-web",
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    }
+  ]
+}
