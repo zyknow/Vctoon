@@ -2225,11 +2225,13 @@ namespace Vctoon.Migrations
                 {
                     b.HasOne("Vctoon.Mediums.Comic", null)
                         .WithMany("Processes")
-                        .HasForeignKey("ComicId");
+                        .HasForeignKey("ComicId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Vctoon.Mediums.Video", null)
                         .WithMany("Processes")
-                        .HasForeignKey("VideoId");
+                        .HasForeignKey("VideoId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Vctoon.Libraries.ArchiveInfo", b =>
