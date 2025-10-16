@@ -19,7 +19,7 @@ public class CoverSaver(IBlobContainer<CoverContainer> coverContainer) : VctoonS
 
         var fileName = $@"{Guid.NewGuid()}.png";
 
-        await coverContainer.SaveAsync(fileName, memoryStream);
+        await coverContainer.SaveAsync(fileName, memoryStream,true);
 
         return fileName;
     }

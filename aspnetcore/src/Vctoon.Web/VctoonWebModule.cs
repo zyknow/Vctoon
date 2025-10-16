@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Logging;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation.AspNetCore;
+using Vctoon.BlobContainers;
 using Vctoon.EntityFrameworkCore;
 using Vctoon.Localization.Vctoon;
 using Vctoon.Web.HealthChecks;
@@ -26,6 +27,8 @@ using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.AspNetCore.SignalR;
 using Volo.Abp.Autofac;
 using Volo.Abp.AutoMapper;
+using Volo.Abp.BlobStoring;
+using Volo.Abp.BlobStoring.FileSystem;
 using Volo.Abp.Identity.AspNetCore;
 using Volo.Abp.Modularity;
 using Volo.Abp.OpenIddict;
@@ -50,7 +53,8 @@ namespace Vctoon.Web;
     typeof(AbpAspNetCoreMvcUiBasicThemeModule),
     typeof(AbpSwashbuckleModule),
     typeof(AbpAspNetCoreSerilogModule),
-    typeof(AbpAspNetCoreSignalRModule)
+    typeof(AbpAspNetCoreSignalRModule),
+    typeof(AbpBlobStoringFileSystemModule)
 )]
 public class VctoonWebModule : AbpModule
 {
@@ -134,6 +138,14 @@ public class VctoonWebModule : AbpModule
         Configure<PermissionManagementOptions>(options => { options.IsDynamicPermissionStoreEnabled = true; });
 
         Configure<AbpMvcLibsOptions>(options => { options.CheckLibs = false; });
+
+        Configure<AbpBlobStoringOptions>(options =>
+        {
+            options.Containers.Configure<CoverContainer>(container =>
+            {
+                container.UseFileSystem(fileSystem => { fileSystem.BasePath = @$"Covers"; });
+            });
+        });
     }
 
 
