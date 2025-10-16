@@ -19,6 +19,11 @@
     "readingProgress": "Reading Progress"
   },
   "mediums": {
+    "list": {
+      "loading": "Loading more...",
+      "loadMoreHint": "You hit the end, keep scrolling to load more",
+      "noMore": "You've reached the end"
+    },
     "edit": {
       "title": "Edit Media",
       "titleLabel": "Title",

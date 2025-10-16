@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { watch } from 'vue'
+
 import { Page } from '@vben/common-ui'
 import { useUserStore } from '@vben/stores'
 
@@ -9,17 +11,27 @@ import {
   provideMediumProvider,
 } from '#/hooks/useMediumProvider'
 import { $t } from '#/locales'
+import { useMediumStore } from '#/store'
 
 import LibraryRecommend from './library-recommend.vue'
 
 // 当前库 ID（从路径中解析）
 const libraryId = location.pathname.replace('/library/', '')
 const userStore = useUserStore()
+const mediumStore = useMediumStore()
 const library = userStore.libraries.find((i) => i.id === libraryId)
 if (!library) {
   throw new Error('Library not found')
 }
 const state = createLibraryMediumProvider(library)
+state.currentTab.value = mediumStore.libraryTabs[library.id] ?? 'library'
+watch(
+  () => state.currentTab.value,
+  (tab) => {
+    mediumStore.setLibraryTab(library.id, tab)
+  },
+  { immediate: true },
+)
 provideMediumProvider(state)
 provideMediumItemProvider({
   items: state.items,

@@ -18,6 +18,7 @@ import {
   useInjectedMediumItemProvider,
   useInjectedMediumProvider,
 } from '#/hooks/useMediumProvider'
+import { $t } from '#/locales'
 import { useMediumStore } from '#/store'
 import { ItemDisplayMode } from '#/store/typing'
 
@@ -189,6 +190,29 @@ const providerLoadNext = async () => {
   await injected.loadNext()
 }
 
+const bottomStatus = computed<'done' | 'loading' | 'more'>(() => {
+  if (
+    injected.loading.value &&
+    (items.value.length > 0 || pendingScrollTop.value !== null)
+  ) {
+    return 'loading'
+  }
+  if (injected.hasMore.value) {
+    return 'more'
+  }
+  return 'done'
+})
+
+const bottomMessage = computed(() => {
+  if (bottomStatus.value === 'loading') {
+    return $t('page.mediums.list.loading')
+  }
+  if (bottomStatus.value === 'more') {
+    return $t('page.mediums.list.loadMoreHint')
+  }
+  return $t('page.mediums.list.noMore')
+})
+
 // 编辑弹窗处理（Promise 化）
 const handleEdit = async (medium: any) => {
   try {
@@ -288,6 +312,12 @@ watch(
         @edit="handleEdit"
       />
     </TransitionGroup>
+    <div
+      v-if="items.length > 0 || injected.loading"
+      class="medium-content__footer text-muted-foreground py-4 text-center text-sm"
+    >
+      {{ bottomMessage }}
+    </div>
   </div>
 </template>
 

@@ -19,6 +19,11 @@
     "readingProgress": "阅读进度"
   },
   "mediums": {
+    "list": {
+      "loading": "正在加载更多...",
+      "loadMoreHint": "已到列表底部，继续滚动即可加载更多",
+      "noMore": "已经到底了，没有更多内容"
+    },
     "edit": {
       "title": "编辑媒体",
       "titleLabel": "标题",
