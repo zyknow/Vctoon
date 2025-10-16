@@ -1,4 +1,6 @@
 ﻿using System.Threading;
+using System.Threading.Tasks;
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Vctoon.Handlers;
@@ -16,7 +18,7 @@ public class LibraryScanner(
     : VctoonService, ITransientDependency
 
 {
-    private static readonly Lock LockObject = new();
+    private static readonly object LockObject = new();
 
     private readonly int _maxDegreeOfParallelism = 8;
 
@@ -24,15 +26,25 @@ public class LibraryScanner(
 
     public async Task ScanAsync(Guid libraryId)
     {
+        var stopwatch = Stopwatch.StartNew();
+
+        var skipScan = false;
         lock (LockObject)
         {
             if (ScanningLibraryIds.Contains(libraryId))
             {
-                logger.LogWarning($"Library {libraryId} is being scanned, please wait");
-                return;
+                logger.LogWarning("Library {LibraryId} is being scanned, please wait", libraryId);
+                skipScan = true;
             }
+            else
+            {
+                ScanningLibraryIds.Add(libraryId);
+            }
+        }
 
-            ScanningLibraryIds.Add(libraryId);
+        if (skipScan)
+        {
+            return;
         }
 
         try
@@ -46,7 +58,7 @@ public class LibraryScanner(
                 throw new BusinessException("Library is not found");
             }
 
-            logger.LogInformation($"Start scanning library: {library.Name}");
+            logger.LogInformation("Start scanning library: {LibraryName}", library.Name);
 
             await SendLibraryScanMessageAsync(libraryId, L["ScanningLibraryPathDirectory"]);
             await ScanLibraryPathDirectoryStructureAsync(library);
@@ -59,59 +71,53 @@ public class LibraryScanner(
         }
         catch (Exception e)
         {
-            logger.LogError(e, $"Scanning library {libraryId} failed");
+            logger.LogError(e, "Scanning library {LibraryId} failed", libraryId);
             throw;
         }
         finally
         {
-            ScanningLibraryIds.Remove(libraryId);
+            lock (LockObject)
+            {
+                ScanningLibraryIds.Remove(libraryId);
+            }
             await SendLibraryScannedAsync(libraryId);
-            logger.LogInformation($"End scanning library: {libraryId}");
+            stopwatch.Stop();
+            logger.LogInformation("End scanning library: {LibraryId}. Elapsed: {ElapsedMs} ms", libraryId, stopwatch.ElapsedMilliseconds);
         }
     }
 
     protected virtual async Task ScanLibraryFileAsync(Library library)
     {
-        using var semaphore = new SemaphoreSlim(_maxDegreeOfParallelism);
-        var scanLibraryPathFileTasks = new List<Task>();
-
-        foreach (var libraryPath in library.Paths)
+        // 并行扫描 LibraryPath 文件，限制最大并行度
+        var parallelOptions = new ParallelOptions
         {
-            var task = Task.Run(async () =>
+            MaxDegreeOfParallelism = _maxDegreeOfParallelism
+        };
+
+        await Parallel.ForEachAsync(library.Paths, parallelOptions, async (libraryPath, _) =>
+        {
+            try
             {
-                await semaphore.WaitAsync();
-
-                try
+                using (var uow = unitOfWorkManager.Begin(true))
                 {
-                    using (var uow = unitOfWorkManager.Begin(true))
-                    {
-                        await using var scope = uow.ServiceProvider.CreateAsyncScope();
-                        var libraryScanner = scope.ServiceProvider.GetRequiredService<LibraryScanner>();
-                        // do not auto save
-                        await libraryScanner.ScanningLibraryPathFileAsync(library, libraryPath, false);
-                    }
+                    await using var scope = uow.ServiceProvider.CreateAsyncScope();
+                    var libraryScanner = scope.ServiceProvider.GetRequiredService<LibraryScanner>();
+                    // do not auto save
+                    await libraryScanner.ScanningLibraryPathFileAsync(library, libraryPath);
                 }
-                catch (Exception e)
-                {
-                    Logger.LogError(e, $"Scanning library path {libraryPath.Path} failed");
-                }
-                finally
-                {
-                    semaphore.Release();
-                }
-            });
-
-            scanLibraryPathFileTasks.Add(task);
-        }
-
-        await Task.WhenAll(scanLibraryPathFileTasks);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Scanning library path {Path} failed", libraryPath.Path);
+            }
+        });
 
         await libraryStore.DeleteLibraryEmptyComicAsync(library);
 
         await libraryRepository.UpdateAsync(library, true);
     }
 
-    protected virtual async Task ScanLibraryPathDirectoryStructureAsync(Library library)
+    protected virtual Task ScanLibraryPathDirectoryStructureAsync(Library library)
     {
         // Scan only the directory structure, if it does not exist, create and add it to the Children of libraryPath, and you need to delete the non-existent Children
 
@@ -119,28 +125,40 @@ public class LibraryScanner(
 
         if (rootPaths.IsNullOrEmpty())
         {
-            return;
+            return Task.CompletedTask;
         }
 
         foreach (var libraryPath in rootPaths)
         {
             if (!Directory.Exists(libraryPath.Path))
             {
-                return;
+                library.Paths.RemoveAll(x => x.Path.StartsWith(libraryPath.Path));
+                // 不存在则跳过该根路径，继续处理其它根路径
+                continue;
             }
 
-            var dirs = Directory.GetDirectories(libraryPath.Path, "*", SearchOption.AllDirectories);
+            // 使用枚举器以降低内存峰值
+            var dirsEnum = Directory.EnumerateDirectories(libraryPath.Path, "*", SearchOption.AllDirectories);
+            var dirsSet = new HashSet<string>(dirsEnum, StringComparer.OrdinalIgnoreCase);
 
-            var deleteLibraryPaths = library.Paths.Where(x => !x.IsRoot).Where(x => !dirs.Contains(x.Path)).ToList();
+            var allPathsSet = new HashSet<string>(library.Paths.Select(p => p.Path), StringComparer.OrdinalIgnoreCase);
+
+            var deleteLibraryPaths = library.Paths
+                .Where(x => !x.IsRoot)
+                .Where(x => !dirsSet.Contains(x.Path))
+                .ToList();
             library.Paths.RemoveAll(x => deleteLibraryPaths.Contains(x));
 
-            var addLibraryPaths = dirs.Where(x => !library.Paths.Select(p => p.Path).Contains(x))
+            var addLibraryPaths = dirsSet
+                .Where(x => !allPathsSet.Contains(x))
                 .Select(dirPath =>
                     new LibraryPath(GuidGenerator.Create(), dirPath, false, library.Id))
                 .ToList();
 
             library.Paths.AddRange(addLibraryPaths);
         }
+
+        return Task.CompletedTask;
     }
 
     /// <summary>
