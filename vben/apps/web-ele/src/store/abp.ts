@@ -14,6 +14,6 @@ export const useAbpStore = defineStore('Abp', {
   },
   persist: {
     // 持久化
-    pick: ['application'],
+    // pick: ['application'],
   },
 })

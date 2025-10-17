@@ -319,5 +319,29 @@
     "messages": {
       "loadError": "加载安全日志失败"
     }
+  },
+  "setting": {
+    "title": "系统设置",
+    "actions": {
+      "refresh": "刷新",
+      "save": "保存更改",
+      "resetAll": "重置全部"
+    },
+    "group": {
+      "reset": "重置分组"
+    },
+    "item": {
+      "reset": "重置"
+    },
+    "messages": {
+      "loadError": "加载设置失败",
+      "saveSuccess": "保存成功",
+      "saveNoChange": "没有需要保存的更改",
+      "resetSuccess": "重置成功",
+      "resetConfirm": "是否重置设置：{name}？",
+      "resetGroupConfirm": "是否重置分组：{group}？",
+      "resetAllConfirm": "是否重置全部设置？"
+    },
+    "empty": "暂无设置项"
   }
 }

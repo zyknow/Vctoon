@@ -63,6 +63,17 @@ const routes: RouteRecordRaw[] = [
   },
   {
     meta: {
+      icon: 'mdi:cog',
+      keepAlive: false,
+      order: 10_002,
+      title: $t('page.setting.title'),
+    },
+    name: 'Setting',
+    path: '/setting',
+    component: () => import('#/views/setting/index.vue'),
+  },
+  {
+    meta: {
       icon: 'mdi:shield-lock',
       keepAlive: false,
       order: 10_001,

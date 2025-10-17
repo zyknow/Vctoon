@@ -317,5 +317,29 @@
     "messages": {
       "loadError": "Failed to load security logs"
     }
+  },
+  "setting": {
+    "title": "Settings",
+    "actions": {
+      "refresh": "Refresh",
+      "save": "Save Changes",
+      "resetAll": "Reset All"
+    },
+    "group": {
+      "reset": "Reset Group"
+    },
+    "item": {
+      "reset": "Reset"
+    },
+    "messages": {
+      "loadError": "Failed to load settings",
+      "saveSuccess": "Settings saved successfully",
+      "saveNoChange": "No changes to save",
+      "resetSuccess": "Settings reset successfully",
+      "resetConfirm": "Reset setting: {name}?",
+      "resetGroupConfirm": "Reset group: {group}?",
+      "resetAllConfirm": "Reset all settings?"
+    },
+    "empty": "No settings available"
   }
 }

@@ -173,7 +173,7 @@ const clearSelection = () => {
           :disabled="isBusy"
           @command="handleArtistCommand"
         >
-          <el-button type="primary" size="small" :loading="artistLoading">
+          <el-button type="default" size="small" :loading="artistLoading">
             {{ $t('page.mediums.selection.artistActions.label') }}
             <MdiChevronDown class="ml-1 text-base" />
           </el-button>

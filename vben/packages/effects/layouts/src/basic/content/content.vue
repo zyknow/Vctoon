@@ -18,7 +18,8 @@ defineOptions({ name: 'LayoutContent' })
 const tabbarStore = useTabbarStore()
 const { keepAlive } = usePreferences()
 
-const { getCachedTabs, getExcludeCachedTabs } = storeToRefs(tabbarStore)
+const { getCachedTabs, getExcludeCachedTabs, renderRouteView } =
+  storeToRefs(tabbarStore)
 const currentRoute = useRoute()
 
 const shouldSyncTabs = computed(
@@ -123,7 +124,7 @@ function transformComponent(
 <template>
   <div class="relative h-full">
     <IFrameRouterView />
-    <RouterView v-slot="{ Component, route }">
+    <RouterView v-if="renderRouteView" v-slot="{ Component, route }">
       <Transition
         v-if="getEnabledTransition"
         :name="getTransitionName(route)"
