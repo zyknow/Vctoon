@@ -156,3 +156,103 @@ Repository-specific guidance for Copilot
 - Use AutoMapper via IObjectMapper; do not introduce manual mapping unless necessary
 - Use IRepository and IQueryable extensions for queries; avoid raw DbContext in app layer
 - Follow the solution layout and place code in the correct project by responsibility
+
+Setting UI — Setting Types Guide (for EasyAbp / Abp.SettingUi)
+
+This document explains how to change setting types and make them effective in the Setting UI. Put this in your project documentation to help team members understand how to customize the display types of settings.
+
+1. Use WithProperty in setting definitions (example)
+In the `MyAbpApp.Domain` project, inside `Settings/MyAbpAppSettingDefinitionProvider`, you can set properties directly on a `SettingDefinition` using `WithProperty`:
+
+```csharp
+context.Add(
+    new SettingDefinition(
+            "Connection.Ip", // setting name
+            "127.0.0.1", // default value
+            L("DisplayName:Connection.Ip"), // display name
+            L("Description:Connection.Ip") // description
+        )
+        .WithProperty(SettingUiConst.Group1, "Server")
+        .WithProperty(SettingUiConst.Group2, "Connection")
+);
+```
+
+The constants `Group1` and `Group2` are defined in the `SettingUiConst` class. In the example above, `Group1` is set to `Server` and `Group2` is set to `Connection`.
+
+2. Provide localization for group names (example)
+Add localization files in the `MyAbpApp.Domain.Shared` project:
+
+`Localization/MyAbpApp/en.json`
+```json
+{
+  "culture": "en",
+  "texts": {
+    "Server": "Server",
+    "Connection": "Connection"
+  }
+}
+```
+
+`Localization/MyAbpApp/zh-Hans.json`
+```json
+{
+  "culture": "zh-Hans",
+  "texts": {
+    "Server": "服务器",
+    "Connection": "连接"
+  }
+}
+```
+
+3. Setting types (default: text)
+By default, a setting value is a string and will be rendered as a text input in the UI. You can customize the input type by providing a `Type` property.
+
+In the `MyAbpApp.Domain.Shared` project, create or modify `/SettingProperties/MySettingProperties.json`:
+
+```json
+{
+  "Connection.Port": {
+    "Group1": "Server",
+    "Group2": "Connection",
+    "Type": "number"
+  }
+}
+```
+
+After refreshing the browser (F5), the front-end will immediately take effect: the input control becomes a number input and front-end validation will apply.
+
+You can also set the type using `WithProperty("Type", "number")` on the `SettingDefinition`.
+
+Currently supported Setting UI types:
+- text (default)
+- number
+- checkbox
+- select
+
+4. select type and Options property
+When using the `select` type you must also provide an `Options` property. `Options` is a string separated by vertical bars (`|`). The first position can be empty to represent a blank default option:
+
+```json
+{
+  "Connection.Protocol": {
+    "Group1": "Server",
+    "Group2": "Connection",
+    "Type": "select",
+    "Options": "|HTTP|TCP|RDP|FTP|SFTP"
+  }
+}
+```
+
+Alternatively, configure with:
+```csharp
+.WithProperty("Type", "select")
+.WithProperty("Options", "|HTTP|TCP|RDP|FTP|SFTP")
+```
+
+5. Notes and recommendations
+- Changing the `SettingProperties` JSON or using `SettingDefinition.WithProperty` usually does not require restarting the application. Refresh the UI page (F5) to see changes.
+- It is recommended to put group names and option labels into localization files to support multiple languages.
+
+---
+
+(End of English guide — copy this text into `copilot-instructions.md` and edit as needed.)

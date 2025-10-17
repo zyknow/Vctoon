@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="Docnet.Core" Version="2.6.0" />
+    <PackageReference Include="EasyAbp.Abp.SettingUi.Application" Version="2.6.0" />
     <PackageReference Include="FFMpegCore" Version="5.2.0" />
     <PackageReference Include="FFMpegCore.Extensions.SkiaSharp" Version="5.0.2" />
     <PackageReference Include="SharpCompress" Version="0.40.0" />

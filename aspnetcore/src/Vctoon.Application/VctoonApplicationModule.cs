@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using EasyAbp.Abp.SettingUi;
+using Microsoft.Extensions.DependencyInjection;
 using Vctoon.Handlers;
 using Vctoon.ImageProviders;
 using Volo.Abp.Account;
@@ -7,7 +8,6 @@ using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
 using Volo.Abp.Modularity;
 using Volo.Abp.PermissionManagement;
-using Volo.Abp.SettingManagement;
 
 namespace Vctoon;
 
@@ -18,7 +18,7 @@ namespace Vctoon;
     typeof(AbpFeatureManagementApplicationModule),
     typeof(AbpIdentityApplicationModule),
     typeof(AbpAccountApplicationModule),
-    typeof(AbpSettingManagementApplicationModule)
+    typeof(AbpSettingUiApplicationModule)
 )]
 public class VctoonApplicationModule : AbpModule
 {

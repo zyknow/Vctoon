@@ -1,4 +1,5 @@
-﻿using Localization.Resources.AbpUi;
+﻿using EasyAbp.Abp.SettingUi;
+using Localization.Resources.AbpUi;
 using Vctoon.Localization.Vctoon;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
@@ -14,7 +15,8 @@ namespace Vctoon;
     typeof(AbpPermissionManagementHttpApiModule),
     typeof(AbpSettingManagementHttpApiModule),
     typeof(AbpIdentityHttpApiModule),
-    typeof(AbpFeatureManagementHttpApiModule)
+    typeof(AbpFeatureManagementHttpApiModule),
+    typeof(AbpSettingUiHttpApiModule)
 )]
 public class VctoonHttpApiModule : AbpModule
 {

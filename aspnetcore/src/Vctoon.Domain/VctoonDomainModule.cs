@@ -1,3 +1,4 @@
+using EasyAbp.Abp.SettingUi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Volo.Abp.AuditLogging;
@@ -27,7 +28,8 @@ namespace Vctoon;
     typeof(AbpEmailingModule),
     typeof(AbpIdentityDomainModule),
     typeof(AbpOpenIddictDomainModule),
-    typeof(BlobStoringDatabaseDomainModule)
+    typeof(BlobStoringDatabaseDomainModule),
+    typeof(AbpSettingUiDomainModule)
 )]
 public class VctoonDomainModule : AbpModule
 {

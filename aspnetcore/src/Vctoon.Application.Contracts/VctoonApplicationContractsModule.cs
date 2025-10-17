@@ -1,4 +1,5 @@
-﻿using Volo.Abp.Account;
+﻿using EasyAbp.Abp.SettingUi;
+using Volo.Abp.Account;
 using Volo.Abp.Modularity;
 using Volo.Abp.PermissionManagement;
 using Volo.Abp.SettingManagement;
@@ -12,7 +13,8 @@ namespace Vctoon;
     typeof(AbpSettingManagementApplicationContractsModule),
     typeof(AbpIdentityApplicationContractsModule),
     typeof(AbpAccountApplicationContractsModule),
-    typeof(AbpPermissionManagementApplicationContractsModule)
+    typeof(AbpPermissionManagementApplicationContractsModule),
+    typeof(AbpSettingUiApplicationContractsModule)
 )]
 public class VctoonApplicationContractsModule : AbpModule
 {

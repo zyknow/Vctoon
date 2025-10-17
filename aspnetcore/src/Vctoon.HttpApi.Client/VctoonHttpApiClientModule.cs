@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using EasyAbp.Abp.SettingUi;
+using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Modularity;
 using Volo.Abp.PermissionManagement;
 using Volo.Abp.SettingManagement;
@@ -13,7 +14,8 @@ namespace Vctoon;
     typeof(AbpPermissionManagementHttpApiClientModule),
     typeof(AbpFeatureManagementHttpApiClientModule),
     typeof(AbpIdentityHttpApiClientModule),
-    typeof(AbpSettingManagementHttpApiClientModule)
+    typeof(AbpSettingManagementHttpApiClientModule),
+    typeof(AbpSettingUiHttpApiClientModule)
 )]
 public class VctoonHttpApiClientModule : AbpModule
 {

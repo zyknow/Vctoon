@@ -1,3 +1,5 @@
+using EasyAbp.Abp.SettingUi;
+using EasyAbp.Abp.SettingUi.Localization;
 using Vctoon.Localization.Vctoon;
 using Volo.Abp.AuditLogging;
 using Volo.Abp.BackgroundJobs;
@@ -24,7 +26,8 @@ namespace Vctoon;
     typeof(AbpSettingManagementDomainSharedModule),
     typeof(AbpIdentityDomainSharedModule),
     typeof(AbpOpenIddictDomainSharedModule),
-    typeof(BlobStoringDatabaseDomainSharedModule)
+    typeof(BlobStoringDatabaseDomainSharedModule),
+    typeof(AbpSettingUiDomainSharedModule)
 )]
 public class VctoonDomainSharedModule : AbpModule
 {
@@ -51,6 +54,10 @@ public class VctoonDomainSharedModule : AbpModule
                 .Add<VctoonResource>("en")
                 .AddBaseTypes(typeof(AbpValidationResource))
                 .AddVirtualJson("/Localization/Vctoon");
+            
+            options.Resources
+                .Get<SettingUiResource>()
+                .AddVirtualJson("/Localization/SettingUI");
 
             options.DefaultResourceType = typeof(VctoonResource);
 
