@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="../../../../common.props"/>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Zyknow.Abp.Lucene.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Zyknow.Abp.Lucene.Domain.Shared/Zyknow.Abp.Lucene.Domain.Shared.csproj" />
+    <ProjectReference Include="../../src/Zyknow.Abp.Lucene.Domain/Zyknow.Abp.Lucene.Domain.csproj" />
+    <ProjectReference Include="../../src/Zyknow.Abp.Lucene.Application/Zyknow.Abp.Lucene.Application.csproj" />
+    <ProjectReference Include="../../src/Zyknow.Abp.Lucene.Application.Contracts/Zyknow.Abp.Lucene.Application.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.TestBase" Version="$(AbpVersion)" />
+    <PackageReference Include="Lucene.Net" Version="4.8.0-beta00017" />
+    <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00017" />
+    <PackageReference Include="Lucene.Net.ICU" Version="4.8.0-beta00017" />
+  </ItemGroup>
+
+</Project>
