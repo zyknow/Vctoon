@@ -1,35 +1,47 @@
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Volo.Abp;
 using Volo.Abp.AspNetCore.Mvc;
 using Zyknow.Abp.Lucene.Dtos;
 
 namespace Zyknow.Abp.Lucene.Controllers;
 
-[Area("lucene")] 
-[Route("api/lucene")] 
+[Area("lucene")]
+[Route("api/lucene")]
 public class LuceneController : AbpControllerBase
 {
     private readonly ILuceneService _service;
-    public LuceneController(ILuceneService service) => _service = service;
+
+    public LuceneController(ILuceneService service)
+    {
+        _service = service;
+    }
 
     [HttpPost("search/{entity}")]
     public Task<SearchResultDto> SearchAsync([FromRoute] string entity, [FromBody] SearchQueryInput input)
-        => _service.SearchAsync(entity, input);
+    {
+        return _service.SearchAsync(entity, input);
+    }
 
     [HttpPost("rebuild/{entity}")]
     public Task<int> RebuildIndexAsync([FromRoute] string entity)
-        => _service.RebuildIndexAsync(entity);
+    {
+        return _service.RebuildIndexAsync(entity);
+    }
 
     [HttpPost("rebuild-and-index/{entity}")]
     public Task<int> RebuildAndIndexAllAsync([FromRoute] string entity, [FromQuery] int batchSize = 1000)
-        => _service.RebuildAndIndexAllAsync(entity, batchSize);
+    {
+        return _service.RebuildAndIndexAllAsync(entity, batchSize);
+    }
 
     [HttpGet("count/{entity}")]
     public Task<int> GetIndexDocumentCountAsync([FromRoute] string entity)
-        => _service.GetIndexDocumentCountAsync(entity);
+    {
+        return _service.GetIndexDocumentCountAsync(entity);
+    }
 
     [HttpGet("dump/{entity}")]
     public Task<SearchResultDto> DumpIndexAsync([FromRoute] string entity, [FromQuery] int take = 10)
-        => _service.DumpIndexAsync(entity, take);
+    {
+        return _service.DumpIndexAsync(entity, take);
+    }
 }

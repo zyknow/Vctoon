@@ -10,14 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Zyknow.Abp.Lucene.Application/Zyknow.Abp.Lucene.Application.csproj" />
-    <ProjectReference Include="../Zyknow.Abp.Lucene.Application.Contracts/Zyknow.Abp.Lucene.Application.Contracts.csproj" />
-    <ProjectReference Include="../Zyknow.Abp.Lucene.Domain.Shared/Zyknow.Abp.Lucene.Domain.Shared.csproj" />
+    <ProjectReference Include="../Zyknow.Abp.Lucene.Application/Zyknow.Abp.Lucene.Application.csproj"/>
+    <ProjectReference Include="../Zyknow.Abp.Lucene.Application.Contracts/Zyknow.Abp.Lucene.Application.Contracts.csproj"/>
+    <ProjectReference Include="../Zyknow.Abp.Lucene.Domain.Shared/Zyknow.Abp.Lucene.Domain.Shared.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Volo.Abp" Version="$(AbpVersion)" />
-    <PackageReference Include="Volo.Abp.AspNetCore.Mvc" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp" Version="$(AbpVersion)"/>
+    <PackageReference Include="Volo.Abp.AspNetCore.Mvc" Version="$(AbpVersion)"/>
   </ItemGroup>
 
 </Project>

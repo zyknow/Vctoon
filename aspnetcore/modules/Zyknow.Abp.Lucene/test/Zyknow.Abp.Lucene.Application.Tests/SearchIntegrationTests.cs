@@ -1,15 +1,10 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Logging;
-using Xunit;
-using Zyknow.Abp.Lucene.Options;
-using Zyknow.Abp.Lucene.Services;
-using Zyknow.Abp.Lucene.Application.Tests.Fakes;
 using Volo.Abp.MultiTenancy;
 using Zyknow.Abp.Lucene.Analyzers;
+using Zyknow.Abp.Lucene.Application.Tests.Fakes;
 using Zyknow.Abp.Lucene.Dtos;
+using Zyknow.Abp.Lucene.Options;
+using Zyknow.Abp.Lucene.Services;
 
 namespace Zyknow.Abp.Lucene.Application.Tests;
 
@@ -25,7 +20,7 @@ public class SearchIntegrationTests
         services.Configure<LuceneOptions>(opt =>
         {
             opt.PerTenantIndex = false;
-            opt.IndexRootPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "lucene-index-test");
+            opt.IndexRootPath = Path.Combine(Path.GetTempPath(), "lucene-index-test");
             opt.AnalyzerFactory = AnalyzerFactories.IcuGeneral;
             opt.ConfigureLucene(model =>
             {
@@ -51,7 +46,7 @@ public class SearchIntegrationTests
         };
 
         // Act: index documents
-        await indexer.IndexRangeAsync(books, replace: true);
+        await indexer.IndexRangeAsync(books, true);
 
         // Act: search
         var result = await search.SearchAsync("Book", new SearchQueryInput

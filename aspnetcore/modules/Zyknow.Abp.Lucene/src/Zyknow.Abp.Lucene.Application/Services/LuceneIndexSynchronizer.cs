@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
+using Lucene.Net.Documents;
 using Lucene.Net.Index;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Volo.Abp;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
@@ -15,7 +13,6 @@ using Volo.Abp.MultiTenancy;
 using Zyknow.Abp.Lucene.Descriptors;
 using Zyknow.Abp.Lucene.Indexing;
 using Zyknow.Abp.Lucene.Options;
-using Lucene.Net.Documents;
 
 namespace Zyknow.Abp.Lucene.Services;
 
@@ -24,11 +21,11 @@ namespace Zyknow.Abp.Lucene.Services;
 /// </summary>
 public class LuceneIndexSynchronizer : ITransientDependency
 {
-    private readonly LuceneIndexManager _indexManager;
-    private readonly IOptions<LuceneOptions> _options;
-    private readonly ICurrentTenant _currentTenant;
     private readonly IAsyncQueryableExecuter _asyncExecuter;
+    private readonly ICurrentTenant _currentTenant;
+    private readonly LuceneIndexManager _indexManager;
     private readonly ILogger<LuceneIndexSynchronizer> _logger;
+    private readonly IOptions<LuceneOptions> _options;
 
     public LuceneIndexSynchronizer(
         LuceneIndexManager indexManager,
@@ -47,7 +44,8 @@ public class LuceneIndexSynchronizer : ITransientDependency
     /// <summary>
     /// 泛型主键版本：按实体类型进行全量/增量同步，兼容非 Guid 主键。
     /// </summary>
-    public async Task SyncAllAsync<T, TKey>(IRepository<T, TKey> repository, int batchSize = 1000, bool deleteMissing = true, CancellationToken ct = default)
+    public async Task SyncAllAsync<T, TKey>(IRepository<T, TKey> repository, int batchSize = 1000,
+        bool deleteMissing = true, CancellationToken ct = default)
         where T : class, IEntity<TKey>
         where TKey : notnull
     {
@@ -63,8 +61,9 @@ public class LuceneIndexSynchronizer : ITransientDependency
                 .Distinct()
                 .ToList();
 
-            _logger.LogDebug("Lucene sync using projection for {Entity} (Index:{IndexName}) Fields:{Fields}", typeof(T).FullName, descriptor.IndexName, string.Join(",", propNames));
-            int skip = 0;
+            _logger.LogDebug("Lucene sync using projection for {Entity} (Index:{IndexName}) Fields:{Fields}",
+                typeof(T).FullName, descriptor.IndexName, string.Join(",", propNames));
+            var skip = 0;
             while (true)
             {
                 ct.ThrowIfCancellationRequested();
@@ -72,50 +71,65 @@ public class LuceneIndexSynchronizer : ITransientDependency
                 var selector = BuildProjectionSelector<T>(propNames, descriptor.IdFieldName);
                 var projected = query.Select(selector).Skip(skip).Take(batchSize);
                 var rows = await _asyncExecuter.ToListAsync(projected);
-                if (rows.Count == 0) break;
+                if (rows.Count == 0)
+                {
+                    break;
+                }
 
                 var docs = new List<Document>(rows.Count);
-                for (int r = 0; r < rows.Count; r++)
+                for (var r = 0; r < rows.Count; r++)
                 {
                     var row = rows[r];
-                    var values = new Dictionary<string, string>(capacity: propNames.Count + 1)
+                    var values = new Dictionary<string, string>(propNames.Count + 1)
                     {
                         [descriptor.IdFieldName] = row.Id?.ToString() ?? string.Empty
                     };
-                    for (int i = 0; i < propNames.Count; i++)
+                    for (var i = 0; i < propNames.Count; i++)
                     {
                         var val = GetV(row, i)?.ToString() ?? string.Empty;
                         values[propNames[i]] = val;
                     }
+
                     var doc = LuceneDocumentFactory.CreateDocument(values, descriptor);
                     docs.Add(doc);
                 }
 
-                await _indexManager.IndexRangeDocumentsAsync(descriptor, docs, replace: false);
+                await _indexManager.IndexRangeDocumentsAsync(descriptor, docs, false);
                 skip += rows.Count;
             }
         }
         else
         {
-            var valueFields = descriptor.Fields.Where(f => f.ValueSelector != null).Select(f => f.Name).Distinct().ToList();
-            _logger.LogInformation("Lucene sync fallback to entity load for {Entity} (Index:{IndexName}). ValueFields:{Fields}", typeof(T).FullName, descriptor.IndexName, string.Join(",", valueFields));
+            var valueFields = descriptor.Fields.Where(f => f.ValueSelector != null).Select(f => f.Name).Distinct()
+                .ToList();
+            _logger.LogInformation(
+                "Lucene sync fallback to entity load for {Entity} (Index:{IndexName}). ValueFields:{Fields}",
+                typeof(T).FullName, descriptor.IndexName, string.Join(",", valueFields));
 
             // 回退：存在 ValueSelector 时加载完整实体，保证正确性
-            var depends = new HashSet<string>(descriptor.Fields.SelectMany(f => f.Depends).Append(descriptor.IdFieldName));
-            int skip = 0;
+            var depends =
+                new HashSet<string>(descriptor.Fields.SelectMany(f => f.Depends).Append(descriptor.IdFieldName));
+            var skip = 0;
             while (true)
             {
                 ct.ThrowIfCancellationRequested();
                 var query = await repository.GetQueryableAsync();
                 var batchQuery = query.Skip(skip).Take(batchSize);
                 var batch = await _asyncExecuter.ToListAsync(batchQuery);
-                if (batch.Count == 0) break;
-                await _indexManager.IndexRangeAsync(batch, replace: false);
+                if (batch.Count == 0)
+                {
+                    break;
+                }
+
+                await _indexManager.IndexRangeAsync(batch, false);
                 skip += batch.Count;
             }
         }
 
-        if (!deleteMissing) return;
+        if (!deleteMissing)
+        {
+            return;
+        }
 
         // 对账删除：索引 Id - 数据库 Id 的差集（以字符串比较）
         var dbIdQuery = (await repository.GetQueryableAsync()).Select(x => x.Id);
@@ -128,6 +142,167 @@ public class LuceneIndexSynchronizer : ITransientDependency
         {
             await _indexManager.DeleteRangeAsync<T>(staleIds);
         }
+    }
+
+    private static object? GetV(IndexShape row, int idx)
+    {
+        return idx switch
+        {
+            0 => row.V0,
+            1 => row.V1,
+            2 => row.V2,
+            3 => row.V3,
+            4 => row.V4,
+            5 => row.V5,
+            6 => row.V6,
+            7 => row.V7,
+            8 => row.V8,
+            9 => row.V9,
+            10 => row.V10,
+            11 => row.V11,
+            12 => row.V12,
+            13 => row.V13,
+            14 => row.V14,
+            15 => row.V15,
+            _ => null
+        };
+    }
+
+    private static Expression<Func<T, IndexShape>> BuildProjectionSelector<T>(
+        IReadOnlyList<string> propNames, string idFieldName)
+    {
+        var p = Expression.Parameter(typeof(T), "x");
+        var bindings = new List<MemberBinding>();
+
+        var idProp = typeof(T).GetProperty(idFieldName, BindingFlags.Public | BindingFlags.Instance);
+        if (idProp != null)
+        {
+            var idExpr = Expression.Property(p, idProp);
+            var boxId = Expression.Convert(idExpr, typeof(object));
+            var idBind =
+                Expression.Bind(typeof(IndexShape).GetProperty(nameof(IndexShape.Id))!, boxId);
+            bindings.Add(idBind);
+        }
+
+        var count = Math.Min(propNames.Count, 16);
+        for (var i = 0; i < count; i++)
+        {
+            var name = propNames[i];
+            var prop = typeof(T).GetProperty(name, BindingFlags.Public | BindingFlags.Instance);
+            if (prop == null)
+            {
+                continue;
+            }
+
+            var valExpr = Expression.Property(p, prop);
+            var box = Expression.Convert(valExpr, typeof(object));
+            var targetProp = typeof(IndexShape).GetProperty($"V{i}")!;
+            var bind = Expression.Bind(targetProp, box);
+            bindings.Add(bind);
+        }
+
+        var body = Expression.MemberInit(
+            Expression.New(typeof(IndexShape)), bindings);
+        return Expression.Lambda<Func<T, IndexShape>>(body, p);
+    }
+
+    /// <summary>
+    /// Guid 主键版本（兼容旧调用），内部委托到泛型主键版本。
+    /// </summary>
+    public Task SyncAllAsync<T>(IRepository<T, Guid> repository, int batchSize = 1000, bool deleteMissing = true,
+        CancellationToken ct = default)
+        where T : class, IEntity<Guid>
+    {
+        return SyncAllAsync<T, Guid>(repository, batchSize, deleteMissing, ct);
+    }
+
+    /// <summary>
+    /// 遍历当前租户下所有已注册的实体描述符并执行同步（泛型主键）。
+    /// </summary>
+    public async Task SyncTenantAsync(Guid? tenantId = null, Func<Type, object>? repositoryFactory = null,
+        int batchSize = 1000, bool deleteMissing = true, CancellationToken ct = default)
+    {
+        using var change = _currentTenant.Change(tenantId);
+        foreach (var kv in _options.Value.Descriptors)
+        {
+            var entityType = kv.Key;
+            var keyType = ResolveKeyType(entityType);
+            if (keyType is null)
+            {
+                continue;
+            }
+
+            var repoObj = repositoryFactory?.Invoke(entityType);
+            if (repoObj == null)
+            {
+                continue; // 必须由调用方提供 IRepository<TEntity, TKey>
+            }
+
+            var method = typeof(LuceneIndexSynchronizer)
+                .GetMethods(BindingFlags.Instance | BindingFlags.Public)
+                .First(m => m.Name == nameof(SyncAllAsync) && m.IsGenericMethodDefinition &&
+                            m.GetGenericArguments().Length == 2);
+
+            var gmethod = method.MakeGenericMethod(entityType, keyType);
+            await (Task)gmethod.Invoke(this, new object?[] { repoObj, batchSize, deleteMissing, ct })!;
+        }
+    }
+
+    private static Type? ResolveKeyType(Type entityType)
+    {
+        var ientity = entityType.GetInterfaces()
+            .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEntity<>));
+        return ientity?.GetGenericArguments().FirstOrDefault();
+    }
+
+    private EntitySearchDescriptor GetDescriptor(Type type)
+    {
+        if (!_options.Value.Descriptors.TryGetValue(type, out var descriptor))
+        {
+            throw new BusinessException("Lucene:EntityNotConfigured").WithData("Entity", type.FullName);
+        }
+
+        return descriptor;
+    }
+
+    /// <summary>
+    /// 列出索引中所有文档的主键 Id（字符串）。
+    /// </summary>
+    private async Task<List<string>> ListIndexedIdsAsync(EntitySearchDescriptor descriptor)
+    {
+        await Task.Yield();
+        var indexPath = _indexManager.GetIndexPath(descriptor.IndexName);
+        using var dir = _options.Value.DirectoryFactory(indexPath);
+        using var reader = DirectoryReader.Open(dir);
+
+        var ids = new List<string>(reader.MaxDoc);
+        for (var docId = 0; docId < reader.MaxDoc; docId++)
+        {
+            var doc = reader.Document(docId);
+            var id = doc.Get(descriptor.IdFieldName);
+            if (!string.IsNullOrEmpty(id))
+            {
+                ids.Add(id);
+            }
+        }
+
+        return ids;
+    }
+
+    private static string InferNameLocal(LambdaExpression exp)
+    {
+        if (exp.Body is MemberExpression m)
+        {
+            return m.Member.Name;
+        }
+
+        if (exp.Body is UnaryExpression u &&
+            u.Operand is MemberExpression um)
+        {
+            return um.Member.Name;
+        }
+
+        return "Field";
     }
 
     private sealed class IndexShape
@@ -149,131 +324,5 @@ public class LuceneIndexSynchronizer : ITransientDependency
         public object? V13 { get; set; }
         public object? V14 { get; set; }
         public object? V15 { get; set; }
-    }
-
-    private static object? GetV(IndexShape row, int idx) => idx switch
-    {
-        0 => row.V0,
-        1 => row.V1,
-        2 => row.V2,
-        3 => row.V3,
-        4 => row.V4,
-        5 => row.V5,
-        6 => row.V6,
-        7 => row.V7,
-        8 => row.V8,
-        9 => row.V9,
-        10 => row.V10,
-        11 => row.V11,
-        12 => row.V12,
-        13 => row.V13,
-        14 => row.V14,
-        15 => row.V15,
-        _ => null
-    };
-
-    private static System.Linq.Expressions.Expression<Func<T, IndexShape>> BuildProjectionSelector<T>(IReadOnlyList<string> propNames, string idFieldName)
-    {
-        var p = System.Linq.Expressions.Expression.Parameter(typeof(T), "x");
-        var bindings = new List<System.Linq.Expressions.MemberBinding>();
-
-        var idProp = typeof(T).GetProperty(idFieldName, BindingFlags.Public | BindingFlags.Instance);
-        if (idProp != null)
-        {
-            var idExpr = System.Linq.Expressions.Expression.Property(p, idProp);
-            var boxId = System.Linq.Expressions.Expression.Convert(idExpr, typeof(object));
-            var idBind = System.Linq.Expressions.Expression.Bind(typeof(IndexShape).GetProperty(nameof(IndexShape.Id))!, boxId);
-            bindings.Add(idBind);
-        }
-
-        int count = Math.Min(propNames.Count, 16);
-        for (int i = 0; i < count; i++)
-        {
-            var name = propNames[i];
-            var prop = typeof(T).GetProperty(name, BindingFlags.Public | BindingFlags.Instance);
-            if (prop == null) continue;
-            var valExpr = System.Linq.Expressions.Expression.Property(p, prop);
-            var box = System.Linq.Expressions.Expression.Convert(valExpr, typeof(object));
-            var targetProp = typeof(IndexShape).GetProperty($"V{i}")!;
-            var bind = System.Linq.Expressions.Expression.Bind(targetProp, box);
-            bindings.Add(bind);
-        }
-
-        var body = System.Linq.Expressions.Expression.MemberInit(System.Linq.Expressions.Expression.New(typeof(IndexShape)), bindings);
-        return System.Linq.Expressions.Expression.Lambda<Func<T, IndexShape>>(body, p);
-    }
-
-    /// <summary>
-    /// Guid 主键版本（兼容旧调用），内部委托到泛型主键版本。
-    /// </summary>
-    public Task SyncAllAsync<T>(IRepository<T, Guid> repository, int batchSize = 1000, bool deleteMissing = true, CancellationToken ct = default)
-        where T : class, IEntity<Guid>
-    {
-        return SyncAllAsync<T, Guid>(repository, batchSize, deleteMissing, ct);
-    }
-
-    /// <summary>
-    /// 遍历当前租户下所有已注册的实体描述符并执行同步（泛型主键）。
-    /// </summary>
-    public async Task SyncTenantAsync(Guid? tenantId = null, Func<Type, object>? repositoryFactory = null, int batchSize = 1000, bool deleteMissing = true, CancellationToken ct = default)
-    {
-        using var change = _currentTenant.Change(tenantId);
-        foreach (var kv in _options.Value.Descriptors)
-        {
-            var entityType = kv.Key;
-            var keyType = ResolveKeyType(entityType);
-            if (keyType is null) continue;
-
-            var repoObj = repositoryFactory?.Invoke(entityType);
-            if (repoObj == null) continue; // 必须由调用方提供 IRepository<TEntity, TKey>
-
-            var method = typeof(LuceneIndexSynchronizer)
-                .GetMethods(BindingFlags.Instance | BindingFlags.Public)
-                .First(m => m.Name == nameof(SyncAllAsync) && m.IsGenericMethodDefinition && m.GetGenericArguments().Length == 2);
-
-            var gmethod = method.MakeGenericMethod(entityType, keyType);
-            await (Task)gmethod.Invoke(this, new object?[] { repoObj, batchSize, deleteMissing, ct })!;
-        }
-    }
-
-    private static Type? ResolveKeyType(Type entityType)
-    {
-        var ientity = entityType.GetInterfaces()
-            .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEntity<>));
-        return ientity?.GetGenericArguments().FirstOrDefault();
-    }
-
-    private EntitySearchDescriptor GetDescriptor(Type type)
-    {
-        if (!_options.Value.Descriptors.TryGetValue(type, out var descriptor))
-            throw new Volo.Abp.BusinessException(code: "Lucene:EntityNotConfigured").WithData("Entity", type.FullName);
-        return descriptor;
-    }
-
-    /// <summary>
-    /// 列出索引中所有文档的主键 Id（字符串）。
-    /// </summary>
-    private async Task<List<string>> ListIndexedIdsAsync(EntitySearchDescriptor descriptor)
-    {
-        await Task.Yield();
-        var indexPath = _indexManager.GetIndexPath(descriptor.IndexName);
-        using var dir = _options.Value.DirectoryFactory(indexPath);
-        using var reader = DirectoryReader.Open(dir);
-
-        var ids = new List<string>(capacity: reader.MaxDoc);
-        for (int docId = 0; docId < reader.MaxDoc; docId++)
-        {
-            var doc = reader.Document(docId);
-            var id = doc.Get(descriptor.IdFieldName);
-            if (!string.IsNullOrEmpty(id)) ids.Add(id);
-        }
-        return ids;
-    }
-
-    private static string InferNameLocal(System.Linq.Expressions.LambdaExpression exp)
-    {
-        if (exp.Body is System.Linq.Expressions.MemberExpression m) return m.Member.Name;
-        if (exp.Body is System.Linq.Expressions.UnaryExpression u && u.Operand is System.Linq.Expressions.MemberExpression um) return um.Member.Name;
-        return "Field";
     }
 }

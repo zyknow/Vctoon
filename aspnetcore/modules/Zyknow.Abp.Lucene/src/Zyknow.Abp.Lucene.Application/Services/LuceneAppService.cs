@@ -46,7 +46,9 @@ public class LuceneAppService : ApplicationService, ILuceneService
             _options.Descriptors.Values.FirstOrDefault(d =>
                 d.IndexName.Equals(entityName, StringComparison.OrdinalIgnoreCase));
         if (descriptor is null)
-            throw new BusinessException(code: "Lucene:EntityNotConfigured").WithData("Entity", entityName);
+        {
+            throw new BusinessException("Lucene:EntityNotConfigured").WithData("Entity", entityName);
+        }
 
         var indexPath = GetIndexPath(descriptor.IndexName);
         _logger.LogInformation(
@@ -166,7 +168,9 @@ public class LuceneAppService : ApplicationService, ILuceneService
             _options.Descriptors.Values.FirstOrDefault(d =>
                 d.IndexName.Equals(entityName, StringComparison.OrdinalIgnoreCase));
         if (descriptor is null)
-            throw new BusinessException(code: "Lucene:EntityNotConfigured").WithData("Entity", entityName);
+        {
+            throw new BusinessException("Lucene:EntityNotConfigured").WithData("Entity", entityName);
+        }
 
         var indexPath = GetIndexPath(descriptor.IndexName);
         _logger.LogInformation("Lucene rebuild index {Index} at path {Path}", descriptor.IndexName, indexPath);
@@ -189,7 +193,9 @@ public class LuceneAppService : ApplicationService, ILuceneService
             _options.Descriptors.Values.FirstOrDefault(d =>
                 d.IndexName.Equals(entityName, StringComparison.OrdinalIgnoreCase));
         if (descriptor is null)
-            throw new BusinessException(code: "Lucene:EntityNotConfigured").WithData("Entity", entityName);
+        {
+            throw new BusinessException("Lucene:EntityNotConfigured").WithData("Entity", entityName);
+        }
 
         var cleared = await RebuildIndexAsync(entityName);
 
@@ -231,7 +237,10 @@ public class LuceneAppService : ApplicationService, ILuceneService
             _options.Descriptors.Values.FirstOrDefault(d =>
                 d.IndexName.Equals(entityName, StringComparison.OrdinalIgnoreCase));
         if (descriptor is null)
-            throw new BusinessException(code: "Lucene:EntityNotConfigured").WithData("Entity", entityName);
+        {
+            throw new BusinessException("Lucene:EntityNotConfigured").WithData("Entity", entityName);
+        }
+
         var indexPath = GetIndexPath(descriptor.IndexName);
         using var dir = _options.DirectoryFactory(indexPath);
         using var reader = DirectoryReader.Open(dir);
@@ -248,7 +257,9 @@ public class LuceneAppService : ApplicationService, ILuceneService
             _options.Descriptors.Values.FirstOrDefault(d =>
                 d.IndexName.Equals(entityName, StringComparison.OrdinalIgnoreCase));
         if (descriptor is null)
-            throw new BusinessException(code: "Lucene:EntityNotConfigured").WithData("Entity", entityName);
+        {
+            throw new BusinessException("Lucene:EntityNotConfigured").WithData("Entity", entityName);
+        }
 
         var indexPath = GetIndexPath(descriptor.IndexName);
         using var dir = _options.DirectoryFactory(indexPath);
@@ -257,7 +268,7 @@ public class LuceneAppService : ApplicationService, ILuceneService
 
         var hits = new List<SearchHitDto>();
         var max = Math.Min(reader.MaxDoc, take);
-        for (int docId = 0; docId < max; docId++)
+        for (var docId = 0; docId < max; docId++)
         {
             var doc = searcher.Doc(docId);
             var payload = new Dictionary<string, string>();

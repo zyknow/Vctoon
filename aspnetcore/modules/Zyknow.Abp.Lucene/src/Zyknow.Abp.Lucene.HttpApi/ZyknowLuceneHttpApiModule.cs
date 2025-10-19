@@ -5,7 +5,7 @@ namespace Zyknow.Abp.Lucene;
 
 [DependsOn(
     typeof(ZyknowLuceneApplicationModule),
-    typeof(Volo.Abp.AspNetCore.AbpAspNetCoreModule)
+    typeof(AbpAspNetCoreModule)
 )]
 public class ZyknowLuceneHttpApiModule : AbpModule
 {

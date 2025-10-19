@@ -10,11 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Zyknow.Abp.Lucene.Domain.Shared/Zyknow.Abp.Lucene.Domain.Shared.csproj" />
+    <ProjectReference Include="../Zyknow.Abp.Lucene.Domain.Shared/Zyknow.Abp.Lucene.Domain.Shared.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Volo.Abp.Ddd.Application.Contracts" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Ddd.Application.Contracts" Version="$(AbpVersion)"/>
     <PackageReference Include="Volo.Abp.Authorization" Version="$(AbpVersion)"/>
   </ItemGroup>
 

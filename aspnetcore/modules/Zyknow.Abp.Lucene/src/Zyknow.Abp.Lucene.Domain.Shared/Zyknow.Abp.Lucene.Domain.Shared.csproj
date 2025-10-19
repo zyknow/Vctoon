@@ -11,12 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Volo.Abp" Version="$(AbpVersion)" />
-    <PackageReference Include="Volo.Abp.Ddd.Domain.Shared" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp" Version="$(AbpVersion)"/>
+    <PackageReference Include="Volo.Abp.Ddd.Domain.Shared" Version="$(AbpVersion)"/>
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.5"/>
-    <PackageReference Include="Lucene.Net" Version="4.8.0-beta00017" />
-    <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00017" />
-    <PackageReference Include="Lucene.Net.ICU" Version="4.8.0-beta00017" />
+    <PackageReference Include="Lucene.Net" Version="4.8.0-beta00017"/>
+    <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00017"/>
+    <PackageReference Include="Lucene.Net.ICU" Version="4.8.0-beta00017"/>
   </ItemGroup>
 
   <ItemGroup>

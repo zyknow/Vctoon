@@ -1,21 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Util;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Xunit;
+using Volo.Abp.MultiTenancy;
 using Zyknow.Abp.Lucene.Analyzers;
+using Zyknow.Abp.Lucene.Application.Tests.Fakes;
 using Zyknow.Abp.Lucene.Dtos;
 using Zyknow.Abp.Lucene.Filtering;
-using Zyknow.Abp.Lucene.Fluent;
 using Zyknow.Abp.Lucene.Options;
 using Zyknow.Abp.Lucene.Services;
-using Volo.Abp.MultiTenancy;
 
 namespace Zyknow.Abp.Lucene.Application.Tests;
 
@@ -28,7 +22,7 @@ public class FilteringAndQueryTests
         services.Configure<LuceneOptions>(opt =>
         {
             opt.PerTenantIndex = false;
-            opt.IndexRootPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "lucene-index-tests");
+            opt.IndexRootPath = Path.Combine(Path.GetTempPath(), "lucene-index-tests");
             opt.AnalyzerFactory = AnalyzerFactories.IcuGeneral;
             opt.LuceneQuery.FuzzyMaxEdits = 1;
             opt.LuceneQuery.MultiFieldMode = "OR";
@@ -44,7 +38,7 @@ public class FilteringAndQueryTests
         });
         services.AddSingleton<LuceneIndexManager>();
         services.AddSingleton<LuceneAppService>();
-        services.AddSingleton<ICurrentTenant>(new Zyknow.Abp.Lucene.Application.Tests.Fakes.FakeCurrentTenant { Id = null });
+        services.AddSingleton<ICurrentTenant>(new FakeCurrentTenant { Id = null });
         services.AddLogging();
 
         var sp = services.BuildServiceProvider();
@@ -57,7 +51,7 @@ public class FilteringAndQueryTests
             new("2", "Pro .NET Lucene", "John Doe", "B002")
         };
         await indexer.RebuildAsync(typeof(Book));
-        await indexer.IndexRangeAsync(books, replace: true);
+        await indexer.IndexRangeAsync(books, true);
 
         var prefixResult = await search.SearchAsync("Book", new SearchQueryInput
         {
@@ -87,7 +81,7 @@ public class FilteringAndQueryTests
         services.Configure<LuceneOptions>(opt =>
         {
             opt.PerTenantIndex = false;
-            opt.IndexRootPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "lucene-index-tests");
+            opt.IndexRootPath = Path.Combine(Path.GetTempPath(), "lucene-index-tests");
             opt.AnalyzerFactory = AnalyzerFactories.IcuGeneral;
             opt.ConfigureLucene(model =>
             {
@@ -101,7 +95,7 @@ public class FilteringAndQueryTests
         services.AddSingleton<LuceneIndexManager>();
         services.AddSingleton<LuceneAppService>();
         services.AddSingleton<ILuceneFilterProvider>(new RestrictCodeProvider("B001"));
-        services.AddSingleton<ICurrentTenant>(new Zyknow.Abp.Lucene.Application.Tests.Fakes.FakeCurrentTenant { Id = null });
+        services.AddSingleton<ICurrentTenant>(new FakeCurrentTenant { Id = null });
         services.AddLogging();
 
         var sp = services.BuildServiceProvider();
@@ -113,19 +107,11 @@ public class FilteringAndQueryTests
         {
             new("1", "Lucene in Action", "Erik", "B001"),
             new("2", "Lucene for .NET", "John", "B002")
-        }, replace: true);
+        }, true);
 
-        var result = await search.SearchAsync("Book", new SearchQueryInput { Query = "Lucene", MaxResultCount = 10, SkipCount = 0 });
+        var result = await search.SearchAsync("Book",
+            new SearchQueryInput { Query = "Lucene", MaxResultCount = 10, SkipCount = 0 });
         Assert.Equal(1, result.TotalCount);
-    }
-
-    private sealed class RestrictCodeProvider(string code) : ILuceneFilterProvider
-    {
-        public Task<Query?> BuildAsync(SearchFilterContext ctx)
-        {
-            var q = new TermQuery(new Term("Code", code));
-            return Task.FromResult<Query?>(q);
-        }
     }
 
     [Fact]
@@ -135,7 +121,7 @@ public class FilteringAndQueryTests
         services.Configure<LuceneOptions>(opt =>
         {
             opt.PerTenantIndex = false;
-            opt.IndexRootPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "lucene-index-tests");
+            opt.IndexRootPath = Path.Combine(Path.GetTempPath(), "lucene-index-tests");
             opt.AnalyzerFactory = AnalyzerFactories.IcuGeneral;
             opt.ConfigureLucene(model =>
             {
@@ -149,7 +135,7 @@ public class FilteringAndQueryTests
         services.AddSingleton<LuceneIndexManager>();
         services.AddSingleton<LuceneAppService>();
         services.AddSingleton<ILuceneFilterProvider>(new CodesInProvider(new[] { "B001", "B002" }));
-        services.AddSingleton<ICurrentTenant>(new Zyknow.Abp.Lucene.Application.Tests.Fakes.FakeCurrentTenant { Id = null });
+        services.AddSingleton<ICurrentTenant>(new FakeCurrentTenant { Id = null });
         services.AddLogging();
 
         var sp = services.BuildServiceProvider();
@@ -161,23 +147,11 @@ public class FilteringAndQueryTests
         {
             new("1", "Lucene", "A", "b001"),
             new("2", "Lucene", "B", "B002")
-        }, replace: true);
+        }, true);
 
-        var result = await search.SearchAsync("Book", new SearchQueryInput { Query = "Lucene", MaxResultCount = 10, SkipCount = 0 });
+        var result = await search.SearchAsync("Book",
+            new SearchQueryInput { Query = "Lucene", MaxResultCount = 10, SkipCount = 0 });
         Assert.Equal(2, result.TotalCount);
-    }
-
-    private sealed class CodesInProvider(IEnumerable<string> codes) : ILuceneFilterProvider
-    {
-        private readonly HashSet<string> _codes = new(codes);
-        public Task<Query?> BuildAsync(SearchFilterContext ctx)
-        {
-            Expression<Func<BookProj, bool>> expr = x => _codes.Contains(x.Code);
-            var q = LinqLucene.Where(ctx.Descriptor, expr);
-            return Task.FromResult<Query?>(q);
-        }
-
-        private sealed class BookProj { public string Code { get; set; } = string.Empty; }
     }
 
     [Fact]
@@ -187,7 +161,7 @@ public class FilteringAndQueryTests
         services.Configure<LuceneOptions>(opt =>
         {
             opt.PerTenantIndex = false;
-            opt.IndexRootPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "lucene-index-tests");
+            opt.IndexRootPath = Path.Combine(Path.GetTempPath(), "lucene-index-tests");
             opt.AnalyzerFactory = AnalyzerFactories.IcuGeneral;
             opt.ConfigureLucene(model =>
             {
@@ -201,7 +175,7 @@ public class FilteringAndQueryTests
         services.AddSingleton<LuceneIndexManager>();
         services.AddSingleton<LuceneAppService>();
         services.AddSingleton<ILuceneFilterProvider>(new ReadCountRangeProvider("00000010", "00000050"));
-        services.AddSingleton<ICurrentTenant>(new Zyknow.Abp.Lucene.Application.Tests.Fakes.FakeCurrentTenant { Id = null });
+        services.AddSingleton<ICurrentTenant>(new FakeCurrentTenant { Id = null });
         services.AddLogging();
 
         var sp = services.BuildServiceProvider();
@@ -213,25 +187,11 @@ public class FilteringAndQueryTests
         {
             new("i1", "dummy", 5),
             new("i2", "dummy", 20)
-        }, replace: true);
+        }, true);
 
-        var result = await search.SearchAsync("Item", new SearchQueryInput { Query = "dummy", MaxResultCount = 10, SkipCount = 0 });
+        var result = await search.SearchAsync("Item",
+            new SearchQueryInput { Query = "dummy", MaxResultCount = 10, SkipCount = 0 });
         Assert.Equal(1, result.TotalCount);
-    }
-
-    private sealed class ReadCountRangeProvider(string minIncl, string maxExcl) : ILuceneFilterProvider
-    {
-        public Task<Query?> BuildAsync(SearchFilterContext ctx)
-        {
-            var q = new TermRangeQuery("ReadCountNorm",
-                new BytesRef(minIncl),
-                new BytesRef(maxExcl),
-                includeLower: true,
-                includeUpper: false);
-            return Task.FromResult<Query?>(q);
-        }
-
-        private sealed class ItemProj { public string ReadCountNorm { get; set; } = string.Empty; }
     }
 
     [Fact]
@@ -241,7 +201,7 @@ public class FilteringAndQueryTests
         services.Configure<LuceneOptions>(opt =>
         {
             opt.PerTenantIndex = false;
-            opt.IndexRootPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "lucene-index-tests");
+            opt.IndexRootPath = Path.Combine(Path.GetTempPath(), "lucene-index-tests");
             opt.AnalyzerFactory = AnalyzerFactories.IcuGeneral;
             opt.ConfigureLucene(model =>
             {
@@ -255,7 +215,7 @@ public class FilteringAndQueryTests
         });
         services.AddSingleton<LuceneIndexManager>();
         services.AddSingleton<LuceneAppService>();
-        services.AddSingleton<ICurrentTenant>(new Zyknow.Abp.Lucene.Application.Tests.Fakes.FakeCurrentTenant { Id = null });
+        services.AddSingleton<ICurrentTenant>(new FakeCurrentTenant { Id = null });
         services.AddLogging();
 
         var sp = services.BuildServiceProvider();
@@ -266,7 +226,7 @@ public class FilteringAndQueryTests
         await indexer.IndexRangeAsync(new List<Book>
         {
             new("1", "Lucene", "A", "B001")
-        }, replace: true);
+        }, true);
 
         var dump = await search.DumpIndexAsync("Book", 10);
         Assert.True(dump.TotalCount >= 1);
@@ -276,6 +236,51 @@ public class FilteringAndQueryTests
         Assert.False(payload.ContainsKey("Code"));
     }
 
+    private sealed class RestrictCodeProvider(string code) : ILuceneFilterProvider
+    {
+        public Task<Query?> BuildAsync(SearchFilterContext ctx)
+        {
+            var q = new TermQuery(new Term("Code", code));
+            return Task.FromResult<Query?>(q);
+        }
+    }
+
+    private sealed class CodesInProvider(IEnumerable<string> codes) : ILuceneFilterProvider
+    {
+        private readonly HashSet<string> _codes = new(codes);
+
+        public Task<Query?> BuildAsync(SearchFilterContext ctx)
+        {
+            Expression<Func<BookProj, bool>> expr = x => _codes.Contains(x.Code);
+            var q = LinqLucene.Where(ctx.Descriptor, expr);
+            return Task.FromResult<Query?>(q);
+        }
+
+        private sealed class BookProj
+        {
+            public string Code { get; set; } = string.Empty;
+        }
+    }
+
+    private sealed class ReadCountRangeProvider(string minIncl, string maxExcl) : ILuceneFilterProvider
+    {
+        public Task<Query?> BuildAsync(SearchFilterContext ctx)
+        {
+            var q = new TermRangeQuery("ReadCountNorm",
+                new BytesRef(minIncl),
+                new BytesRef(maxExcl),
+                true,
+                false);
+            return Task.FromResult<Query?>(q);
+        }
+
+        private sealed class ItemProj
+        {
+            public string ReadCountNorm { get; set; } = string.Empty;
+        }
+    }
+
     private record Book(string Id, string Title, string Author, string Code);
+
     private record Item(string Id, string Name, int ReadCount);
 }

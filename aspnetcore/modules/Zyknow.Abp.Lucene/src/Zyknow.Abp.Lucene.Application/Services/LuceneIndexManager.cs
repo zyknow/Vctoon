@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Lucene.Net.Analysis;
+using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Util;
 using Microsoft.Extensions.Options;
@@ -11,14 +7,13 @@ using Volo.Abp.MultiTenancy;
 using Zyknow.Abp.Lucene.Descriptors;
 using Zyknow.Abp.Lucene.Indexing;
 using Zyknow.Abp.Lucene.Options;
-using Lucene.Net.Documents;
 
 namespace Zyknow.Abp.Lucene.Services;
 
 public class LuceneIndexManager
 {
-    private readonly LuceneOptions _options;
     private readonly ICurrentTenant _currentTenant;
+    private readonly LuceneOptions _options;
 
     public LuceneIndexManager(IOptions<LuceneOptions> options, ICurrentTenant currentTenant)
     {
@@ -46,6 +41,7 @@ public class LuceneIndexManager
             {
                 writer.DeleteAll();
             }
+
             foreach (var entity in entities)
             {
                 var doc = LuceneDocumentFactory.CreateDocument(entity!, descriptor);
@@ -55,7 +51,8 @@ public class LuceneIndexManager
         return Task.CompletedTask;
     }
 
-    public Task IndexRangeDocumentsAsync(Descriptors.EntitySearchDescriptor descriptor, IEnumerable<Document> documents, bool replace = false)
+    public Task IndexRangeDocumentsAsync(EntitySearchDescriptor descriptor, IEnumerable<Document> documents,
+        bool replace = false)
     {
         Write(descriptor, writer =>
         {
@@ -63,6 +60,7 @@ public class LuceneIndexManager
             {
                 writer.DeleteAll();
             }
+
             foreach (var doc in documents)
             {
                 var id = doc.Get(descriptor.IdFieldName);
@@ -75,10 +73,7 @@ public class LuceneIndexManager
     public Task DeleteAsync<T>(object id)
     {
         var descriptor = GetDescriptor(typeof(T));
-        Write(descriptor, writer =>
-        {
-            writer.DeleteDocuments(new Term(descriptor.IdFieldName, id.ToString()));
-        });
+        Write(descriptor, writer => { writer.DeleteDocuments(new Term(descriptor.IdFieldName, id.ToString())); });
         return Task.CompletedTask;
     }
 
@@ -96,6 +91,7 @@ public class LuceneIndexManager
             var d = GetDescriptor(entityType);
             Write(d, writer => writer.DeleteAll());
         }
+
         return Task.CompletedTask;
     }
 
@@ -115,7 +111,10 @@ public class LuceneIndexManager
     protected virtual EntitySearchDescriptor GetDescriptor(Type type)
     {
         if (!_options.Descriptors.TryGetValue(type, out var descriptor))
-            throw new BusinessException(code: "Lucene:EntityNotConfigured").WithData("Entity", type.FullName);
+        {
+            throw new BusinessException("Lucene:EntityNotConfigured").WithData("Entity", type.FullName);
+        }
+
         return descriptor;
     }
 
@@ -135,8 +134,9 @@ public class LuceneIndexManager
         var root = _options.IndexRootPath;
         if (_options.PerTenantIndex && _currentTenant.Id.HasValue)
         {
-            return System.IO.Path.Combine(root, _currentTenant.Id.Value.ToString(), indexName);
+            return Path.Combine(root, _currentTenant.Id.Value.ToString(), indexName);
         }
-        return System.IO.Path.Combine(root, indexName);
+
+        return Path.Combine(root, indexName);
     }
 }

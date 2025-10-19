@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Lucene.Net.Documents;
 using Zyknow.Abp.Lucene.Descriptors;
@@ -20,7 +17,10 @@ public static class LuceneDocumentFactory
         foreach (var field in descriptor.Fields)
         {
             var valObj = ResolveObjectValue(entity, field);
-            if (valObj == null) continue;
+            if (valObj == null)
+            {
+                continue;
+            }
 
             Field luceneField;
             if (!field.Searchable)
@@ -35,13 +35,16 @@ public static class LuceneDocumentFactory
             {
                 var strVal = valObj.ToString() ?? string.Empty;
                 var writeValue = field.LowerCaseKeyword
-                    ? (field.LowerCaseCulture != null ? strVal.ToLower(field.LowerCaseCulture) : strVal.ToLowerInvariant())
+                    ? field.LowerCaseCulture != null
+                        ? strVal.ToLower(field.LowerCaseCulture)
+                        : strVal.ToLowerInvariant()
                     : strVal;
                 luceneField = new StringField(field.Name, writeValue, field.Store ? Field.Store.YES : Field.Store.NO);
             }
             else
             {
-                luceneField = new TextField(field.Name, valObj.ToString(), field.Store ? Field.Store.YES : Field.Store.NO);
+                luceneField = new TextField(field.Name, valObj.ToString(),
+                    field.Store ? Field.Store.YES : Field.Store.NO);
             }
 
 #pragma warning disable 618
@@ -53,6 +56,7 @@ public static class LuceneDocumentFactory
 
             doc.Add(luceneField);
         }
+
         return doc;
     }
 
@@ -83,7 +87,7 @@ public static class LuceneDocumentFactory
             else if (field.Keyword)
             {
                 var writeValue = field.LowerCaseKeyword
-                    ? (field.LowerCaseCulture != null ? value.ToLower(field.LowerCaseCulture) : value.ToLowerInvariant())
+                    ? field.LowerCaseCulture != null ? value.ToLower(field.LowerCaseCulture) : value.ToLowerInvariant()
                     : value;
                 luceneField = new StringField(field.Name, writeValue, field.Store ? Field.Store.YES : Field.Store.NO);
             }
@@ -111,12 +115,14 @@ public static class LuceneDocumentFactory
         {
             return field.ValueSelector.DynamicInvoke(entity);
         }
+
         if (field.Selector != null)
         {
             var compiled = field.Selector.Compile();
             var v = compiled.DynamicInvoke(entity);
             return v;
         }
+
         return null;
     }
 
@@ -141,8 +147,15 @@ public static class LuceneDocumentFactory
                 {
                     ms = new DateTimeOffset(dt).ToUnixTimeMilliseconds();
                 }
-                else if (value is long l) { ms = l; }
-                else { ms = new DateTimeOffset(DateTime.Parse(value.ToString()!)).ToUnixTimeMilliseconds(); }
+                else if (value is long l)
+                {
+                    ms = l;
+                }
+                else
+                {
+                    ms = new DateTimeOffset(DateTime.Parse(value.ToString()!)).ToUnixTimeMilliseconds();
+                }
+
                 return new Int64Field(fd.Name, ms, fd.Store ? Field.Store.YES : Field.Store.NO);
             }
             case LuceneNumericKind.DateEpochSeconds:
@@ -152,8 +165,15 @@ public static class LuceneDocumentFactory
                 {
                     s = new DateTimeOffset(dt).ToUnixTimeSeconds();
                 }
-                else if (value is long l) { s = l; }
-                else { s = new DateTimeOffset(DateTime.Parse(value.ToString()!)).ToUnixTimeSeconds(); }
+                else if (value is long l)
+                {
+                    s = l;
+                }
+                else
+                {
+                    s = new DateTimeOffset(DateTime.Parse(value.ToString()!)).ToUnixTimeSeconds();
+                }
+
                 return new Int64Field(fd.Name, s, fd.Store ? Field.Store.YES : Field.Store.NO);
             }
             default:

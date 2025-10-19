@@ -1,18 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
+using Lucene.Net.Search;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Xunit;
+using Volo.Abp.MultiTenancy;
 using Zyknow.Abp.Lucene.Analyzers;
+using Zyknow.Abp.Lucene.Application.Tests.Fakes;
 using Zyknow.Abp.Lucene.Dtos;
 using Zyknow.Abp.Lucene.Filtering;
-using Zyknow.Abp.Lucene.Fluent;
 using Zyknow.Abp.Lucene.Options;
 using Zyknow.Abp.Lucene.Services;
-using Volo.Abp.MultiTenancy;
-using Lucene.Net.Search;
 
 namespace Zyknow.Abp.Lucene.Application.Tests;
 
@@ -25,7 +20,7 @@ public class NumericAndDateLinqTests
         services.Configure<LuceneOptions>(opt =>
         {
             opt.PerTenantIndex = false;
-            opt.IndexRootPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "lucene-index-num-tests");
+            opt.IndexRootPath = Path.Combine(Path.GetTempPath(), "lucene-index-num-tests");
             opt.AnalyzerFactory = AnalyzerFactories.IcuGeneral;
             opt.ConfigureLucene(model =>
             {
@@ -39,7 +34,7 @@ public class NumericAndDateLinqTests
         services.AddSingleton<LuceneIndexManager>();
         services.AddSingleton<LuceneAppService>();
         services.AddSingleton<ILuceneFilterProvider>(new CountRangeProvider(10, 100));
-        services.AddSingleton<ICurrentTenant>(new Zyknow.Abp.Lucene.Application.Tests.Fakes.FakeCurrentTenant { Id = null });
+        services.AddSingleton<ICurrentTenant>(new FakeCurrentTenant { Id = null });
         services.AddLogging();
         var sp = services.BuildServiceProvider();
         var indexer = sp.GetRequiredService<LuceneIndexManager>();
@@ -51,22 +46,11 @@ public class NumericAndDateLinqTests
             new("1", "A", 5),
             new("2", "B", 20),
             new("3", "C", 100)
-        }, replace: true);
+        }, true);
 
-        var result = await search.SearchAsync("Item", new SearchQueryInput { Query = "A OR B OR C", MaxResultCount = 10, SkipCount = 0 });
+        var result = await search.SearchAsync("Item",
+            new SearchQueryInput { Query = "A OR B OR C", MaxResultCount = 10, SkipCount = 0 });
         Assert.Equal(2, result.TotalCount); // 20 and 100 in range [10,100]
-    }
-
-    private sealed class CountRangeProvider(int minIncl, int maxIncl) : ILuceneFilterProvider
-    {
-        public Task<Query?> BuildAsync(SearchFilterContext ctx)
-        {
-            Expression<Func<ItemProj, bool>> expr = x => x.Count >= minIncl && x.Count <= maxIncl;
-            var q = LinqLucene.Where(ctx.Descriptor, expr);
-            return Task.FromResult<Query?>(q);
-        }
-
-        private sealed class ItemProj { public int Count { get; set; } }
     }
 
     [Fact]
@@ -76,7 +60,7 @@ public class NumericAndDateLinqTests
         services.Configure<LuceneOptions>(opt =>
         {
             opt.PerTenantIndex = false;
-            opt.IndexRootPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "lucene-index-date-tests");
+            opt.IndexRootPath = Path.Combine(Path.GetTempPath(), "lucene-index-date-tests");
             opt.AnalyzerFactory = AnalyzerFactories.IcuGeneral;
             opt.ConfigureLucene(model =>
             {
@@ -89,8 +73,9 @@ public class NumericAndDateLinqTests
         });
         services.AddSingleton<LuceneIndexManager>();
         services.AddSingleton<LuceneAppService>();
-        services.AddSingleton<ILuceneFilterProvider>(new DateRangeProvider(DateTime.UtcNow.AddDays(-2), DateTime.UtcNow.AddDays(2)));
-        services.AddSingleton<ICurrentTenant>(new Zyknow.Abp.Lucene.Application.Tests.Fakes.FakeCurrentTenant { Id = null });
+        services.AddSingleton<ILuceneFilterProvider>(new DateRangeProvider(DateTime.UtcNow.AddDays(-2),
+            DateTime.UtcNow.AddDays(2)));
+        services.AddSingleton<ICurrentTenant>(new FakeCurrentTenant { Id = null });
         services.AddLogging();
         var sp = services.BuildServiceProvider();
         var indexer = sp.GetRequiredService<LuceneIndexManager>();
@@ -103,10 +88,26 @@ public class NumericAndDateLinqTests
             new("1", "before", now.AddDays(-3)),
             new("2", "inside", now),
             new("3", "after", now.AddDays(3))
-        }, replace: true);
+        }, true);
 
-        var result = await search.SearchAsync("Event", new SearchQueryInput { Query = "before OR inside OR after", MaxResultCount = 10, SkipCount = 0 });
+        var result = await search.SearchAsync("Event",
+            new SearchQueryInput { Query = "before OR inside OR after", MaxResultCount = 10, SkipCount = 0 });
         Assert.Equal(1, result.TotalCount); // only inside is within range
+    }
+
+    private sealed class CountRangeProvider(int minIncl, int maxIncl) : ILuceneFilterProvider
+    {
+        public Task<Query?> BuildAsync(SearchFilterContext ctx)
+        {
+            Expression<Func<ItemProj, bool>> expr = x => x.Count >= minIncl && x.Count <= maxIncl;
+            var q = LinqLucene.Where(ctx.Descriptor, expr);
+            return Task.FromResult<Query?>(q);
+        }
+
+        private sealed class ItemProj
+        {
+            public int Count { get; set; }
+        }
     }
 
     private sealed class DateRangeProvider(DateTime minIncl, DateTime maxIncl) : ILuceneFilterProvider
@@ -118,9 +119,13 @@ public class NumericAndDateLinqTests
             return Task.FromResult<Query?>(q);
         }
 
-        private sealed class EventProj { public DateTime OccurredAt { get; set; } }
+        private sealed class EventProj
+        {
+            public DateTime OccurredAt { get; set; }
+        }
     }
 
     private record Item(string Id, string Name, int Count);
+
     private record Event(string Id, string Name, DateTime OccurredAt);
 }

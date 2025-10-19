@@ -1,6 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Collections;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Uow;
 using Zyknow.Abp.Lucene.Services;
@@ -13,23 +11,24 @@ namespace Zyknow.Abp.Lucene.Indexing;
 /// </summary>
 public interface IIndexingCollector
 {
-    void Upsert<T>(T entity, string id);
-    void Delete<T>(string id);
     IReadOnlyDictionary<Type, Dictionary<string, object>> Upserts { get; }
     IReadOnlyDictionary<Type, HashSet<string>> Deletes { get; }
+    void Upsert<T>(T entity, string id);
+    void Delete<T>(string id);
 
     /// <summary>
     /// 确保仅注册一次提交后的批处理回调。
     /// </summary>
     void RegisterOnCompleted(IUnitOfWork uow, LuceneIndexManager indexer);
+
     Task ProcessImmediatelyAsync(LuceneIndexManager indexer);
 }
 
 /// <inheritdoc/>
 public sealed class IndexingCollector : IIndexingCollector, IScopedDependency
 {
-    private readonly Dictionary<Type, Dictionary<string, object>> _upserts = new();
     private readonly Dictionary<Type, HashSet<string>> _deletes = new();
+    private readonly Dictionary<Type, Dictionary<string, object>> _upserts = new();
     private bool _registered;
 
     public IReadOnlyDictionary<Type, Dictionary<string, object>> Upserts => _upserts;
@@ -43,6 +42,7 @@ public sealed class IndexingCollector : IIndexingCollector, IScopedDependency
             map = new Dictionary<string, object>();
             _upserts[type] = map;
         }
+
         map[id] = entity!;
     }
 
@@ -54,12 +54,17 @@ public sealed class IndexingCollector : IIndexingCollector, IScopedDependency
             set = new HashSet<string>(StringComparer.Ordinal);
             _deletes[type] = set;
         }
+
         set.Add(id);
     }
 
     public void RegisterOnCompleted(IUnitOfWork uow, LuceneIndexManager indexer)
     {
-        if (_registered) return;
+        if (_registered)
+        {
+            return;
+        }
+
         _registered = true;
 
         uow.OnCompleted(async () =>
@@ -92,14 +97,18 @@ public sealed class IndexingCollector : IIndexingCollector, IScopedDependency
         // 批量 upsert
         foreach (var (type, map) in _upserts)
         {
-            if (map.Count == 0) continue;
+            if (map.Count == 0)
+            {
+                continue;
+            }
+
             var indexRange = typeof(LuceneIndexManager).GetMethod(nameof(LuceneIndexManager.IndexRangeAsync))!;
             var generic = indexRange.MakeGenericMethod(type);
 
             // 构造 List<T> 参数
             var listType = typeof(List<>).MakeGenericType(type);
             var list = Activator.CreateInstance(listType)!;
-            var ilist = (System.Collections.IList)list;
+            var ilist = (IList)list;
             foreach (var obj in map.Values)
             {
                 ilist.Add(obj);

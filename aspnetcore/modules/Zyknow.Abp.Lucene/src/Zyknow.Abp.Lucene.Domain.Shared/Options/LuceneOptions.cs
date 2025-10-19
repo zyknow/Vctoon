@@ -1,8 +1,8 @@
-using System;
-using System.Collections.Generic;
 using Lucene.Net.Analysis;
 using Zyknow.Abp.Lucene.Analyzers;
-using LuceneStore = global::Lucene.Net.Store;
+using Zyknow.Abp.Lucene.Descriptors;
+using Zyknow.Abp.Lucene.Fluent;
+using LuceneStore = Lucene.Net.Store;
 
 namespace Zyknow.Abp.Lucene.Options;
 
@@ -28,7 +28,7 @@ public sealed class LuceneOptions
     /// 索引根目录路径（本地文件系统）。
     /// </summary>
     /// <remarks>默认：<c>{AppContext.BaseDirectory}/lucene-index</c>。</remarks>
-    public string IndexRootPath { get; set; } = System.IO.Path.Combine(AppContext.BaseDirectory, "lucene-index");
+    public string IndexRootPath { get; set; } = Path.Combine(AppContext.BaseDirectory, "lucene-index");
 
     /// <summary>
     /// 是否按租户隔离索引目录。
@@ -56,21 +56,7 @@ public sealed class LuceneOptions
     /// 每个实体类型的索引描述符集合。
     /// </summary>
     /// <remarks>通过 <see cref="ConfigureLucene"/> 进行注册。</remarks>
-    public Dictionary<Type, Descriptors.EntitySearchDescriptor> Descriptors { get; } = new();
-
-    /// <summary>
-    /// 使用流式 API 注册实体的索引描述符。
-    /// </summary>
-    /// <param name="configure">对 <see cref="Fluent.LuceneModelBuilder"/> 的配置委托。</param>
-    public void ConfigureLucene(Action<Fluent.LuceneModelBuilder> configure)
-    {
-        var builder = new Fluent.LuceneModelBuilder();
-        configure(builder);
-        foreach (var kv in builder.Build())
-        {
-            Descriptors[kv.Key] = kv.Value;
-        }
-    }
+    public Dictionary<Type, EntitySearchDescriptor> Descriptors { get; } = new();
 
     /// <summary>
     /// 索引目录工厂，创建 <see cref="LuceneStore.Directory"/> 实例。
@@ -82,25 +68,36 @@ public sealed class LuceneOptions
     public Func<string, LuceneStore.Directory> DirectoryFactory { get; set; } = FSDirectoryFactory;
 
     /// <summary>
-    /// 默认文件系统目录工厂：确保目录存在并返回 <see cref="LuceneStore.FSDirectory"/>。
-    /// </summary>
-    /// <param name="path">索引目录的绝对路径。</param>
-    /// <returns>已打开的 <see cref="LuceneStore.Directory"/> 实例。</returns>
-    public static LuceneStore.Directory FSDirectoryFactory(string path)
-    {
-        var dirInfo = new System.IO.DirectoryInfo(path);
-        dirInfo.Create();
-        return LuceneStore.FSDirectory.Open(dirInfo);
-    }
-
-    /// <summary>
     /// 是否启用自动事件驱动的索引维护（创建/更新/删除）。
     /// </summary>
     /// <remarks>
     /// 默认启用（true）。关闭后将不再通过实体事件自动维护索引，需手动调用 IndexManager。
     /// </remarks>
     public bool EnableAutoIndexingEvents { get; set; } = true;
+
+    /// <summary>
+    /// 使用流式 API 注册实体的索引描述符。
+    /// </summary>
+    /// <param name="configure">对 <see cref="Fluent.LuceneModelBuilder"/> 的配置委托。</param>
+    public void ConfigureLucene(Action<LuceneModelBuilder> configure)
+    {
+        var builder = new LuceneModelBuilder();
+        configure(builder);
+        foreach (var kv in builder.Build())
+        {
+            Descriptors[kv.Key] = kv.Value;
+        }
+    }
+
+    /// <summary>
+    /// 默认文件系统目录工厂：确保目录存在并返回 <see cref="LuceneStore.FSDirectory"/>。
+    /// </summary>
+    /// <param name="path">索引目录的绝对路径。</param>
+    /// <returns>已打开的 <see cref="LuceneStore.Directory"/> 实例。</returns>
+    public static LuceneStore.Directory FSDirectoryFactory(string path)
+    {
+        var dirInfo = new DirectoryInfo(path);
+        dirInfo.Create();
+        return LuceneStore.FSDirectory.Open(dirInfo);
+    }
 }
-
-
-

@@ -33,8 +33,16 @@ public sealed class FieldDescriptor
 
     internal static string InferName(LambdaExpression exp)
     {
-        if (exp.Body is MemberExpression m) return m.Member.Name;
-        if (exp.Body is UnaryExpression u && u.Operand is MemberExpression um) return um.Member.Name;
+        if (exp.Body is MemberExpression m)
+        {
+            return m.Member.Name;
+        }
+
+        if (exp.Body is UnaryExpression u && u.Operand is MemberExpression um)
+        {
+            return um.Member.Name;
+        }
+
         return "Field";
     }
 }

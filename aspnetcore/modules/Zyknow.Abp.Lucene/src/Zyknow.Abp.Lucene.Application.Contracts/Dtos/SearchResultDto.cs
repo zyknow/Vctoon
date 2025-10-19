@@ -13,12 +13,16 @@ public sealed class SearchResultDto : PagedResultDto<SearchHitDto>
     /// <summary>
     /// 初始化一个空的搜索结果（TotalCount=0，Items=空集合）。
     /// </summary>
-    public SearchResultDto() : base(0, new List<SearchHitDto>()) {}
+    public SearchResultDto() : base(0, new List<SearchHitDto>())
+    {
+    }
 
     /// <summary>
     /// 使用总命中数与命中项集合初始化搜索结果。
     /// </summary>
     /// <param name="totalCount">总命中数。</param>
     /// <param name="items">当前页命中项集合。</param>
-    public SearchResultDto(long totalCount, List<SearchHitDto> items) : base(totalCount, items) {}
+    public SearchResultDto(long totalCount, List<SearchHitDto> items) : base(totalCount, items)
+    {
+    }
 }
