@@ -5,47 +5,42 @@ using Volo.Abp.Uow;
 
 namespace Vctoon.Libraries;
 
-public class LibraryPermissionStore(
-    IDistributedCache<LibraryPermission> cache,
-    ILibraryPermissionRepository libraryPermissionRepository,
-    ILibraryRepository libraryRepository,
-    IIdentityUserRepository identityUserRepository)
-    : ITransientDependency
+public class LibraryPermissionStore : ISingletonDependency
 {
-    private static string CalculateCacheKey(Guid userId, Guid libraryId)
+    private readonly ILibraryPermissionRepository _libraryPermissionRepository;
+
+    public List<LibraryPermission> Permissions { get;  }
+
+    public LibraryPermissionStore(
+        ILibraryPermissionRepository libraryPermissionRepository)
     {
-        return "li:" + libraryId + ",ui:" + userId;
+        _libraryPermissionRepository = libraryPermissionRepository;
+        Permissions = libraryPermissionRepository.GetListAsync().Result;
     }
 
     public async Task<LibraryPermission?> GetOrNullAsync(Guid userId, Guid libraryId)
     {
-        var key = CalculateCacheKey(userId, libraryId);
-
-        return await cache.GetOrAddAsync(key, async () =>
-        {
-            var permission = await libraryPermissionRepository.FirstOrDefaultAsync(x =>
-                x.UserId == userId && x.LibraryId == libraryId);
-            return permission;
-        });
+        return Permissions.FirstOrDefault(x => x.UserId == userId && x.LibraryId == libraryId);
     }
 
+     
+    
     public async Task RemoveUserPermissionAsync(Guid userId, Guid libraryId)
     {
-        var key = CalculateCacheKey(userId, libraryId);
-        await libraryPermissionRepository.DeleteDirectAsync(x => x.UserId == userId);
-        await cache.RemoveAsync(key);
+        await _libraryPermissionRepository.DeleteDirectAsync(x => x.UserId == userId);
+        Permissions.RemoveAll(x => x.UserId == userId);
     }
 
     [UnitOfWork]
     public async Task SetAsync(LibraryPermission permission)
     {
         var existingPermission =
-            await libraryPermissionRepository.FirstOrDefaultAsync(x =>
+            await _libraryPermissionRepository.FirstOrDefaultAsync(x =>
                 x.UserId == permission.UserId && x.LibraryId == permission.LibraryId);
 
         if (existingPermission == null)
         {
-            await libraryPermissionRepository.InsertAsync(permission);
+            await _libraryPermissionRepository.InsertAsync(permission);
         }
         else
         {
@@ -55,10 +50,10 @@ public class LibraryPermissionStore(
             existingPermission.CanView = permission.CanView;
             existingPermission.CanShare = permission.CanShare;
 
-            await libraryPermissionRepository.UpdateAsync(existingPermission);
+            await _libraryPermissionRepository.UpdateAsync(existingPermission);
         }
 
-        await cache.SetAsync(CalculateCacheKey(permission.UserId, permission.LibraryId),
-            permission);
+        Permissions.RemoveAll(x => x.UserId == permission.UserId && x.LibraryId == permission.LibraryId);
+        Permissions.Add(permission);
     }
 }

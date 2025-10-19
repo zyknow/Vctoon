@@ -23,8 +23,10 @@ public static class LibraryDbContextModelBuilderExtensions
             b.ConfigureByConvention();
 
             b.HasMany(x => x.Paths).WithOne().HasForeignKey(x => x.LibraryId).OnDelete(DeleteBehavior.Cascade);
-            b.HasMany<Comic>().WithOne().HasForeignKey(x => x.LibraryId).OnDelete(DeleteBehavior.Cascade);
-            b.HasMany<Video>().WithOne().HasForeignKey(x => x.LibraryId).OnDelete(DeleteBehavior.Cascade);
+            
+            // 级联删除Zyknow.Abp.Lucene 会导致更新Lucene索引
+            // b.HasMany<Comic>().WithOne().HasForeignKey(x => x.LibraryId).OnDelete(DeleteBehavior.Cascade);
+            // b.HasMany<Video>().WithOne().HasForeignKey(x => x.LibraryId).OnDelete(DeleteBehavior.Cascade);
 
             /* Configure more properties here */
         });

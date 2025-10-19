@@ -7,6 +7,7 @@ using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
 using Volo.Abp.PermissionManagement.HttpApi;
 using Volo.Abp.SettingManagement;
+using Zyknow.Abp.Lucene;
 
 namespace Vctoon;
 
@@ -16,7 +17,8 @@ namespace Vctoon;
     typeof(AbpSettingManagementHttpApiModule),
     typeof(AbpIdentityHttpApiModule),
     typeof(AbpFeatureManagementHttpApiModule),
-    typeof(AbpSettingUiHttpApiModule)
+    typeof(AbpSettingUiHttpApiModule),
+    typeof(ZyknowLuceneApplicationContractsModule)
 )]
 public class VctoonHttpApiModule : AbpModule
 {

@@ -15,7 +15,9 @@ using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation.AspNetCore;
 using Vctoon.BlobContainers;
 using Vctoon.EntityFrameworkCore;
+using Vctoon.Libraries;
 using Vctoon.Localization.Vctoon;
+using Vctoon.Mediums;
 using Vctoon.Web.HealthChecks;
 using Volo.Abp;
 using Volo.Abp.Account.Web;
@@ -37,6 +39,8 @@ using Volo.Abp.Security.Claims;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.VirtualFileSystem;
+using Zyknow.Abp.Lucene.Analyzers;
+using Zyknow.Abp.Lucene.Options;
 
 namespace Vctoon.Web;
 
@@ -124,7 +128,6 @@ public class VctoonWebModule : AbpModule
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
             });
         }
-
         ConfigureBundles();
         ConfigureUrls(configuration);
         //ConfigureHealthChecks(context);
@@ -144,6 +147,30 @@ public class VctoonWebModule : AbpModule
             options.Containers.Configure<CoverContainer>(container =>
             {
                 container.UseFileSystem(fileSystem => { fileSystem.BasePath = @$"Covers"; });
+            });
+        });
+        
+        Configure<LuceneOptions>(opt =>
+        {
+            // opt.IndexRootPath = Path.Combine(AppContext.BaseDirectory, "lucene-index");
+            opt.IndexRootPath = "lucene-index";
+            opt.PerTenantIndex = true;
+            opt.AnalyzerFactory = AnalyzerFactories.IcuGeneral;
+            opt.ConfigureLucene(model =>
+            {
+                model.Entity<Comic>(e =>
+                {
+                    e.Field(x => x.Title, f => f.Store());
+                    e.Field(x => x.Cover, f => f.StoreOnly());
+                    e.Field(x=> x.LibraryId,f => f.StoreOnly());
+                });
+                
+                model.Entity<Video>(e =>
+                {
+                    e.Field(x => x.Title, f => f.Store());
+                    e.Field(x => x.Cover, f => f.StoreOnly());
+                    e.Field(x=> x.LibraryId,f => f.StoreOnly());
+                });
             });
         });
     }

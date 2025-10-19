@@ -15,6 +15,7 @@ using Volo.Abp.PermissionManagement;
 using Volo.Abp.SettingManagement;
 using Volo.Abp.Validation.Localization;
 using Volo.Abp.VirtualFileSystem;
+using Zyknow.Abp.Lucene;
 
 namespace Vctoon;
 
@@ -27,7 +28,8 @@ namespace Vctoon;
     typeof(AbpIdentityDomainSharedModule),
     typeof(AbpOpenIddictDomainSharedModule),
     typeof(BlobStoringDatabaseDomainSharedModule),
-    typeof(AbpSettingUiDomainSharedModule)
+    typeof(AbpSettingUiDomainSharedModule),
+    typeof(ZyknowLuceneDomainSharedModule)
 )]
 public class VctoonDomainSharedModule : AbpModule
 {

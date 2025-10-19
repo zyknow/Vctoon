@@ -13,6 +13,7 @@ using Volo.Abp.OpenIddict;
 using Volo.Abp.PermissionManagement.Identity;
 using Volo.Abp.PermissionManagement.OpenIddict;
 using Volo.Abp.SettingManagement;
+using Zyknow.Abp.Lucene;
 
 namespace Vctoon;
 
@@ -29,7 +30,8 @@ namespace Vctoon;
     typeof(AbpIdentityDomainModule),
     typeof(AbpOpenIddictDomainModule),
     typeof(BlobStoringDatabaseDomainModule),
-    typeof(AbpSettingUiDomainModule)
+    typeof(AbpSettingUiDomainModule),
+    typeof(ZyknowLuceneDomainModule)
 )]
 public class VctoonDomainModule : AbpModule
 {

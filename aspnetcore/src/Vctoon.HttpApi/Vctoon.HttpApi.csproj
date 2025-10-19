@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\modules\Zyknow.Abp.Lucene\src\Zyknow.Abp.Lucene.HttpApi\Zyknow.Abp.Lucene.HttpApi.csproj" />
     <ProjectReference Include="..\Vctoon.Application.Contracts\Vctoon.Application.Contracts.csproj"/>
   </ItemGroup>
 

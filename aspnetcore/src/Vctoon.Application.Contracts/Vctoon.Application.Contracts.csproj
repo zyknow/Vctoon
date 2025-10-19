@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Vctoon.Domain.Shared\Vctoon.Domain.Shared.csproj"/>
+    <ProjectReference Include="..\..\modules\Zyknow.Abp.Lucene\src\Zyknow.Abp.Lucene.Application.Contracts\Zyknow.Abp.Lucene.Application.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

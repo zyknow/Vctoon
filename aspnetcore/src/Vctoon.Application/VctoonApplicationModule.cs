@@ -8,6 +8,7 @@ using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
 using Volo.Abp.Modularity;
 using Volo.Abp.PermissionManagement;
+using Zyknow.Abp.Lucene;
 
 namespace Vctoon;
 
@@ -18,7 +19,8 @@ namespace Vctoon;
     typeof(AbpFeatureManagementApplicationModule),
     typeof(AbpIdentityApplicationModule),
     typeof(AbpAccountApplicationModule),
-    typeof(AbpSettingUiApplicationModule)
+    typeof(AbpSettingUiApplicationModule),
+    typeof(ZyknowLuceneApplicationModule)
 )]
 public class VctoonApplicationModule : AbpModule
 {

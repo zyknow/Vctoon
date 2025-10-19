@@ -27,10 +27,6 @@ public abstract class VctoonService
     private IStringLocalizer? _localizer;
     public IAbpLazyServiceProvider LazyServiceProvider { get; set; } = default!;
 
-    public static string[] CommonPostfixes { get; set; } = { "AppService", "ApplicationService", "Service" };
-
-    public List<string> AppliedCrossCuttingConcerns { get; } = new();
-
     protected IUnitOfWorkManager UnitOfWorkManager => LazyServiceProvider.LazyGetRequiredService<IUnitOfWorkManager>();
 
     protected IAsyncQueryableExecuter AsyncExecuter =>
