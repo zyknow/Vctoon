@@ -14,7 +14,7 @@ const url = {
   /** 获取所有标签 */
   all: `${baseUrl}/all`,
   /** 批量删除 */
-  deleteMany: `${baseUrl}/delete-many`,
+  deleteMany: `${baseUrl}/many`,
 }
 
 export const tagApi = {
@@ -39,7 +39,9 @@ export const tagApi = {
   /** 批量删除标签 */
   async deleteMany(ids: string[]) {
     return requestClient.delete(url.deleteMany, {
-      data: ids,
+      params: { ids },
+      // 使用 repeat 序列化生成 ?ids=a&ids=b 形式
+      paramsSerializer: 'repeat',
     })
   },
 }

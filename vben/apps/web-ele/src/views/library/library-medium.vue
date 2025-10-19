@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import { Page } from '@vben/common-ui'
 import { useUserStore } from '@vben/stores'
@@ -15,8 +16,20 @@ import { useMediumStore } from '#/store'
 
 import LibraryRecommend from './library-recommend.vue'
 
-// 当前库 ID（从路径中解析）
-const libraryId = location.pathname.replace('/library/', '')
+const route = useRoute()
+const router = useRouter()
+
+const MEDIUM_VIEW_TABS = ['collection', 'library', 'recommend'] as const
+type MediumViewTabValue = (typeof MEDIUM_VIEW_TABS)[number]
+
+const resolveLibraryId = () => {
+  if (typeof route.name === 'string' && route.name.startsWith('library_')) {
+    return route.name.slice('library_'.length)
+  }
+  return route.path.replace('/library/', '')
+}
+
+const libraryId = resolveLibraryId()
 const userStore = useUserStore()
 const mediumStore = useMediumStore()
 const library = userStore.libraries.find((i) => i.id === libraryId)
@@ -24,13 +37,52 @@ if (!library) {
   throw new Error('Library not found')
 }
 const state = createLibraryMediumProvider(library)
-state.currentTab.value = mediumStore.libraryTabs[library.id] ?? 'library'
+
+const normalizeQueryString = (value: unknown): null | string => {
+  if (Array.isArray(value)) {
+    return typeof value[0] === 'string' ? value[0] : null
+  }
+  return typeof value === 'string' ? value : null
+}
+
+const resolveMediumTab = (value: unknown): MediumViewTabValue | null => {
+  const text = normalizeQueryString(value)
+  if (!text) return null
+  return MEDIUM_VIEW_TABS.includes(text as MediumViewTabValue)
+    ? (text as MediumViewTabValue)
+    : null
+}
+
+const initialTab = (() => {
+  const tab = resolveMediumTab(route.query.tab)
+  if (tab) return tab
+  return mediumStore.libraryTabs[library.id] ?? 'library'
+})()
+
+state.currentTab.value = initialTab
+
 watch(
   () => state.currentTab.value,
   (tab) => {
     mediumStore.setLibraryTab(library.id, tab)
+    const currentTab = normalizeQueryString(route.query.tab)
+    if (currentTab === tab) {
+      return
+    }
+    const nextQuery = { ...route.query, tab }
+    void router.replace({ query: nextQuery })
   },
   { immediate: true },
+)
+
+watch(
+  () => route.query.tab,
+  (value) => {
+    const normalized = resolveMediumTab(value)
+    if (normalized && state.currentTab.value !== normalized) {
+      state.currentTab.value = normalized
+    }
+  },
 )
 provideMediumProvider(state)
 provideMediumItemProvider({

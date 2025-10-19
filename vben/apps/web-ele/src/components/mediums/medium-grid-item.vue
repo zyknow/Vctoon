@@ -22,6 +22,7 @@ import {
 import { $t } from '#/locales'
 import { useMediumStore } from '#/store'
 
+import { getMediumAnchorId } from './anchor'
 import MediumCoverCard from './medium-cover-card.vue'
 import MediumInfoDialog from './medium-info-dialog.vue'
 import MediumSelectionIndicator from './medium-selection-indicator.vue'
@@ -52,6 +53,7 @@ const cardStyleVars = computed(() => ({
 }))
 
 const mediumType = computed(() => props.modelValue.mediumType)
+const mediumAnchorId = computed(() => getMediumAnchorId(props.modelValue.id))
 
 // 检查当前项目是否被选中
 const isSelected = computed(() => {
@@ -366,6 +368,7 @@ const cover = computed(() => {
 
 <template>
   <div
+    :id="mediumAnchorId"
     :style="cardStyleVars"
     class="text-foreground medium-card group relative cursor-pointer select-none transition-colors"
     @click="handleCardClick"
