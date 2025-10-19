@@ -1,0 +1,12 @@
+{
+  "culture": "en",
+  "texts": {
+    "Permission:ZyknowLucene": "Lucene Permissions",
+    "Permission:ZyknowLucene.Indexing": "Index Maintenance",
+    "Permission:ZyknowLucene.Indexing.Build": "Build Index",
+    "Permission:ZyknowLucene.Indexing.Rebuild": "Rebuild Index",
+    "Permission:ZyknowLucene.Indexing.Clear": "Clear Index",
+    "Permission:ZyknowLucene.Indexing.Synchronize": "Synchronize Index",
+    "Permission:ZyknowLucene.Search": "Search"
+  }
+}

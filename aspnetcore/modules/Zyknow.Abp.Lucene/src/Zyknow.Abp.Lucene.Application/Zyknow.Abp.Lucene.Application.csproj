@@ -25,6 +25,7 @@
     <PackageReference Include="Lucene.Net.ICU" Version="4.8.0-beta00017" />
     <PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00017" />
     <PackageReference Include="Lucene.Net.Highlighter" Version="4.8.0-beta00017" />
+    <PackageReference Include="Volo.Abp.Authorization" Version="$(AbpVersion)"/>
   </ItemGroup>
 
 </Project>

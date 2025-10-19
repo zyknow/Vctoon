@@ -1,0 +1,12 @@
+{
+  "culture": "zh-Hans",
+  "texts": {
+    "Permission:ZyknowLucene": "Lucene 权限",
+    "Permission:ZyknowLucene.Indexing": "索引维护",
+    "Permission:ZyknowLucene.Indexing.Build": "构建索引",
+    "Permission:ZyknowLucene.Indexing.Rebuild": "重建索引",
+    "Permission:ZyknowLucene.Indexing.Clear": "清空索引",
+    "Permission:ZyknowLucene.Indexing.Synchronize": "同步索引",
+    "Permission:ZyknowLucene.Search": "搜索"
+  }
+}
