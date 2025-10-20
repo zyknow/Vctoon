@@ -9,10 +9,12 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     ElAlert: typeof import('element-plus/es')['ElAlert']
+    ElAutocomplete: typeof import('element-plus/es')['ElAutocomplete']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElButtonGroup: typeof import('element-plus/es')['ElButtonGroup']
     ElCard: typeof import('element-plus/es')['ElCard']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
+    ElCheckboxGroup: typeof import('element-plus/es')['ElCheckboxGroup']
     ElCollapse: typeof import('element-plus/es')['ElCollapse']
     ElCollapseItem: typeof import('element-plus/es')['ElCollapseItem']
     ElColorPicker: typeof import('element-plus/es')['ElColorPicker']
@@ -60,6 +62,7 @@ declare module 'vue' {
     MediumInfoDialog: typeof import('./src/components/mediums/medium-info-dialog.vue')['default']
     MediumLayoutDropdownSelect: typeof import('./src/components/mediums/medium-layout-dropdown-select.vue')['default']
     MediumRecommendationSection: typeof import('./src/components/mediums/medium-recommendation-section.vue')['default']
+    MediumSearchInput: typeof import('./src/components/headers/medium-search-input.vue')['default']
     MediumSelectionIndicator: typeof import('./src/components/mediums/medium-selection-indicator.vue')['default']
     MediumSortDropdown: typeof import('./src/components/mediums/medium-sort-dropdown.vue')['default']
     MediumToolbarFirst: typeof import('./src/components/mediums/medium-toolbar-first.vue')['default']
