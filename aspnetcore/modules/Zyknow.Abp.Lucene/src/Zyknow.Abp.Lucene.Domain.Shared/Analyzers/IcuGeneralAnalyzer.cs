@@ -6,20 +6,13 @@ using Lucene.Net.Util;
 
 namespace Zyknow.Abp.Lucene.Analyzers;
 
-internal sealed class IcuGeneralAnalyzer : Analyzer
+internal sealed class IcuGeneralAnalyzer(LuceneVersion version) : Analyzer
 {
-    private readonly LuceneVersion _version;
-
-    public IcuGeneralAnalyzer(LuceneVersion version)
-    {
-        _version = version;
-    }
-
     protected override TokenStreamComponents CreateComponents(string fieldName, TextReader reader)
     {
-        var src = new StandardTokenizer(_version, reader);
+        var src = new StandardTokenizer(version, reader);
         TokenStream ts = new ICUNormalizer2Filter(src);
-        ts = new LowerCaseFilter(_version, ts);
+        ts = new LowerCaseFilter(version, ts);
         ts = new ICUFoldingFilter(ts);
         return new TokenStreamComponents(src, ts);
     }

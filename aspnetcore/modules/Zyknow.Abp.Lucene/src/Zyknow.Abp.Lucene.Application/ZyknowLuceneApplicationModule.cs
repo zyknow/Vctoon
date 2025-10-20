@@ -56,6 +56,6 @@ public class ZyknowLuceneApplicationModule : AbpModule
             .First(m => m.Name == nameof(ILocalEventBus.Subscribe) && m.IsGenericMethod &&
                         m.GetParameters().Length == 1);
         var gmethod = method.MakeGenericMethod(eventType);
-        gmethod.Invoke(bus, new object?[] { handler });
+        gmethod.Invoke(bus, [handler]);
     }
 }

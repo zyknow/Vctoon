@@ -19,24 +19,15 @@ using Zyknow.Abp.Lucene.Permissions;
 
 namespace Zyknow.Abp.Lucene.Services;
 
-public class LuceneAppService : ApplicationService, ILuceneService
+public class LuceneAppService(
+    IOptions<LuceneOptions> options,
+    ICurrentTenant currentTenant,
+    ILogger<LuceneAppService> logger,
+    IServiceProvider serviceProvider,
+    IEnumerable<ILuceneFilterProvider> filterProviders)
+    : ApplicationService, ILuceneService
 {
-    private readonly ICurrentTenant _currentTenant;
-    private readonly IEnumerable<ILuceneFilterProvider> _filterProviders;
-    private readonly ILogger<LuceneAppService> _logger;
-    private readonly LuceneOptions _options;
-    private readonly IServiceProvider _serviceProvider;
-
-    public LuceneAppService(IOptions<LuceneOptions> options, ICurrentTenant currentTenant,
-        ILogger<LuceneAppService> logger, IServiceProvider serviceProvider,
-        IEnumerable<ILuceneFilterProvider> filterProviders)
-    {
-        _options = options.Value;
-        _currentTenant = currentTenant;
-        _logger = logger;
-        _serviceProvider = serviceProvider;
-        _filterProviders = filterProviders;
-    }
+    private readonly LuceneOptions _options = options.Value;
 
     [Authorize(ZyknowLucenePermissions.Search.Default)]
     public virtual async Task<SearchResultDto> SearchAsync(string entityName, SearchQueryInput input)
@@ -51,7 +42,7 @@ public class LuceneAppService : ApplicationService, ILuceneService
         }
 
         var indexPath = GetIndexPath(descriptor.IndexName);
-        _logger.LogInformation(
+        logger.LogInformation(
             "Lucene search on index {Index} at path {Path}. Query={Query} Prefix={Prefix} Fuzzy={Fuzzy}",
             descriptor.IndexName, indexPath, input.Query, input.Prefix, input.Fuzzy);
         using var dir = _options.DirectoryFactory(indexPath);
@@ -95,7 +86,7 @@ public class LuceneAppService : ApplicationService, ILuceneService
                 }
                 catch (ParseException ex)
                 {
-                    _logger.LogWarning("Lucene query variant parse failed: variant={Variant} error={Error}", v,
+                    logger.LogWarning("Lucene query variant parse failed: variant={Variant} error={Error}", v,
                         ex.Message);
                 }
             }
@@ -106,7 +97,7 @@ public class LuceneAppService : ApplicationService, ILuceneService
         // 执行过滤器（MUST 合并）
         var filterCtx = new SearchFilterContext(entityName, descriptor, input);
         var composed = new BooleanQuery { { finalQuery, Occur.MUST } };
-        foreach (var provider in _filterProviders)
+        foreach (var provider in filterProviders)
         {
             var fq = await provider.BuildAsync(filterCtx);
             if (fq == null && filterCtx.Expression != null)
@@ -118,7 +109,7 @@ public class LuceneAppService : ApplicationService, ILuceneService
                     if (gtype != null)
                     {
                         var method = typeof(LinqLucene).GetMethod(nameof(LinqLucene.Where))!.MakeGenericMethod(gtype);
-                        fq = (Query)method.Invoke(null, new object[] { descriptor, filterCtx.Expression })!;
+                        fq = (Query)method.Invoke(null, [descriptor, filterCtx.Expression])!;
                     }
                 }
                 catch
@@ -136,7 +127,7 @@ public class LuceneAppService : ApplicationService, ILuceneService
         var searcher = new IndexSearcher(reader);
         var topN = input.SkipCount + input.MaxResultCount;
         var hits = searcher.Search(composed, topN);
-        _logger.LogInformation("Lucene search returned {Total} hits", hits.TotalHits);
+        logger.LogInformation("Lucene search returned {Total} hits", hits.TotalHits);
         var slice = hits.ScoreDocs.Skip(input.SkipCount).Take(input.MaxResultCount).ToList();
 
         var results = new List<SearchHitDto>(slice.Count);
@@ -173,7 +164,7 @@ public class LuceneAppService : ApplicationService, ILuceneService
         }
 
         var indexPath = GetIndexPath(descriptor.IndexName);
-        _logger.LogInformation("Lucene rebuild index {Index} at path {Path}", descriptor.IndexName, indexPath);
+        logger.LogInformation("Lucene rebuild index {Index} at path {Path}", descriptor.IndexName, indexPath);
         using var dir = _options.DirectoryFactory(indexPath);
         var analyzer = _options.AnalyzerFactory();
         var config = new IndexWriterConfig(LuceneVersion.LUCENE_48, analyzer);
@@ -181,7 +172,7 @@ public class LuceneAppService : ApplicationService, ILuceneService
         var beforeMaxDoc = writer.MaxDoc;
         writer.DeleteAll();
         writer.Commit();
-        _logger.LogInformation("Lucene rebuild cleared {Before} docs from {Index}", beforeMaxDoc, descriptor.IndexName);
+        logger.LogInformation("Lucene rebuild cleared {Before} docs from {Index}", beforeMaxDoc, descriptor.IndexName);
         return beforeMaxDoc;
     }
 
@@ -206,25 +197,25 @@ public class LuceneAppService : ApplicationService, ILuceneService
             ?.GetGenericArguments().FirstOrDefault() ?? typeof(Guid);
 
         var repoType = typeof(IRepository<,>).MakeGenericType(entityType, keyType);
-        var repository = _serviceProvider.GetService(repoType);
+        var repository = serviceProvider.GetService(repoType);
         if (repository is null)
         {
-            _logger.LogWarning("Lucene rebuild+index: repository not found for entity {Entity}", entityType.FullName);
+            logger.LogWarning("Lucene rebuild+index: repository not found for entity {Entity}", entityType.FullName);
             return cleared;
         }
 
         // 调用 LuceneIndexSynchronizer.SyncAllAsync<T,TKey>
-        var synchronizer = _serviceProvider.GetRequiredService<LuceneIndexSynchronizer>();
+        var synchronizer = serviceProvider.GetRequiredService<LuceneIndexSynchronizer>();
         var method = typeof(LuceneIndexSynchronizer)
             .GetMethods(BindingFlags.Instance | BindingFlags.Public)
             .First(m => m.Name == nameof(LuceneIndexSynchronizer.SyncAllAsync) && m.IsGenericMethodDefinition &&
                         m.GetGenericArguments().Length == 2);
         var gmethod = method.MakeGenericMethod(entityType, keyType);
-        _logger.LogInformation("Lucene rebuild+index: start SyncAll for {Entity} with batchSize {Batch}",
+        logger.LogInformation("Lucene rebuild+index: start SyncAll for {Entity} with batchSize {Batch}",
             entityType.FullName, batchSize);
         await (Task)gmethod.Invoke(synchronizer,
-            new object?[] { repository, batchSize, true, default(CancellationToken) })!;
-        _logger.LogInformation("Lucene rebuild+index: completed for {Entity}", entityType.FullName);
+            [repository, batchSize, true, CancellationToken.None])!;
+        logger.LogInformation("Lucene rebuild+index: completed for {Entity}", entityType.FullName);
 
         return cleared;
     }
@@ -244,58 +235,17 @@ public class LuceneAppService : ApplicationService, ILuceneService
         var indexPath = GetIndexPath(descriptor.IndexName);
         using var dir = _options.DirectoryFactory(indexPath);
         using var reader = DirectoryReader.Open(dir);
-        _logger.LogInformation("Lucene index {Index} at {Path} has {Count} docs", descriptor.IndexName, indexPath,
+        logger.LogInformation("Lucene index {Index} at {Path} has {Count} docs", descriptor.IndexName, indexPath,
             reader.MaxDoc);
         return reader.MaxDoc;
     }
-
-    [Authorize(ZyknowLucenePermissions.Indexing.Default)]
-    public virtual async Task<SearchResultDto> DumpIndexAsync(string entityName, int take = 10)
-    {
-        await Task.Yield();
-        var descriptor =
-            _options.Descriptors.Values.FirstOrDefault(d =>
-                d.IndexName.Equals(entityName, StringComparison.OrdinalIgnoreCase));
-        if (descriptor is null)
-        {
-            throw new BusinessException("Lucene:EntityNotConfigured").WithData("Entity", entityName);
-        }
-
-        var indexPath = GetIndexPath(descriptor.IndexName);
-        using var dir = _options.DirectoryFactory(indexPath);
-        using var reader = DirectoryReader.Open(dir);
-        var searcher = new IndexSearcher(reader);
-
-        var hits = new List<SearchHitDto>();
-        var max = Math.Min(reader.MaxDoc, take);
-        for (var docId = 0; docId < max; docId++)
-        {
-            var doc = searcher.Doc(docId);
-            var payload = new Dictionary<string, string>();
-            foreach (var f in descriptor.Fields.Where(f => f.Store))
-            {
-                payload[f.Name] = doc.Get(f.Name);
-            }
-
-            hits.Add(new SearchHitDto
-            {
-                EntityId = doc.Get(descriptor.IdFieldName) ?? string.Empty,
-                Score = 0,
-                Payload = payload
-            });
-        }
-
-        _logger.LogInformation("Lucene dump index {Index}: take={Take} showed {Count} docs", descriptor.IndexName, take,
-            hits.Count);
-        return new SearchResultDto(reader.MaxDoc, hits);
-    }
-
+    
     protected virtual string GetIndexPath(string indexName)
     {
         var root = _options.IndexRootPath;
-        if (_options.PerTenantIndex && _currentTenant.Id.HasValue)
+        if (_options.PerTenantIndex && currentTenant.Id.HasValue)
         {
-            return Path.Combine(root, _currentTenant.Id.Value.ToString(), indexName);
+            return Path.Combine(root, currentTenant.Id.Value.ToString(), indexName);
         }
 
         return Path.Combine(root, indexName);

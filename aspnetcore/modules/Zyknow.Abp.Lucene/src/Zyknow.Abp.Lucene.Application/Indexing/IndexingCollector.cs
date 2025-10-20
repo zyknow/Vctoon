@@ -24,7 +24,6 @@ public interface IIndexingCollector
     Task ProcessImmediatelyAsync(LuceneIndexManager indexer);
 }
 
-/// <inheritdoc/>
 public sealed class IndexingCollector : IIndexingCollector, IScopedDependency
 {
     private readonly Dictionary<Type, HashSet<string>> _deletes = new();
@@ -115,7 +114,7 @@ public sealed class IndexingCollector : IIndexingCollector, IScopedDependency
             }
 
             // replace:false 表示增量更新
-            await (Task)generic.Invoke(indexer, new object?[] { list, false })!;
+            await (Task)generic.Invoke(indexer, [list, false])!;
         }
 
         // 批量删除
@@ -125,7 +124,7 @@ public sealed class IndexingCollector : IIndexingCollector, IScopedDependency
             var gdeleteRange = deleteRange.MakeGenericMethod(type);
             // 构造 List<object> 参数
             var list = new List<object>(ids);
-            await (Task)gdeleteRange.Invoke(indexer, new object?[] { list })!;
+            await (Task)gdeleteRange.Invoke(indexer, [list])!;
         }
     }
 

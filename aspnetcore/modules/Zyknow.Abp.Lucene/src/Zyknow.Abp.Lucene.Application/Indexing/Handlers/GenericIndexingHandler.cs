@@ -15,29 +15,17 @@ namespace Zyknow.Abp.Lucene.Indexing.Handlers;
 /// 并在事务提交后一次性批量写入 Lucene 索引。
 /// 仅对已通过 Fluent DSL 注册的实体类型生效。
 /// </summary>
-public sealed class GenericIndexingHandler<T> :
-    ILocalEventHandler<EntityCreatedEventData<T>>,
-    ILocalEventHandler<EntityUpdatedEventData<T>>,
-    ILocalEventHandler<EntityDeletedEventData<T>>,
-    ITransientDependency
+public sealed class GenericIndexingHandler<T>(
+    IIndexingCollector collector,
+    IUnitOfWorkManager uow,
+    LuceneIndexManager indexer,
+    IOptions<LuceneOptions> options)
+    :
+        ILocalEventHandler<EntityCreatedEventData<T>>,
+        ILocalEventHandler<EntityUpdatedEventData<T>>,
+        ILocalEventHandler<EntityDeletedEventData<T>>,
+        ITransientDependency
 {
-    private readonly IIndexingCollector _collector;
-    private readonly LuceneIndexManager _indexer;
-    private readonly IOptions<LuceneOptions> _options;
-    private readonly IUnitOfWorkManager _uow;
-
-    public GenericIndexingHandler(
-        IIndexingCollector collector,
-        IUnitOfWorkManager uow,
-        LuceneIndexManager indexer,
-        IOptions<LuceneOptions> options)
-    {
-        _collector = collector;
-        _uow = uow;
-        _indexer = indexer;
-        _options = options;
-    }
-
     public Task HandleEventAsync(EntityCreatedEventData<T> eventData)
     {
         return HandleUpsert(eventData.Entity);
@@ -53,7 +41,7 @@ public sealed class GenericIndexingHandler<T> :
         var id = GetIdString(eventData.Entity);
         if (id != null)
         {
-            _collector.Delete<T>(id);
+            collector.Delete<T>(id);
             RegisterOnce();
         }
 
@@ -75,7 +63,7 @@ public sealed class GenericIndexingHandler<T> :
         var id = GetIdString(entity);
         if (id != null)
         {
-            _collector.Upsert(entity, id);
+            collector.Upsert(entity, id);
             RegisterOnce();
         }
 
@@ -84,7 +72,7 @@ public sealed class GenericIndexingHandler<T> :
 
     private bool IsConfigured()
     {
-        var opts = _options.Value;
+        var opts = options.Value;
         if (!opts.EnableAutoIndexingEvents)
         {
             return false;
@@ -95,15 +83,15 @@ public sealed class GenericIndexingHandler<T> :
 
     private void RegisterOnce()
     {
-        var current = _uow.Current;
+        var current = uow.Current;
         if (current != null)
         {
-            _collector.RegisterOnCompleted(current, _indexer);
+            collector.RegisterOnCompleted(current, indexer);
         }
         else
         {
             // 无 UoW 情况：立即执行批处理
-            _collector.ProcessImmediatelyAsync(_indexer).GetAwaiter().GetResult();
+            collector.ProcessImmediatelyAsync(indexer).GetAwaiter().GetResult();
         }
     }
 

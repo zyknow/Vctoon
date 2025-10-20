@@ -18,18 +18,11 @@ public sealed class FakeCurrentTenant : ICurrentTenant
         });
     }
 
-    private sealed class NoopDisposable : IDisposable
+    private sealed class NoopDisposable(Action onDispose) : IDisposable
     {
-        private readonly Action _onDispose;
-
-        public NoopDisposable(Action onDispose)
-        {
-            _onDispose = onDispose;
-        }
-
         public void Dispose()
         {
-            _onDispose();
+            onDispose();
         }
     }
 }

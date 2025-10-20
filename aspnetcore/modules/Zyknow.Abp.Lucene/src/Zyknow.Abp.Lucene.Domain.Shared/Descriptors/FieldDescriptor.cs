@@ -27,7 +27,7 @@ public sealed class FieldDescriptor
     public CultureInfo? LowerCaseCulture { get; set; }
     public (int min, int max)? Autocomplete { get; set; }
     public (bool positions, bool offsets)? StoreTermVectors { get; set; }
-    public List<string> Depends { get; } = new();
+    public List<string> Depends { get; } = [];
     public bool Searchable { get; set; } = true;
     public LuceneNumericKind NumericKind { get; set; } = LuceneNumericKind.None;
 

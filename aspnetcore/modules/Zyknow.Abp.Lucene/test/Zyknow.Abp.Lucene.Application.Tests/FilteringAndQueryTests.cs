@@ -134,7 +134,7 @@ public class FilteringAndQueryTests
         });
         services.AddSingleton<LuceneIndexManager>();
         services.AddSingleton<LuceneAppService>();
-        services.AddSingleton<ILuceneFilterProvider>(new CodesInProvider(new[] { "B001", "B002" }));
+        services.AddSingleton<ILuceneFilterProvider>(new CodesInProvider(["B001", "B002"]));
         services.AddSingleton<ICurrentTenant>(new FakeCurrentTenant { Id = null });
         services.AddLogging();
 
@@ -194,48 +194,6 @@ public class FilteringAndQueryTests
         Assert.Equal(1, result.TotalCount);
     }
 
-    [Fact]
-    public async Task DumpIndex_Should_Return_Stored_Payload_Only()
-    {
-        var services = new ServiceCollection();
-        services.Configure<LuceneOptions>(opt =>
-        {
-            opt.PerTenantIndex = false;
-            opt.IndexRootPath = Path.Combine(Path.GetTempPath(), "lucene-index-tests");
-            opt.AnalyzerFactory = AnalyzerFactories.IcuGeneral;
-            opt.ConfigureLucene(model =>
-            {
-                model.Entity<Book>(e =>
-                {
-                    e.Field(x => x.Title, f => f.Store());
-                    e.Field(x => x.Author, f => f.Store());
-                    e.Field(x => x.Code, f => f.Keyword());
-                });
-            });
-        });
-        services.AddSingleton<LuceneIndexManager>();
-        services.AddSingleton<LuceneAppService>();
-        services.AddSingleton<ICurrentTenant>(new FakeCurrentTenant { Id = null });
-        services.AddLogging();
-
-        var sp = services.BuildServiceProvider();
-        var indexer = sp.GetRequiredService<LuceneIndexManager>();
-        var search = sp.GetRequiredService<LuceneAppService>();
-
-        await indexer.RebuildAsync(typeof(Book));
-        await indexer.IndexRangeAsync(new List<Book>
-        {
-            new("1", "Lucene", "A", "B001")
-        }, true);
-
-        var dump = await search.DumpIndexAsync("Book", 10);
-        Assert.True(dump.TotalCount >= 1);
-        var payload = dump.Items.First().Payload;
-        Assert.True(payload.ContainsKey("Title"));
-        Assert.True(payload.ContainsKey("Author"));
-        Assert.False(payload.ContainsKey("Code"));
-    }
-
     private sealed class RestrictCodeProvider(string code) : ILuceneFilterProvider
     {
         public Task<Query?> BuildAsync(SearchFilterContext ctx)
@@ -247,7 +205,7 @@ public class FilteringAndQueryTests
 
     private sealed class CodesInProvider(IEnumerable<string> codes) : ILuceneFilterProvider
     {
-        private readonly HashSet<string> _codes = new(codes);
+        private readonly HashSet<string> _codes = [..codes];
 
         public Task<Query?> BuildAsync(SearchFilterContext ctx)
         {

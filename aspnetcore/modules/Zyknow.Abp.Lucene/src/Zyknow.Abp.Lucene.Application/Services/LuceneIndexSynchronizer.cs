@@ -19,28 +19,14 @@ namespace Zyknow.Abp.Lucene.Services;
 /// <summary>
 /// 索引同步服务：从数据库批量读取实体并补齐索引，同时删除索引中多余的文档，保证与数据库一致。
 /// </summary>
-public class LuceneIndexSynchronizer : ITransientDependency
+public class LuceneIndexSynchronizer(
+    LuceneIndexManager indexManager,
+    IOptions<LuceneOptions> options,
+    ICurrentTenant currentTenant,
+    IAsyncQueryableExecuter asyncExecuter,
+    ILogger<LuceneIndexSynchronizer> logger)
+    : ITransientDependency
 {
-    private readonly IAsyncQueryableExecuter _asyncExecuter;
-    private readonly ICurrentTenant _currentTenant;
-    private readonly LuceneIndexManager _indexManager;
-    private readonly ILogger<LuceneIndexSynchronizer> _logger;
-    private readonly IOptions<LuceneOptions> _options;
-
-    public LuceneIndexSynchronizer(
-        LuceneIndexManager indexManager,
-        IOptions<LuceneOptions> options,
-        ICurrentTenant currentTenant,
-        IAsyncQueryableExecuter asyncExecuter,
-        ILogger<LuceneIndexSynchronizer> logger)
-    {
-        _indexManager = indexManager;
-        _options = options;
-        _currentTenant = currentTenant;
-        _asyncExecuter = asyncExecuter;
-        _logger = logger;
-    }
-
     /// <summary>
     /// 泛型主键版本：按实体类型进行全量/增量同步，兼容非 Guid 主键。
     /// </summary>
@@ -61,7 +47,7 @@ public class LuceneIndexSynchronizer : ITransientDependency
                 .Distinct()
                 .ToList();
 
-            _logger.LogDebug("Lucene sync using projection for {Entity} (Index:{IndexName}) Fields:{Fields}",
+            logger.LogDebug("Lucene sync using projection for {Entity} (Index:{IndexName}) Fields:{Fields}",
                 typeof(T).FullName, descriptor.IndexName, string.Join(",", propNames));
             var skip = 0;
             while (true)
@@ -70,7 +56,7 @@ public class LuceneIndexSynchronizer : ITransientDependency
                 var query = await repository.GetQueryableAsync();
                 var selector = BuildProjectionSelector<T>(propNames, descriptor.IdFieldName);
                 var projected = query.Select(selector).Skip(skip).Take(batchSize);
-                var rows = await _asyncExecuter.ToListAsync(projected);
+                var rows = await asyncExecuter.ToListAsync(projected, ct);
                 if (rows.Count == 0)
                 {
                     break;
@@ -94,7 +80,7 @@ public class LuceneIndexSynchronizer : ITransientDependency
                     docs.Add(doc);
                 }
 
-                await _indexManager.IndexRangeDocumentsAsync(descriptor, docs, false);
+                await indexManager.IndexRangeDocumentsAsync(descriptor, docs, false);
                 skip += rows.Count;
             }
         }
@@ -102,7 +88,7 @@ public class LuceneIndexSynchronizer : ITransientDependency
         {
             var valueFields = descriptor.Fields.Where(f => f.ValueSelector != null).Select(f => f.Name).Distinct()
                 .ToList();
-            _logger.LogInformation(
+            logger.LogInformation(
                 "Lucene sync fallback to entity load for {Entity} (Index:{IndexName}). ValueFields:{Fields}",
                 typeof(T).FullName, descriptor.IndexName, string.Join(",", valueFields));
 
@@ -115,13 +101,13 @@ public class LuceneIndexSynchronizer : ITransientDependency
                 ct.ThrowIfCancellationRequested();
                 var query = await repository.GetQueryableAsync();
                 var batchQuery = query.Skip(skip).Take(batchSize);
-                var batch = await _asyncExecuter.ToListAsync(batchQuery);
+                var batch = await asyncExecuter.ToListAsync(batchQuery, ct);
                 if (batch.Count == 0)
                 {
                     break;
                 }
 
-                await _indexManager.IndexRangeAsync(batch, false);
+                await indexManager.IndexRangeAsync(batch, false);
                 skip += batch.Count;
             }
         }
@@ -133,14 +119,14 @@ public class LuceneIndexSynchronizer : ITransientDependency
 
         // 对账删除：索引 Id - 数据库 Id 的差集（以字符串比较）
         var dbIdQuery = (await repository.GetQueryableAsync()).Select(x => x.Id);
-        var dbIds = await _asyncExecuter.ToListAsync(dbIdQuery);
+        var dbIds = await asyncExecuter.ToListAsync(dbIdQuery, ct);
         var dbIdStrings = new HashSet<string>(dbIds.Select(x => x?.ToString() ?? string.Empty));
 
         var indexIds = await ListIndexedIdsAsync(descriptor);
         var staleIds = indexIds.Where(id => !dbIdStrings.Contains(id)).Cast<object>().ToList();
         if (staleIds.Count > 0)
         {
-            await _indexManager.DeleteRangeAsync<T>(staleIds);
+            await indexManager.DeleteRangeAsync<T>(staleIds);
         }
     }
 
@@ -222,8 +208,8 @@ public class LuceneIndexSynchronizer : ITransientDependency
     public async Task SyncTenantAsync(Guid? tenantId = null, Func<Type, object>? repositoryFactory = null,
         int batchSize = 1000, bool deleteMissing = true, CancellationToken ct = default)
     {
-        using var change = _currentTenant.Change(tenantId);
-        foreach (var kv in _options.Value.Descriptors)
+        using var change = currentTenant.Change(tenantId);
+        foreach (var kv in options.Value.Descriptors)
         {
             var entityType = kv.Key;
             var keyType = ResolveKeyType(entityType);
@@ -244,7 +230,7 @@ public class LuceneIndexSynchronizer : ITransientDependency
                             m.GetGenericArguments().Length == 2);
 
             var gmethod = method.MakeGenericMethod(entityType, keyType);
-            await (Task)gmethod.Invoke(this, new object?[] { repoObj, batchSize, deleteMissing, ct })!;
+            await (Task)gmethod.Invoke(this, [repoObj, batchSize, deleteMissing, ct])!;
         }
     }
 
@@ -257,7 +243,7 @@ public class LuceneIndexSynchronizer : ITransientDependency
 
     private EntitySearchDescriptor GetDescriptor(Type type)
     {
-        if (!_options.Value.Descriptors.TryGetValue(type, out var descriptor))
+        if (!options.Value.Descriptors.TryGetValue(type, out var descriptor))
         {
             throw new BusinessException("Lucene:EntityNotConfigured").WithData("Entity", type.FullName);
         }
@@ -271,8 +257,8 @@ public class LuceneIndexSynchronizer : ITransientDependency
     private async Task<List<string>> ListIndexedIdsAsync(EntitySearchDescriptor descriptor)
     {
         await Task.Yield();
-        var indexPath = _indexManager.GetIndexPath(descriptor.IndexName);
-        using var dir = _options.Value.DirectoryFactory(indexPath);
+        var indexPath = indexManager.GetIndexPath(descriptor.IndexName);
+        using var dir = options.Value.DirectoryFactory(indexPath);
         using var reader = DirectoryReader.Open(dir);
 
         var ids = new List<string>(reader.MaxDoc);

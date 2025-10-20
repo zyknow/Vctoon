@@ -10,16 +10,9 @@ using Zyknow.Abp.Lucene.Options;
 
 namespace Zyknow.Abp.Lucene.Services;
 
-public class LuceneIndexManager
+public class LuceneIndexManager(IOptions<LuceneOptions> options, ICurrentTenant currentTenant)
 {
-    private readonly ICurrentTenant _currentTenant;
-    private readonly LuceneOptions _options;
-
-    public LuceneIndexManager(IOptions<LuceneOptions> options, ICurrentTenant currentTenant)
-    {
-        _options = options.Value;
-        _currentTenant = currentTenant;
-    }
+    private readonly LuceneOptions _options = options.Value;
 
     public Task IndexAsync<T>(T entity)
     {
@@ -132,9 +125,9 @@ public class LuceneIndexManager
     protected internal virtual string GetIndexPath(string indexName)
     {
         var root = _options.IndexRootPath;
-        if (_options.PerTenantIndex && _currentTenant.Id.HasValue)
+        if (_options.PerTenantIndex && currentTenant.Id.HasValue)
         {
-            return Path.Combine(root, _currentTenant.Id.Value.ToString(), indexName);
+            return Path.Combine(root, currentTenant.Id.Value.ToString(), indexName);
         }
 
         return Path.Combine(root, indexName);

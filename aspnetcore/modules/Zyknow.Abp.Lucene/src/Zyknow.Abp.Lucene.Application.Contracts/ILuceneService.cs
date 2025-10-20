@@ -8,5 +8,4 @@ public interface ILuceneService
     Task<int> RebuildIndexAsync(string entityName);
     Task<int> RebuildAndIndexAllAsync(string entityName, int batchSize = 1000);
     Task<int> GetIndexDocumentCountAsync(string entityName);
-    Task<SearchResultDto> DumpIndexAsync(string entityName, int take = 10);
 }
