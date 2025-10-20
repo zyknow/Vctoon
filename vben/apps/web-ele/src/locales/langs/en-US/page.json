@@ -341,5 +341,8 @@
       "resetAllConfirm": "Reset all settings?"
     },
     "empty": "No settings available"
+  },
+  "search": {
+    "title": "Search"
   }
 }

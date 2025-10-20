@@ -13,6 +13,7 @@ import {
 import { preferences } from '@vben/preferences'
 import { useUserStore } from '@vben/stores'
 
+import MediumSearchInput from '#/components/headers/medium-search-input.vue'
 import { useAuthStore } from '#/store'
 
 const notifications = ref<NotificationItem[]>([])
@@ -68,8 +69,9 @@ watch(
 <template>
   <BasicLayout @clear-preferences-and-logout="handleLogout">
     <template #header-left-100>
-      <div>
+      <div class="flex items-center gap-3">
         <!-- TODO: medium搜索 -->
+        <MediumSearchInput />
       </div>
     </template>
     <template #header-right-50>

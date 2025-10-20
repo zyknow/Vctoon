@@ -105,6 +105,17 @@ const routes: RouteRecordRaw[] = [
     name: 'MediumDetail',
     path: 'medium/:type/:mediumId',
   },
+  {
+    meta: {
+      icon: 'ci:search',
+      keepAlive: false,
+      order: 5000,
+      title: $t('page.search.title'),
+    },
+    name: 'Search',
+    path: '/search',
+    component: () => import('#/views/search/index.vue'),
+  },
 ]
 
 export default routes

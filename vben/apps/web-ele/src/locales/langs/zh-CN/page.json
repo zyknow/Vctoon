@@ -320,6 +320,9 @@
       "loadError": "加载安全日志失败"
     }
   },
+  "search": {
+    "title": "搜索"
+  },
   "setting": {
     "title": "系统设置",
     "actions": {
