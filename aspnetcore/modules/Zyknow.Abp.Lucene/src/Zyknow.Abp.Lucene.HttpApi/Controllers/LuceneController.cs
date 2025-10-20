@@ -8,10 +8,16 @@ namespace Zyknow.Abp.Lucene.Controllers;
 [Route("api/lucene")]
 public class LuceneController(ILuceneService service) : AbpControllerBase
 {
-    [HttpPost("search/{entity}")]
-    public Task<SearchResultDto> SearchAsync([FromRoute] string entity, [FromBody] SearchQueryInput input)
+    [HttpGet("search/{entity}")]
+    public Task<SearchResultDto> SearchAsync([FromRoute] string entity, [FromQuery] SearchQueryInput input)
     {
         return service.SearchAsync(entity, input);
+    }
+
+    [HttpGet("search-many")]
+    public Task<SearchResultDto> SearchManyAsync([FromQuery] MultiSearchInput input)
+    {
+        return service.SearchManyAsync(input);
     }
 
     [HttpPost("rebuild/{entity}")]

@@ -6,6 +6,7 @@ using Volo.Abp.EventBus;
 using Volo.Abp.Uow;
 using Zyknow.Abp.Lucene.Options;
 using Zyknow.Abp.Lucene.Services;
+
 // changed from .Local to correct namespace
 
 namespace Zyknow.Abp.Lucene.Indexing.Handlers;
@@ -15,7 +16,7 @@ namespace Zyknow.Abp.Lucene.Indexing.Handlers;
 /// 并在事务提交后一次性批量写入 Lucene 索引。
 /// 仅对已通过 Fluent DSL 注册的实体类型生效。
 /// </summary>
-public sealed class GenericIndexingHandler<T>(
+public class GenericIndexingHandler<T>(
     IIndexingCollector collector,
     IUnitOfWorkManager uow,
     LuceneIndexManager indexer,

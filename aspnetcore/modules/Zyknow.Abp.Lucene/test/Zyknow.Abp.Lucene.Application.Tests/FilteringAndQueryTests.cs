@@ -194,7 +194,7 @@ public class FilteringAndQueryTests
         Assert.Equal(1, result.TotalCount);
     }
 
-    private sealed class RestrictCodeProvider(string code) : ILuceneFilterProvider
+    private class RestrictCodeProvider(string code) : ILuceneFilterProvider
     {
         public Task<Query?> BuildAsync(SearchFilterContext ctx)
         {
@@ -203,7 +203,7 @@ public class FilteringAndQueryTests
         }
     }
 
-    private sealed class CodesInProvider(IEnumerable<string> codes) : ILuceneFilterProvider
+    private class CodesInProvider(IEnumerable<string> codes) : ILuceneFilterProvider
     {
         private readonly HashSet<string> _codes = [..codes];
 
@@ -214,13 +214,13 @@ public class FilteringAndQueryTests
             return Task.FromResult<Query?>(q);
         }
 
-        private sealed class BookProj
+        private class BookProj
         {
             public string Code { get; set; } = string.Empty;
         }
     }
 
-    private sealed class ReadCountRangeProvider(string minIncl, string maxExcl) : ILuceneFilterProvider
+    private class ReadCountRangeProvider(string minIncl, string maxExcl) : ILuceneFilterProvider
     {
         public Task<Query?> BuildAsync(SearchFilterContext ctx)
         {
@@ -232,7 +232,7 @@ public class FilteringAndQueryTests
             return Task.FromResult<Query?>(q);
         }
 
-        private sealed class ItemProj
+        private class ItemProj
         {
             public string ReadCountNorm { get; set; } = string.Empty;
         }

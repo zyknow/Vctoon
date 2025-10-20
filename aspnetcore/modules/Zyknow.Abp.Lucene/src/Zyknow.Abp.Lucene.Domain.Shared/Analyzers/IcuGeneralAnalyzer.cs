@@ -6,7 +6,7 @@ using Lucene.Net.Util;
 
 namespace Zyknow.Abp.Lucene.Analyzers;
 
-internal sealed class IcuGeneralAnalyzer(LuceneVersion version) : Analyzer
+internal class IcuGeneralAnalyzer(LuceneVersion version) : Analyzer
 {
     protected override TokenStreamComponents CreateComponents(string fieldName, TextReader reader)
     {

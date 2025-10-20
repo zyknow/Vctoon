@@ -291,7 +291,7 @@ public class LuceneIndexSynchronizer(
         return "Field";
     }
 
-    private sealed class IndexShape
+    private class IndexShape
     {
         public object? Id { get; set; }
         public object? V0 { get; set; }

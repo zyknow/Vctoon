@@ -4,7 +4,7 @@ using Zyknow.Abp.Lucene.Dtos;
 
 namespace Zyknow.Abp.Lucene.Filtering;
 
-public sealed record SearchFilterContext(
+public record SearchFilterContext(
     string EntityName,
     EntitySearchDescriptor Descriptor,
     SearchQueryInput Input

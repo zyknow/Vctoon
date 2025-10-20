@@ -24,7 +24,7 @@ public interface IIndexingCollector
     Task ProcessImmediatelyAsync(LuceneIndexManager indexer);
 }
 
-public sealed class IndexingCollector : IIndexingCollector, IScopedDependency
+public class IndexingCollector : IIndexingCollector, IScopedDependency
 {
     private readonly Dictionary<Type, HashSet<string>> _deletes = new();
     private readonly Dictionary<Type, Dictionary<string, object>> _upserts = new();

@@ -7,7 +7,7 @@ using Lucene.Net.Util;
 
 namespace Zyknow.Abp.Lucene.Analyzers;
 
-internal sealed class EdgeNGramAnalyzer(LuceneVersion version, int minGram, int maxGram) : Analyzer
+internal class EdgeNGramAnalyzer(LuceneVersion version, int minGram, int maxGram) : Analyzer
 {
     protected override TokenStreamComponents CreateComponents(string fieldName, TextReader reader)
     {

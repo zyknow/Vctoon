@@ -1,15 +1,15 @@
-using Volo.Abp.Application.Dtos;
-using Zyknow.Abp.Lucene.Options;
-
 namespace Zyknow.Abp.Lucene.Dtos;
 
 /// <summary>
-/// 搜索查询输入参数。
-/// - 支持 Lucene 查询语法（例如：短语查询、字段限定、多字段组合）。
-/// - 与 <see cref="LuceneOptions.LuceneQuery"/> 的全局查询选项协同工作（AND/OR、多字段模式、模糊/前缀开关等）。
+/// 多实体搜索输入。
 /// </summary>
-public class SearchQueryInput : PagedAndSortedResultRequestDto
+public class MultiSearchInput : SearchQueryInput
 {
+    /// <summary>
+    /// 参与聚合的实体索引名集合。
+    /// </summary>
+    public List<string> Entities { get; set; } = new();
+
     /// <summary>
     /// 原始查询字符串。支持 Lucene 的解析器语法（例如：
     /// <code>title:Lucene AND author:Erik</code>、短语查询 <code>"Pro .NET"</code>、前缀 <code>Luc*</code> 等）。

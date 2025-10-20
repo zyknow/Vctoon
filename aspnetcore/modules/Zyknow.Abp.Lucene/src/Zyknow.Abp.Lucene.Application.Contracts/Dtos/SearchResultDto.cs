@@ -8,7 +8,7 @@ namespace Zyknow.Abp.Lucene.Dtos;
 /// - <see cref="Items"/>：当前页的命中项集合。
 /// - 支持 ABP 标准的分页/排序模型，与 <see cref="SearchQueryInput"/> 配合使用。
 /// </summary>
-public sealed class SearchResultDto : PagedResultDto<SearchHitDto>
+public class SearchResultDto : PagedResultDto<SearchHitDto>
 {
     /// <summary>
     /// 初始化一个空的搜索结果（TotalCount=0，Items=空集合）。

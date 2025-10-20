@@ -1,4 +1,5 @@
 using System.Reflection;
+using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.QueryParsers.Classic;
 using Lucene.Net.Search;
@@ -12,10 +13,12 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.MultiTenancy;
+using Zyknow.Abp.Lucene.Descriptors;
 using Zyknow.Abp.Lucene.Dtos;
 using Zyknow.Abp.Lucene.Filtering;
 using Zyknow.Abp.Lucene.Options;
 using Zyknow.Abp.Lucene.Permissions;
+using Directory = Lucene.Net.Store.Directory;
 
 namespace Zyknow.Abp.Lucene.Services;
 
@@ -151,6 +154,182 @@ public class LuceneAppService(
         return new SearchResultDto(hits.TotalHits, results);
     }
 
+    // 新增：MultiReader 聚合多实体搜索
+    [Authorize(ZyknowLucenePermissions.Search.Default)]
+    public virtual async Task<SearchResultDto> SearchManyAsync(MultiSearchInput input)
+    {
+        await Task.Yield();
+
+        var entityNames = input.Entities;
+
+        if (entityNames == null || entityNames.Count == 0)
+        {
+            throw new BusinessException("Lucene:EmptyEntities");
+        }
+
+        // 收集描述符与 reader
+        var descriptors = new List<EntitySearchDescriptor>();
+        var readers = new List<IndexReader>();
+        var dirHandles = new List<Directory>();
+
+        try
+        {
+            foreach (var name in entityNames)
+            {
+                var d = _options.Descriptors.Values.FirstOrDefault(x =>
+                    x.IndexName.Equals(name, StringComparison.OrdinalIgnoreCase));
+                if (d == null)
+                {
+                    logger.LogWarning("Lucene multi search ignored unconfigured entity {Entity}", name);
+                    continue;
+                }
+
+                var p = GetIndexPath(d.IndexName);
+
+                if (!System.IO.Directory.Exists(p) || System.IO.Directory.GetFiles(p).Length == 0)
+                {
+                    logger.LogInformation("Lucene multi search skipped entity {Entity} with no index at {Path}", name,
+                        p);
+                    continue;
+                }
+
+                var dir = _options.DirectoryFactory(p);
+                descriptors.Add(d);
+                dirHandles.Add(dir);
+                readers.Add(DirectoryReader.Open(dir));
+            }
+
+            // 若所有实体均未配置，则直接返回空结果
+            if (descriptors.Count == 0)
+            {
+                logger.LogInformation("Lucene multi search: no configured entities found. Returning empty result.");
+                return new SearchResultDto(0, new List<SearchHitDto>(0));
+            }
+
+            // 构建字段并集
+            var fields = descriptors
+                .SelectMany(d => d.Fields.Where(f => f.Searchable).Select(f => f.Name))
+                .Distinct()
+                .ToArray();
+
+            var analyzer = _options.AnalyzerFactory();
+            var parser = new MultiFieldQueryParser(LuceneVersion.LUCENE_48, fields, analyzer)
+            {
+                DefaultOperator = _options.LuceneQuery.MultiFieldMode.Equals("AND", StringComparison.OrdinalIgnoreCase)
+                    ? Operator.AND
+                    : Operator.OR,
+                AllowLeadingWildcard = true
+            };
+
+            var variants = new List<string> { input.Query };
+            if (input.Prefix)
+            {
+                variants.Add($"{input.Query}*");
+            }
+
+            if (input.Fuzzy)
+            {
+                variants.Add($"{input.Query}~{_options.LuceneQuery.FuzzyMaxEdits}");
+            }
+
+            Query finalQuery;
+            if (variants.Count == 1)
+            {
+                finalQuery = parser.Parse(variants[0]);
+            }
+            else
+            {
+                var bq = new BooleanQuery();
+                foreach (var v in variants)
+                {
+                    try
+                    {
+                        var q = parser.Parse(v);
+                        bq.Add(q, Occur.SHOULD);
+                    }
+                    catch (ParseException ex)
+                    {
+                        logger.LogWarning("Lucene query variant parse failed: variant={Variant} error={Error}", v,
+                            ex.Message);
+                    }
+                }
+
+                finalQuery = bq;
+            }
+
+            // 过滤器：每个实体独立生成并合并
+            var composed = new BooleanQuery { { finalQuery, Occur.MUST } };
+            foreach (var d in descriptors)
+            {
+                var ctx = new SearchFilterContext(d.IndexName, d, input);
+                foreach (var provider in filterProviders)
+                {
+                    var fq = await provider.BuildAsync(ctx);
+                    if (fq != null)
+                    {
+                        composed.Add(fq, Occur.MUST);
+                    }
+                }
+            }
+
+            // MultiReader 全局检索
+            var multi = new MultiReader(readers.ToArray(), true);
+            var searcher = new IndexSearcher(multi);
+            var topN = input.SkipCount + input.MaxResultCount;
+            var hits = searcher.Search(composed, topN);
+            logger.LogInformation("Lucene multi search returned {Total} hits across {Count} indexes", hits.TotalHits,
+                readers.Count);
+            var slice = hits.ScoreDocs.Skip(input.SkipCount).Take(input.MaxResultCount).ToList();
+
+            var results = new List<SearchHitDto>(slice.Count);
+            foreach (var sd in slice)
+            {
+                var doc = searcher.Doc(sd.Doc);
+                // 尝试读取来源实体名（通过字段并集无法直接得知），此处放入 Payload 特殊键
+                var payload = new Dictionary<string, string>();
+                foreach (var d in descriptors)
+                {
+                    foreach (var f in d.Fields.Where(f => f.Store))
+                    {
+                        var v = doc.Get(f.Name);
+                        if (v != null && !payload.ContainsKey(f.Name))
+                        {
+                            payload[f.Name] = v;
+                        }
+                    }
+                }
+
+                payload["__IndexName"] = ResolveDocIndexName(descriptors, doc);
+
+                // id 字段并不统一，优先从各描述符的 id 字段中读取第一个存在的
+                var id = descriptors
+                    .Select(d => doc.Get(d.IdFieldName))
+                    .FirstOrDefault(s => !string.IsNullOrEmpty(s)) ?? string.Empty;
+
+                results.Add(new SearchHitDto
+                {
+                    EntityId = id,
+                    Score = sd.Score,
+                    Payload = payload
+                });
+            }
+
+            return new SearchResultDto(hits.TotalHits, results);
+        }
+        finally
+        {
+            foreach (var r in readers)
+            {
+                r.Dispose();
+            }
+
+            foreach (var dir in dirHandles)
+            {
+                dir.Dispose();
+            }
+        }
+    }
+
     [Authorize(ZyknowLucenePermissions.Indexing.Rebuild)]
     public virtual async Task<int> RebuildIndexAsync(string entityName)
     {
@@ -239,7 +418,22 @@ public class LuceneAppService(
             reader.MaxDoc);
         return reader.MaxDoc;
     }
-    
+
+    private static string ResolveDocIndexName(IEnumerable<EntitySearchDescriptor> descriptors, Document doc)
+    {
+        // 简单策略：匹配哪个描述符的存储字段能唯一识别来源；若无法唯一，则返回 Unknown
+        foreach (var d in descriptors)
+        {
+            var hasAny = d.Fields.Any(f => f.Store && doc.Get(f.Name) != null);
+            if (hasAny)
+            {
+                return d.IndexName;
+            }
+        }
+
+        return "Unknown";
+    }
+
     protected virtual string GetIndexPath(string indexName)
     {
         var root = _options.IndexRootPath;

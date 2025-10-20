@@ -3,7 +3,7 @@ namespace Zyknow.Abp.Lucene.Options;
 /// <summary>
 /// 高亮选项：控制是否启用高亮及片段相关设置。
 /// </summary>
-public sealed class LuceneHighlightOptions
+public class LuceneHighlightOptions
 {
     /// <summary>
     /// 是否启用高亮。

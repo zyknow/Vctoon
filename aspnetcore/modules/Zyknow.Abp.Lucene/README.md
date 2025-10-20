@@ -54,14 +54,47 @@ await _indexManager.RebuildAsync(typeof(Book));
 
 ## Searching
 
-```csharp
-var result = await _searchService.SearchAsync("Book", new SearchQueryInput
-{
-    Query = "Lucene",
-    SkipCount = 0,
-    MaxResultCount = 10
-});
-```
+HTTP GET endpoints are available for both single-entity and multi-entity aggregated search.
+
+- Single-entity search: `GET /api/lucene/search/{entity}`
+  - Query params (`SearchQueryInput`): `query`, `fuzzy`, `prefix`, `highlight`, `skipCount`, `maxResultCount`, `sorting`
+  - Example:
+    ```bash
+    curl -G "http://localhost:5000/api/lucene/search/Book" \
+      --data-urlencode "query=Lucene" \
+      --data-urlencode "fuzzy=true" \
+      --data-urlencode "prefix=true" \
+      --data-urlencode "skipCount=0" \
+      --data-urlencode "maxResultCount=10"
+    ```
+
+- Multi-entity aggregated search: `GET /api/lucene/search-many`
+  - Query params (`MultiSearchInput`): `entities` (required, array), plus `query`, `fuzzy`, `prefix`, `highlight`, `skipCount`, `maxResultCount`, `sorting`
+  - How to pass arrays: repeat the same key, e.g. `entities=Book&entities=Item`
+  - Example:
+    ```bash
+    curl -G "http://localhost:5000/api/lucene/search-many" \
+      --data-urlencode "entities=Book" \
+      --data-urlencode "entities=Item" \
+      --data-urlencode "query=title:Lucene OR name:Lucene" \
+      --data-urlencode "prefix=true" \
+      --data-urlencode "fuzzy=false" \
+      --data-urlencode "skipCount=0" \
+      --data-urlencode "maxResultCount=20"
+    ```
+
+Response
+- Both endpoints return `SearchResultDto` (paged): `TotalCount` and `Items`.
+- Each hit (`SearchHitDto`) includes:
+  - `EntityId`: document key (from descriptor `IdFieldName`)
+  - `Score`: relevance score
+  - `Payload`: stored field key-values. In multi-entity mode, `Payload["__IndexName"]` indicates the source entity index name.
+
+Notes
+- Global query behavior is controlled by `LuceneOptions.LuceneQuery`:
+  - `MultiFieldMode`: `AND`/`OR` (default `OR`).
+  - `FuzzyMaxEdits`: Levenshtein edit distance for fuzzy matching (default 1).
+- With multi-tenancy (`PerTenantIndex`), requests search under the current tenant's index directory.
 
 ## Storage Location
 

@@ -7,7 +7,7 @@ namespace Zyknow.Abp.Lucene.Dtos;
 /// - <see cref="Payload"/>：参与存储的字段键值对（例如标题、作者等），用于结果展示或后续加载。
 /// - <see cref="Highlights"/>：高亮片段（预留，后续版本提供）。
 /// </summary>
-public sealed class SearchHitDto
+public class SearchHitDto
 {
     /// <summary>
     /// 实体主键（字符串格式）。

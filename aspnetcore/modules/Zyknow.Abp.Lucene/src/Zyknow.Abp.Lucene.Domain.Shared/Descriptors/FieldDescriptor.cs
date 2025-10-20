@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 
 namespace Zyknow.Abp.Lucene.Descriptors;
 
-public sealed class FieldDescriptor
+public class FieldDescriptor
 {
     public FieldDescriptor(LambdaExpression selector)
     {

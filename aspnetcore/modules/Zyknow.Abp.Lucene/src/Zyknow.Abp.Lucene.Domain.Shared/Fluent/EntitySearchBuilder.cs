@@ -7,7 +7,7 @@ namespace Zyknow.Abp.Lucene.Fluent;
 /// 实体搜索配置构建器。
 /// 通过字段选择器与委托，为实体定义参与索引/搜索的字段及其行为（存储、权重、关键字等）。
 /// </summary>
-public sealed class EntitySearchBuilder<T>
+public class EntitySearchBuilder<T>
 {
     private readonly EntitySearchDescriptor _descriptor;
 

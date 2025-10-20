@@ -16,7 +16,7 @@ namespace Zyknow.Abp.Lucene.Options;
 /// - 多租户场景下默认按租户拆分独立索引；
 /// - 可通过 <see cref="ConfigureLucene"/> 注册实体搜索描述符。
 /// </remarks>
-public sealed class LuceneOptions
+public class LuceneOptions
 {
     /// <summary>
     /// 分析器工厂，用于创建 <see cref="Analyzer"/> 实例。

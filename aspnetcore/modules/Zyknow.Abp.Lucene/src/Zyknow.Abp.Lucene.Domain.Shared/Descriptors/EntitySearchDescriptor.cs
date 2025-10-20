@@ -1,6 +1,6 @@
 namespace Zyknow.Abp.Lucene.Descriptors;
 
-public sealed class EntitySearchDescriptor(Type type, string? indexName)
+public class EntitySearchDescriptor(Type type, string? indexName)
 {
     public Type EntityType { get; } = type;
     public string IndexName { get; } = indexName ?? type.Name;

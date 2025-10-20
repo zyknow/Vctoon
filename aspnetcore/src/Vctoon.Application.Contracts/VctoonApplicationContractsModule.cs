@@ -1,9 +1,8 @@
 ﻿using EasyAbp.Abp.SettingUi;
 using Volo.Abp.Account;
+using Volo.Abp.FeatureManagement;
 using Volo.Abp.Modularity;
 using Volo.Abp.PermissionManagement;
-using Volo.Abp.SettingManagement;
-using Volo.Abp.FeatureManagement;
 using Zyknow.Abp.Lucene;
 
 namespace Vctoon;
@@ -11,7 +10,7 @@ namespace Vctoon;
 [DependsOn(
     typeof(VctoonDomainSharedModule),
     typeof(AbpFeatureManagementApplicationContractsModule),
-    typeof(AbpSettingManagementApplicationContractsModule),
+    // typeof(AbpSettingManagementApplicationContractsModule),
     typeof(AbpIdentityApplicationContractsModule),
     typeof(AbpAccountApplicationContractsModule),
     typeof(AbpPermissionManagementApplicationContractsModule),

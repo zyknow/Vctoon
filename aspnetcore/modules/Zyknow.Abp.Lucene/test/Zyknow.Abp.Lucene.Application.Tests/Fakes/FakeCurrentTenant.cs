@@ -2,7 +2,7 @@ using Volo.Abp.MultiTenancy;
 
 namespace Zyknow.Abp.Lucene.Application.Tests.Fakes;
 
-public sealed class FakeCurrentTenant : ICurrentTenant
+public class FakeCurrentTenant : ICurrentTenant
 {
     public Guid? ParentId => null;
     public Guid? Id { get; set; }
@@ -18,7 +18,7 @@ public sealed class FakeCurrentTenant : ICurrentTenant
         });
     }
 
-    private sealed class NoopDisposable(Action onDispose) : IDisposable
+    private class NoopDisposable(Action onDispose) : IDisposable
     {
         public void Dispose()
         {

@@ -8,7 +8,7 @@ namespace Zyknow.Abp.Lucene.Fluent;
 /// 字段级配置构建器。
 /// 为字段设置权重（Boost）、是否存储（Store）、命名（Name）、是否按关键字索引（Keyword）、自动补全（Autocomplete）和词条向量存储等。
 /// </summary>
-public sealed class FieldBuilder
+public class FieldBuilder
 {
     private readonly FieldDescriptor _field;
 

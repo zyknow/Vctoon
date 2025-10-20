@@ -95,7 +95,7 @@ public class NumericAndDateLinqTests
         Assert.Equal(1, result.TotalCount); // only inside is within range
     }
 
-    private sealed class CountRangeProvider(int minIncl, int maxIncl) : ILuceneFilterProvider
+    private class CountRangeProvider(int minIncl, int maxIncl) : ILuceneFilterProvider
     {
         public Task<Query?> BuildAsync(SearchFilterContext ctx)
         {
@@ -104,13 +104,13 @@ public class NumericAndDateLinqTests
             return Task.FromResult<Query?>(q);
         }
 
-        private sealed class ItemProj
+        private class ItemProj
         {
             public int Count { get; set; }
         }
     }
 
-    private sealed class DateRangeProvider(DateTime minIncl, DateTime maxIncl) : ILuceneFilterProvider
+    private class DateRangeProvider(DateTime minIncl, DateTime maxIncl) : ILuceneFilterProvider
     {
         public Task<Query?> BuildAsync(SearchFilterContext ctx)
         {
@@ -119,7 +119,7 @@ public class NumericAndDateLinqTests
             return Task.FromResult<Query?>(q);
         }
 
-        private sealed class EventProj
+        private class EventProj
         {
             public DateTime OccurredAt { get; set; }
         }

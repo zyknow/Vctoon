@@ -6,7 +6,7 @@ namespace Zyknow.Abp.Lucene.Fluent;
 /// Lucene 索引模型构建器（Fluent DSL）。
 /// 用于以流式 API 注册实体及其参与索引的字段配置，并最终产出搜索描述符集合。
 /// </summary>
-public sealed class LuceneModelBuilder
+public class LuceneModelBuilder
 {
     private readonly Dictionary<Type, EntitySearchDescriptor> _descriptors = new();
 

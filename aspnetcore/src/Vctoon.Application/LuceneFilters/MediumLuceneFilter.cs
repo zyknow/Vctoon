@@ -17,7 +17,7 @@ public class MediumLuceneFilter(LibraryPermissionStore libraryPermissionStore)
     }
 
     // 只用于 LINQ 字段名解析的轻量投影类型
-    private sealed class MediumBaseProjection
+    private class MediumBaseProjection
     {
         public Guid LibraryId { get; set; }
     }

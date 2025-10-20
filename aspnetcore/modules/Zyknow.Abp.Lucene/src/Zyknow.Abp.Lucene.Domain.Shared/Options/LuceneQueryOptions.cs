@@ -3,7 +3,7 @@ namespace Zyknow.Abp.Lucene.Options;
 /// <summary>
 /// 查询选项：控制多字段模式、模糊匹配和前缀匹配。
 /// </summary>
-public sealed class LuceneQueryOptions
+public class LuceneQueryOptions
 {
     /// <summary>
     /// 多字段查询模式，支持 "OR" 或 "AND"。
