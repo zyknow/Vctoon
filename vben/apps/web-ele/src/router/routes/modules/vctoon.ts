@@ -109,6 +109,8 @@ const routes: RouteRecordRaw[] = [
     meta: {
       icon: 'ci:search',
       keepAlive: false,
+      hideInMenu: true,
+      hideInTab: true,
       order: 5000,
       title: $t('page.search.title'),
     },

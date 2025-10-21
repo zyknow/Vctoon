@@ -14,10 +14,10 @@ public class VctoonSettingDefinitionProvider : SettingDefinitionProvider
         // Medium.ComicDetailVisibleImages
         context.Add(
             new SettingDefinition(
-                    "Settings.Medium.ComicDetailVisibleImages",
+                    "Medium.ComicDetailVisibleImages",
                     "false",
-                    L(@$"DisplayName:Settings.Medium.ComicDetailVisibleImages"),
-                    L(@$"Description:Settings.Medium.ComicDetailVisibleImages"),
+                    L(@$"DisplayName:Medium.ComicDetailVisibleImages"),
+                    L(@$"Description:Medium.ComicDetailVisibleImages"),
                     isVisibleToClients: true
                 )
                 .WithProperty("Group1", "Medium")

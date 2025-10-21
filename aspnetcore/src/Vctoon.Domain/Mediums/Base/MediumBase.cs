@@ -13,12 +13,14 @@ public abstract class MediumBase : AuditedAggregateRoot<Guid>, IMediumHasReading
         string title,
         string cover,
         Guid libraryId,
+        Guid libraryPathId,
         string description = "") : base(id)
     {
         Title = title;
         Cover = cover;
         LibraryId = libraryId;
         Description = description;
+        LibraryPathId = libraryPathId;
     }
 
     public string Title { get; set; }
@@ -31,6 +33,9 @@ public abstract class MediumBase : AuditedAggregateRoot<Guid>, IMediumHasReading
     public int ReadCount { get; set; }
 
     public Guid LibraryId { get; set; }
+
+    public Guid LibraryPathId { get; set; }
+    
     public virtual List<Tag> Tags { get; } = new();
 
     public virtual List<Artist> Artists { get; set; } = new();

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Vctoon.Handlers;
+using Vctoon.Mediums.Base;
 using Volo.Abp;
 using Volo.Abp.Uow;
 
@@ -14,7 +15,8 @@ public class LibraryScanner(
     ILogger<LibraryScanner> logger,
     IUnitOfWorkManager unitOfWorkManager,
     LibraryStore libraryStore,
-    IEnumerable<IMediumScanHandler> mediumScanHandlers)
+    IEnumerable<IMediumScanHandler> mediumScanHandlers,
+    MediumManager mediumManager)
     : VctoonService, ITransientDependency
 
 {
@@ -80,9 +82,11 @@ public class LibraryScanner(
             {
                 ScanningLibraryIds.Remove(libraryId);
             }
+
             await SendLibraryScannedAsync(libraryId);
             stopwatch.Stop();
-            logger.LogInformation("End scanning library: {LibraryId}. Elapsed: {ElapsedMs} ms", libraryId, stopwatch.ElapsedMilliseconds);
+            logger.LogInformation("End scanning library: {LibraryId}. Elapsed: {ElapsedMs} ms", libraryId,
+                stopwatch.ElapsedMilliseconds);
         }
     }
 
@@ -117,7 +121,7 @@ public class LibraryScanner(
         await libraryRepository.UpdateAsync(library, true);
     }
 
-    protected virtual Task ScanLibraryPathDirectoryStructureAsync(Library library)
+    protected virtual async Task ScanLibraryPathDirectoryStructureAsync(Library library)
     {
         // Scan only the directory structure, if it does not exist, create and add it to the Children of libraryPath, and you need to delete the non-existent Children
 
@@ -125,14 +129,16 @@ public class LibraryScanner(
 
         if (rootPaths.IsNullOrEmpty())
         {
-            return Task.CompletedTask;
+            return;
         }
+
+        List<LibraryPath> deleteLibraryPaths = [];
 
         foreach (var libraryPath in rootPaths)
         {
             if (!Directory.Exists(libraryPath.Path))
             {
-                library.Paths.RemoveAll(x => x.Path.StartsWith(libraryPath.Path));
+                deleteLibraryPaths.AddRange(library.Paths.Where(x => x.Path.StartsWith(libraryPath.Path)));
                 // 不存在则跳过该根路径，继续处理其它根路径
                 continue;
             }
@@ -143,11 +149,10 @@ public class LibraryScanner(
 
             var allPathsSet = new HashSet<string>(library.Paths.Select(p => p.Path), StringComparer.OrdinalIgnoreCase);
 
-            var deleteLibraryPaths = library.Paths
+            deleteLibraryPaths.AddRange(library.Paths
                 .Where(x => !x.IsRoot)
                 .Where(x => !dirsSet.Contains(x.Path))
-                .ToList();
-            library.Paths.RemoveAll(x => deleteLibraryPaths.Contains(x));
+                .ToList());
 
             var addLibraryPaths = dirsSet
                 .Where(x => !allPathsSet.Contains(x))
@@ -158,7 +163,13 @@ public class LibraryScanner(
             library.Paths.AddRange(addLibraryPaths);
         }
 
-        return Task.CompletedTask;
+        if (!deleteLibraryPaths.IsNullOrEmpty())
+        {
+            library.Paths.RemoveAll(x => deleteLibraryPaths.Contains(x));
+            await mediumManager.DeleteMediumByLibraryPathIdsAsync(deleteLibraryPaths.Select(x => x.Id));
+
+
+        }
     }
 
     /// <summary>

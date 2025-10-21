@@ -5,7 +5,7 @@ using Zyknow.Abp.Lucene.Filtering;
 namespace Vctoon.LuceneFilters;
 
 public class MediumLuceneFilter(LibraryPermissionStore libraryPermissionStore)
-    : VctoonService, ILuceneFilterProvider, IScopedDependency
+    : VctoonService, ILuceneFilterProvider
 {
     public Task<Query?> BuildAsync(SearchFilterContext ctx)
     {

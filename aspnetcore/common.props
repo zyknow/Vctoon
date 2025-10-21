@@ -5,6 +5,7 @@
         <NoWarn>$(NoWarn);CS1591</NoWarn>
         <AbpProjectType>app</AbpProjectType>
         <AbpVersion>9.3.3</AbpVersion>
+        <LuceneVersion>1.0.0-preview.2</LuceneVersion>
     </PropertyGroup>
 
     <Target Name="NoWarnOnRazorViewImportedTypeConflicts" BeforeTargets="RazorCoreCompile">

@@ -1563,6 +1563,9 @@ importers:
       '@vben-core/icons':
         specifier: workspace:*
         version: link:../@core/base/icons
+      vue:
+        specifier: ^3.5.17
+        version: 3.5.17(typescript@5.9.2)
 
   packages/locales:
     dependencies:

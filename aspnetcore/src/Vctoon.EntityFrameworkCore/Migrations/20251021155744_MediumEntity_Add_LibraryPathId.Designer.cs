@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Vctoon.EntityFrameworkCore;
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace Vctoon.Migrations
 {
     [DbContext(typeof(VctoonDbContext))]
-    partial class VctoonDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251021155744_MediumEntity_Add_LibraryPathId")]
+    partial class MediumEntity_Add_LibraryPathId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -369,8 +372,6 @@ namespace Vctoon.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LibraryId");
-
                     b.HasIndex("LibraryPathId");
 
                     b.ToTable("AppComics", (string)null);
@@ -458,8 +459,6 @@ namespace Vctoon.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("LibraryId");
 
                     b.HasIndex("LibraryPathId");
 
@@ -2329,12 +2328,6 @@ namespace Vctoon.Migrations
 
             modelBuilder.Entity("Vctoon.Mediums.Comic", b =>
                 {
-                    b.HasOne("Vctoon.Libraries.Library", null)
-                        .WithMany()
-                        .HasForeignKey("LibraryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Vctoon.Libraries.LibraryPath", null)
                         .WithMany()
                         .HasForeignKey("LibraryPathId")
@@ -2344,12 +2337,6 @@ namespace Vctoon.Migrations
 
             modelBuilder.Entity("Vctoon.Mediums.Video", b =>
                 {
-                    b.HasOne("Vctoon.Libraries.Library", null)
-                        .WithMany()
-                        .HasForeignKey("LibraryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Vctoon.Libraries.LibraryPath", null)
                         .WithMany()
                         .HasForeignKey("LibraryPathId")

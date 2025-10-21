@@ -12,16 +12,12 @@ import { mediumResourceApi } from '@vben/api'
 import { MdiChevronDown, MdiClose, MdiSelectAll } from '@vben/icons'
 
 import { useMediumBatchRelationDialogService } from '#/hooks/useMediumBatchRelationDialogService'
-import {
-  useInjectedMediumItemProvider,
-  useInjectedMediumProvider,
-} from '#/hooks/useMediumProvider'
+import { useInjectedMediumItemProvider } from '#/hooks/useMediumProvider'
 import { $t } from '#/locales'
 
 defineProps<{ showSelectedAllBtn?: boolean }>()
 
 const { selectedMediumIds, items } = useInjectedMediumItemProvider()
-const mediumProvider = useInjectedMediumProvider()
 const { openRelationDialog } = useMediumBatchRelationDialogService()
 
 type RelationActionKey = `${MediumRelationEntity}:${MediumRelationAction}`
@@ -103,7 +99,6 @@ const executeRelationAction = async (
   pendingAction.value = actionKey
   try {
     await relationApiMap[entity][action](payload)
-    await mediumProvider.loadItems()
   } catch (error) {
     console.error('批量更新媒体关联失败', error)
   } finally {

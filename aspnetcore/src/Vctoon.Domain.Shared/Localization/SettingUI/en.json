@@ -1,5 +1,10 @@
 {
   "culture": "en",
   "texts": {
+    "Medium": "Medium",
+    "Medium.Comic": "Comic",
+    "Comic": "Comic",
+    "DisplayName:Medium.ComicDetailVisibleImages": "Display comic images in detail",
+    "Description:Medium.ComicDetailVisibleImages": "Display comic images on the comic detail page."
   }
 }

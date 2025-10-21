@@ -10,6 +10,12 @@ export const overridesPreferences = defineOverridesPreferences({
   app: {
     name: import.meta.env.VITE_APP_TITLE,
   },
+  breadcrumb: {
+    enable: false,
+  },
+  widget: {
+    globalSearch: false,
+  },
   tabbar: {
     enable: false,
     persist: false,
@@ -17,5 +23,8 @@ export const overridesPreferences = defineOverridesPreferences({
   theme: {
     builtinType: 'yellow',
     colorPrimary: 'hsl(42 84% 61%)',
+  },
+  transition: {
+    enable: false,
   },
 })

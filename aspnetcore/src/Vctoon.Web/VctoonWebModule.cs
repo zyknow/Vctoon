@@ -163,6 +163,7 @@ public class VctoonWebModule : AbpModule
                     e.Field(x => x.Title, f => f.Store());
                     e.Field(x => x.Cover, f => f.StoreOnly());
                     e.Field(x=> x.LibraryId,f => f.StoreOnly());
+                    e.Field(x=> x.LibraryPathId,f => f.StoreOnly());
                 });
                 
                 model.Entity<Video>(e =>
@@ -170,6 +171,7 @@ public class VctoonWebModule : AbpModule
                     e.Field(x => x.Title, f => f.Store());
                     e.Field(x => x.Cover, f => f.StoreOnly());
                     e.Field(x=> x.LibraryId,f => f.StoreOnly());
+                    e.Field(x=> x.LibraryPathId,f => f.StoreOnly());
                 });
             });
         });

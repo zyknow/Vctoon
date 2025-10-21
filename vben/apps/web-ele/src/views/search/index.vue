@@ -1,16 +1,24 @@
 <script setup lang="ts">
-import type { MultiSearchInput, SearchHit } from '@vben/api'
+import type {
+  MediumGetListOutput,
+  MultiSearchInput,
+  SearchHit,
+} from '@vben/api'
 
 import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { luceneApi, mediumResourceApi } from '@vben/api'
+import { luceneApi, MediumType } from '@vben/api'
 import { Page } from '@vben/common-ui'
-import { CiSearch, MdiRefresh } from '@vben/icons'
 
 import { ElMessage } from 'element-plus'
-import { useAppConfig } from '@vben/hooks'
 
+import MediumListItem from '#/components/mediums/medium-list-item.vue'
+import MediumToolbarSecondSelect from '#/components/mediums/medium-toolbar-second-select.vue'
+import {
+  provideMediumAllItemProvider,
+  provideMediumItemProvider,
+} from '#/hooks/useMediumProvider'
 import { $t } from '#/locales'
 
 defineOptions({ name: 'SearchPage' })
@@ -21,6 +29,7 @@ const router = useRouter()
 const loading = ref(false)
 const total = ref(0)
 const items = ref<SearchHit[]>([])
+const updatingFromRoute = ref(false)
 
 const parseBool = (v: unknown, def = false) => {
   if (Array.isArray(v)) return v.some((x) => x === '1' || x === 'true')
@@ -72,10 +81,19 @@ const syncToUrl = () => {
   })
 }
 
+// 选择支持：与首页相同的 Provider 注入（items + selectedMediumIds）
+const mediumItems = ref<MediumGetListOutput[]>([])
+const selectedMediumIds = ref<string[]>([])
+provideMediumItemProvider({ items: mediumItems, selectedMediumIds })
+// 提供 all-item provider（仅主列表映射）以支持批量更新等逻辑
+provideMediumAllItemProvider({ itemsMap: { main: mediumItems } })
+
 const load = async () => {
   if (!queryState.q.trim()) {
     items.value = []
     total.value = 0
+    mediumItems.value = []
+    selectedMediumIds.value = []
     return
   }
   loading.value = true
@@ -83,20 +101,50 @@ const load = async () => {
     const result = await luceneApi.searchMany(requestParams.value)
     items.value = result.items || []
     total.value = result.totalCount || 0
+    const mapped = (result.items || [])
+      .map((h) => mapHitToMedium(h))
+      .filter((m): m is MediumGetListOutput => !!m)
+    mediumItems.value = mapped
+    // 过滤无效选中项（仅保留当前结果中的选中）
+    const idSet = new Set(mapped.map((m) => m.id))
+    selectedMediumIds.value = selectedMediumIds.value.filter((id) =>
+      idSet.has(id),
+    )
   } catch {
-    ElMessage.error('搜索失败')
+    ElMessage.error($t('page.search.messages.loadError'))
   } finally {
     loading.value = false
   }
 }
 
 watch(requestParams, () => {
+  if (updatingFromRoute.value) return
   syncToUrl()
   load()
 })
 
-// 初始化
-load()
+watch(
+  () => route.query,
+  (q) => {
+    updatingFromRoute.value = true
+    queryState.q = (q.q as string) || ''
+    queryState.entities = (q.entities as string[] | undefined) || [
+      'comic',
+      'video',
+    ]
+    queryState.prefix = parseBool(q.prefix, true)
+    queryState.fuzzy = parseBool(q.fuzzy, false)
+    queryState.highlight = parseBool(q.highlight, false)
+    queryState.page = parsePage(q.page, 1)
+    queryState.maxResultCount = Number.parseInt(
+      String(q.maxResultCount ?? 10),
+      10,
+    )
+    load()
+    updatingFromRoute.value = false
+  },
+  { immediate: true },
+)
 
 const resolveTypeFromPayload = (payload: Record<string, string>) => {
   const idx = payload?.__IndexName || payload?.IndexName || payload?.indexName
@@ -106,119 +154,76 @@ const resolveTypeFromPayload = (payload: Record<string, string>) => {
   return 'comic'
 }
 
-const goToDetail = (hit: SearchHit) => {
-  const type = resolveTypeFromPayload(hit.payload || {})
-  const id = hit.entityId
-  if (!id) return
-  void router.push({ name: 'MediumDetail', params: { type, mediumId: id } })
+// 将 payload 映射到枚举类型
+const toMediumTypeEnum = (payload: Record<string, any>): MediumType => {
+  const type = resolveTypeFromPayload(payload)
+  return type === 'video' ? MediumType.Video : MediumType.Comic
 }
 
-const onSubmit = () => {
-  queryState.page = 1
-}
-
-const onReset = () => {
-  queryState.q = ''
-  queryState.entities = ['comic', 'video']
-  queryState.prefix = true
-  queryState.fuzzy = false
-  queryState.highlight = false
-  queryState.page = 1
-  queryState.maxResultCount = 10
-}
-
-const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD)
-
-const resolveCoverUrl = (hit: SearchHit) => {
-  const payload = hit.payload || {}
-  const raw = (payload as any).Cover || (payload as any).cover
-  if (!raw) return ''
-  const url = mediumResourceApi.url.getCover.format({ cover: raw })
-  return `${apiURL}${url}`
+// 将 SearchHit 映射为 MediumGetListOutput（仅必要字段）
+const mapHitToMedium = (hit: SearchHit): MediumGetListOutput | null => {
+  const p = hit.payload || {}
+  const id = hit.entityId || (p as any).Id || (p as any).id
+  if (!id) return null
+  const title = (p as any).Title || (p as any).title || ''
+  const cover = (p as any).Cover || (p as any).cover || undefined
+  const readingProgressRaw =
+    (p as any).ReadingProgress ?? (p as any).readingProgress
+  const readingLastTime =
+    (p as any).ReadingLastTime ?? (p as any).readingLastTime
+  const creationTime = (p as any).CreationTime ?? (p as any).creationTime
+  const lastModificationTime =
+    (p as any).LastModificationTime ?? (p as any).lastModificationTime
+  const libraryId = (p as any).LibraryId ?? (p as any).libraryId
+  const medium: Partial<MediumGetListOutput> & { id: string } = {
+    id,
+    title,
+    cover,
+    mediumType: toMediumTypeEnum(p),
+    readingProgress:
+      typeof readingProgressRaw === 'number' ? readingProgressRaw : undefined,
+    readingLastTime,
+    creationTime,
+    lastModificationTime,
+    libraryId,
+  }
+  return medium as MediumGetListOutput
 }
 </script>
 
 <template>
   <Page content-class="flex flex-col gap-4">
-    <div class="border-border bg-card rounded-xl border px-6 py-4 shadow-sm">
-      <div class="flex items-center justify-between">
-        <div class="text-muted-foreground flex items-center gap-2 text-sm">
-          <CiSearch class="text-lg" />
-          {{ $t('page.search.title') }}
-        </div>
-        <el-button :loading="loading" @click="load">
-          <MdiRefresh class="mr-1" />
-          刷新
-        </el-button>
-      </div>
+    <div class="flex items-center justify-between">
+      <div>{{ $t('page.search.total') }}：{{ total }}</div>
+      <el-pagination
+        v-model:current-page="queryState.page"
+        v-model:page-size="queryState.maxResultCount"
+        :page-sizes="[10, 20, 50]"
+        layout="sizes, prev, pager, next"
+        :total="total"
+      />
     </div>
 
-    <div class="border-border bg-card rounded-xl border px-6 py-4 shadow-sm">
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
-        <div class="flex items-center gap-2 md:col-span-2">
-          <el-input
-            v-model="queryState.q"
-            placeholder="搜索 comic / video..."
-            clearable
-            @keyup.enter="onSubmit"
-          />
-        </div>
-        <div class="flex items-center gap-2 md:col-span-2">
-          <el-checkbox-group v-model="queryState.entities" class="flex gap-2">
-            <el-checkbox label="comic">comic</el-checkbox>
-            <el-checkbox label="video">video</el-checkbox>
-          </el-checkbox-group>
-          <el-checkbox v-model="queryState.prefix">前缀</el-checkbox>
-          <el-checkbox v-model="queryState.fuzzy">模糊</el-checkbox>
-          <el-checkbox v-model="queryState.highlight">高亮</el-checkbox>
-          <el-button type="primary" @click="onSubmit">搜索</el-button>
-          <el-button @click="onReset">重置</el-button>
-        </div>
-      </div>
-    </div>
+    <!-- 选择工具栏（当有选中项时显示） -->
+    <MediumToolbarSecondSelect v-if="selectedMediumIds.length > 0" />
 
-    <div class="border-border bg-card rounded-xl border px-6 py-4 shadow-sm">
-      <div class="flex items-center justify-between">
-        <div>合计：{{ total }}</div>
-        <el-pagination
-          v-model:current-page="queryState.page"
-          v-model:page-size="queryState.maxResultCount"
-          :page-sizes="[10, 20, 50]"
-          layout="sizes, prev, pager, next"
-          :total="total"
-        />
-      </div>
-      <div class="mt-4 grid grid-cols-1 gap-3">
-        <el-card
-          v-for="hit in items"
-          :key="hit.entityId + hit.score"
-          shadow="hover"
-          class="cursor-pointer"
-          @click="goToDetail(hit)"
-        >
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <MediumCoverCard
-                :src="resolveCoverUrl(hit)"
-                base-width="4rem"
-                base-height="6rem"
-                class="border"
-              />
-              <div class="flex flex-col">
-                <div class="text-lg font-medium">
-                  {{ hit.payload?.Title || hit.entityId }}
-                </div>
-                <div class="text-muted-foreground text-xs">
-                  ID: {{ hit.entityId }}
-                </div>
-              </div>
-            </div>
-            <el-tag size="small" type="info">
-              {{ resolveTypeFromPayload(hit.payload || {}) }}
-            </el-tag>
-          </div>
-        </el-card>
-      </div>
+    <!-- 使用 MediumListItem 渲染并支持选中（与首页一致） -->
+    <div class="mt-4 space-y-2">
+      <MediumListItem
+        v-for="item in mediumItems"
+        :key="item.id"
+        :model-value="item"
+      />
     </div>
   </Page>
 </template>
+
+<style scoped>
+.line-clamp-2 {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+</style>

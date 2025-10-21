@@ -175,7 +175,8 @@ public class ComicScanHandler(
 
     protected virtual async Task ScanPdfAsync(ArchiveInfo archiveInfo, Guid libraryId)
     {
-        var archivePaths = archiveInfo.Paths.ToDictionary(x => x.Path ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+        var archivePaths =
+            archiveInfo.Paths.ToDictionary(x => x.Path ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         var rootPath = EnsureRootArchivePath(archiveInfo, archivePaths);
 
         var archivePathIds = archiveInfo.Paths.Select(x => x.Id).ToList();
@@ -235,7 +236,7 @@ public class ComicScanHandler(
                     await using var coverStream = await documentContentService.RenderPdfPageAsync(archiveInfo.Path, 0)
                         .ConfigureAwait(false);
                     var cover = await coverSaver.SaveAsync(coverStream).ConfigureAwait(false);
-                    var comic = new Comic(GuidGenerator.Create(), title, cover, libraryId);
+                    var comic = new Comic(GuidGenerator.Create(), title, cover, libraryId, archiveInfo.LibraryPathId);
                     newComics.Add(comic);
                     mediumId = comic.Id;
                 }
@@ -332,7 +333,7 @@ public class ComicScanHandler(
                         .GetEpubImageStreamAsync(archiveInfo.Path, coverDescriptor.Path)
                         .ConfigureAwait(false);
                     var cover = await coverSaver.SaveAsync(coverStream).ConfigureAwait(false);
-                    var comic = new Comic(GuidGenerator.Create(), title, cover, libraryId);
+                    var comic = new Comic(GuidGenerator.Create(), title, cover, libraryId, archiveInfo.LibraryPathId);
                     newComics.Add(comic);
                     mediumId = comic.Id;
                 }
@@ -355,7 +356,8 @@ public class ComicScanHandler(
         await archiveInfoRepository.UpdateAsync(archiveInfo, true);
     }
 
-    private ArchiveInfoPath EnsureRootArchivePath(ArchiveInfo archiveInfo, IDictionary<string, ArchiveInfoPath>? cache = null)
+    private ArchiveInfoPath EnsureRootArchivePath(ArchiveInfo archiveInfo,
+        IDictionary<string, ArchiveInfoPath>? cache = null)
     {
         var root = archiveInfo.Paths.FirstOrDefault(x => x.Path == null);
 
@@ -448,7 +450,7 @@ public class ComicScanHandler(
             var cover = await coverSaver.SaveAsync(fileStream);
 
             var title = Path.GetFileName(libraryPath.Path);
-            var comic = new Comic(GuidGenerator.Create(), title, cover, libraryPath.LibraryId);
+            var comic = new Comic(GuidGenerator.Create(), title, cover, libraryPath.LibraryId, libraryPath.Id);
             await comicRepository.InsertAsync(comic, autoSave);
             comicId = comic.Id;
         }
@@ -517,6 +519,7 @@ public class ComicScanHandler(
             {
                 continue; // 跳过无效条目
             }
+
             var dirKey = GetDirectoryKey(addKey);
             var archiveInfoPath = dirKey is null
                 ? rootPath
@@ -559,7 +562,7 @@ public class ComicScanHandler(
 
                 await using var entitySteam = entry.OpenEntryStream();
                 var cover = await coverSaver.SaveAsync(entitySteam);
-                var comic = new Comic(GuidGenerator.Create(), title, cover, libraryId);
+                var comic = new Comic(GuidGenerator.Create(), title, cover, libraryId, archiveInfo.LibraryPathId);
                 comics.Add(comic);
 
                 mediumId = comic.Id;

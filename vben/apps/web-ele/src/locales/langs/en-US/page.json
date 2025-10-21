@@ -343,6 +343,18 @@
     "empty": "No settings available"
   },
   "search": {
-    "title": "Search"
+    "title": "Search",
+    "total": "Total",
+    "history": {
+      "title": "Search History",
+      "clear": "Clear",
+      "empty": "No history"
+    },
+    "actions": {
+      "viewAllResults": "View all search results"
+    },
+    "messages": {
+      "loadError": "Search failed"
+    }
   }
 }

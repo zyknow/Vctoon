@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Vctoon.Hubs;
 using Vctoon.Libraries.Dtos;
+using Vctoon.Mediums.Base;
 using Vctoon.Permissions;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
@@ -19,7 +20,8 @@ public class LibraryAppService(
     ILibraryPermissionRepository libraryPermissionRepository,
     IdentityUserStore identityUserStore,
     IRepository<IdentityUser> identityUserRepository,
-    IIdentityRoleRepository identityRoleRepository)
+    IIdentityRoleRepository identityRoleRepository,
+    MediumManager mediumManager)
     : VctoonAppService,
         ILibraryAppService
 {
@@ -134,6 +136,7 @@ public class LibraryAppService(
     public async Task DeleteAsync(Guid id)
     {
         await repository.DeleteAsync(id);
+        await mediumManager.DeleteMediumByLibraryIdAsync(id);
         
         UnitOfWorkManager.Current!.OnCompleted(async () =>
         {

@@ -10,10 +10,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Vctoon.Domain.Shared\Vctoon.Domain.Shared.csproj"/>
-    <ProjectReference Include="..\..\modules\Zyknow.Abp.Lucene\src\Zyknow.Abp.Lucene.Application.Contracts\Zyknow.Abp.Lucene.Application.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Zyknow.Abp.Lucene.Application.Contracts" Version="$(LuceneVersion)" />
     <PackageReference Include="EasyAbp.Abp.SettingUi.Application.Contracts" Version="2.6.0" />
     <PackageReference Include="Volo.Abp.PermissionManagement.Application.Contracts" Version="$(AbpVersion)"/>
     <PackageReference Include="Volo.Abp.FeatureManagement.Application.Contracts" Version="$(AbpVersion)"/>

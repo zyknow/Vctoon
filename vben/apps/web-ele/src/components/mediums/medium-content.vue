@@ -25,6 +25,7 @@ import { ItemDisplayMode } from '#/store/typing'
 
 import { getMediumAnchorId, MEDIUM_ANCHOR_PREFIX } from './anchor'
 import MediumGridItem from './medium-grid-item.vue'
+import MediumListItem from './medium-list-item.vue'
 
 defineProps<{
   modelValue?: boolean
@@ -465,6 +466,15 @@ onBeforeUnmount(() => {
         @edit="handleEdit"
       />
     </TransitionGroup>
+    <!-- List 模式渲染容器 -->
+    <div v-else :class="containerClass">
+      <MediumListItem
+        v-for="item in items"
+        :key="`list-${item.id}`"
+        :model-value="item"
+        @edit="handleEdit"
+      />
+    </div>
     <div
       v-if="!injected.loading && items.length === 0"
       class="text-muted-foreground py-12 text-center text-sm"

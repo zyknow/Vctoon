@@ -8,10 +8,10 @@ public class Video : MediumBase
     {
     }
 
-    public Video(Guid id, string path, string title, string cover, Guid libraryId, double framerate,
+    public Video(Guid id, string path, string title, string cover, Guid libraryId, Guid libraryPathId, double framerate,
         string codec,
         int width, int height, long bitrate, TimeSpan duration, string ratio, string description = "") : base(id, title,
-        cover, libraryId, description)
+        cover, libraryId, libraryPathId, description)
     {
         Framerate = framerate;
         Codec = codec;

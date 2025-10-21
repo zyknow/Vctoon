@@ -61,6 +61,7 @@ declare module 'vue' {
     MediumGridItem: typeof import('./src/components/mediums/medium-grid-item.vue')['default']
     MediumInfoDialog: typeof import('./src/components/mediums/medium-info-dialog.vue')['default']
     MediumLayoutDropdownSelect: typeof import('./src/components/mediums/medium-layout-dropdown-select.vue')['default']
+    MediumListItem: typeof import('./src/components/mediums/medium-list-item.vue')['default']
     MediumRecommendationSection: typeof import('./src/components/mediums/medium-recommendation-section.vue')['default']
     MediumSearchInput: typeof import('./src/components/headers/medium-search-input.vue')['default']
     MediumSelectionIndicator: typeof import('./src/components/mediums/medium-selection-indicator.vue')['default']

@@ -8,9 +8,10 @@ public class Comic : MediumBase
     {
     }
 
-    public Comic(Guid id, string title, string cover, Guid libraryId, string description = "") : base(id,
+    public Comic(Guid id, string title, string cover, Guid libraryId, Guid libraryPathId,
+        string description = "") : base(id,
         title, cover,
-        libraryId, description)
+        libraryId, libraryPathId, description)
     {
     }
 

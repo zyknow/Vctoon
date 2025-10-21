@@ -10,10 +10,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Vctoon.Domain.Shared\Vctoon.Domain.Shared.csproj"/>
-    <ProjectReference Include="..\..\modules\Zyknow.Abp.Lucene\src\Zyknow.Abp.Lucene.Domain\Zyknow.Abp.Lucene.Domain.csproj" />
+    <!-- Replaced local Lucene project reference with NuGet package -->
+    <!-- <ProjectReference Include="..\..\modules\Zyknow.Abp.Lucene\src\Zyknow.Abp.Lucene.Domain\Zyknow.Abp.Lucene.Domain.csproj" /> -->
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Zyknow.Abp.Lucene.Domain" Version="$(LuceneVersion)" />
     <PackageReference Include="EasyAbp.Abp.SettingUi.Domain" Version="2.6.0" />
     <PackageReference Include="Volo.Abp.Emailing" Version="$(AbpVersion)"/>
     <PackageReference Include="Volo.Abp.Caching" Version="$(AbpVersion)"/>

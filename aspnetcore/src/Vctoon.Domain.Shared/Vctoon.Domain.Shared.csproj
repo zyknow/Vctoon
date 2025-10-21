@@ -10,7 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\modules\Zyknow.Abp.Lucene\src\Zyknow.Abp.Lucene.Domain.Shared\Zyknow.Abp.Lucene.Domain.Shared.csproj" />
+    <!-- Replaced local project reference with NuGet package -->
+    <PackageReference Include="Zyknow.Abp.Lucene.Domain.Shared" Version="$(LuceneVersion)" />
     
     <PackageReference Include="EasyAbp.Abp.SettingUi.Domain.Shared" Version="2.6.0" />
     <PackageReference Include="Volo.Abp.BackgroundJobs.Domain.Shared" Version="$(AbpVersion)"/>

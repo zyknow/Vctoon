@@ -402,10 +402,10 @@ $namespace: vben;
   &.is-disabled,
   &.is-disabled:hover,
   &.is-disabled:focus {
+    color: var(--menu-item-color) !important;
     cursor: default !important;
     background: var(--menu-item-background-color) !important;
     opacity: 1;
-    color: var(--menu-item-color) !important;
     transition: none;
   }
 

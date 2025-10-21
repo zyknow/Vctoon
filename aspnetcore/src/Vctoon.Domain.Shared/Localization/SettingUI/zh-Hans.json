@@ -4,7 +4,7 @@
     "Medium": "媒体",
     "Medium.Comic": "漫画",
     "Comic": "漫画",
-    "DisplayName:Settings.Medium.ComicDetailVisibleImages": "详情显示漫画图片",
-    "Description:Settings.Medium.ComicDetailVisibleImages": "在漫画详情页面显示漫画图片。"
+    "DisplayName:Medium.ComicDetailVisibleImages": "详情显示漫画图片",
+    "Description:Medium.ComicDetailVisibleImages": "在漫画详情页面显示漫画图片。"
   }
 }

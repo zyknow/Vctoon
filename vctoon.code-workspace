@@ -1,0 +1,52 @@
+{
+  "folders": [
+    {
+      "name": "aspnetcore",
+      "path": "aspnetcore",
+    },
+    {
+      "name": "vben",
+      "path": "vben",
+    }
+  ],
+  "settings": {},
+  "extensions": {
+    "recommendations": [
+      // Vue - Official（Volar）
+      "Vue.volar",
+      // TypeScript Vue Plugin（与 Volar 配套）
+      "Vue.vscode-typescript-vue-plugin",
+
+      // Tailwind CSS - 实时提示与类名校验
+      "bradlc.vscode-tailwindcss",
+
+      // CSS 变量自动补全
+      "vunguyentuan.vscode-css-variables",
+
+      // Iconify IntelliSense - 图标名自动补全
+      "antfu.iconify",
+
+      // i18n Ally - 多语言文件管理
+      "antfu.i18n-ally",
+
+      // ESLint - 脚本代码检查
+      "dbaeumer.vscode-eslint",
+
+      // Prettier - 代码格式化
+      "esbenp.prettier-vscode",
+
+      // Stylelint - CSS/样式检查
+      "stylelint.vscode-stylelint",
+
+      // Code Spell Checker - 拼写检查
+      "streetsidesoftware.code-spell-checker",
+
+      // DotENV - .env 文件高亮
+      "mikestead.dotenv",
+    ],
+    "unwantedRecommendations": [
+      // 避免与 Volar 冲突
+      "octref.vetur",
+    ],
+  },
+}

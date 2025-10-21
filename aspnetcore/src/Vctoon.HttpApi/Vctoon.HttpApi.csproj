@@ -9,11 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\modules\Zyknow.Abp.Lucene\src\Zyknow.Abp.Lucene.HttpApi\Zyknow.Abp.Lucene.HttpApi.csproj" />
+    <!-- Replaced local Lucene HttpApi project reference with NuGet package -->
+    <!-- <ProjectReference Include="..\..\modules\Zyknow.Abp.Lucene\src\Zyknow.Abp.Lucene.HttpApi\Zyknow.Abp.Lucene.HttpApi.csproj" /> -->
     <ProjectReference Include="..\Vctoon.Application.Contracts\Vctoon.Application.Contracts.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Zyknow.Abp.Lucene.HttpApi" Version="$(LuceneVersion)" />
     <PackageReference Include="EasyAbp.Abp.SettingUi.HttpApi" Version="2.6.0" />
     <PackageReference Include="Volo.Abp.PermissionManagement.HttpApi" Version="$(AbpVersion)"/>
     <PackageReference Include="Volo.Abp.FeatureManagement.HttpApi" Version="$(AbpVersion)"/>

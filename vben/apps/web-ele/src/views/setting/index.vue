@@ -419,15 +419,6 @@ function customOptionsOf(info: any): SelectOption[] {
       <div class="min-w-0 flex-1">
         <div class="h-full overflow-y-auto overflow-x-hidden">
           <div v-if="activeGroup" class="space-y-6 p-1">
-            <!-- 分组标题 -->
-            <div
-              class="border-border bg-card rounded-xl border px-6 py-4 shadow-sm"
-            >
-              <h2 class="text-xl font-semibold">
-                {{ activeGroup.groupDisplayName || activeGroup.groupName }}
-              </h2>
-            </div>
-
             <!-- 按子分组显示内容 -->
             <div
               v-for="group in groupedInfos"
@@ -447,7 +438,7 @@ function customOptionsOf(info: any): SelectOption[] {
               </div>
 
               <!-- 子分组内容 -->
-              <el-card shadow="never" class="border-border">
+              <div shadow="never" class="border-border p-4">
                 <el-form
                   :label-position="isMobile ? 'top' : 'left'"
                   label-width="200px"
@@ -552,7 +543,7 @@ function customOptionsOf(info: any): SelectOption[] {
                     </el-form-item>
                   </template>
                 </el-form>
-              </el-card>
+              </div>
             </div>
           </div>
         </div>

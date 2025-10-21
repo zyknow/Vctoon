@@ -9,12 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\modules\Zyknow.Abp.Lucene\src\Zyknow.Abp.Lucene.Application\Zyknow.Abp.Lucene.Application.csproj" />
+    <!-- Replaced local Lucene Application project reference with NuGet package -->
+    <!-- <ProjectReference Include="..\..\modules\Zyknow.Abp.Lucene\src\Zyknow.Abp.Lucene.Application\Zyknow.Abp.Lucene.Application.csproj" /> -->
     <ProjectReference Include="..\Vctoon.Domain\Vctoon.Domain.csproj" />
     <ProjectReference Include="..\Vctoon.Application.Contracts\Vctoon.Application.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Zyknow.Abp.Lucene.Application" Version="$(LuceneVersion)" />
     <PackageReference Include="Docnet.Core" Version="2.6.0" />
     <PackageReference Include="EasyAbp.Abp.SettingUi.Application" Version="2.6.0" />
     <PackageReference Include="FFMpegCore" Version="5.2.0" />

@@ -37,13 +37,12 @@ https://localhost:44364/swagger/v1/swagger.json
 
 筛选关键字（如 `"/api/app/comic"`、`Dto`）确认：
 
-* 基础路由（`/api/app/{entity}`）
-* 分页查询参数（大小写要与后端一致：如 `Title`, `Tags`, `SkipCount`）
-* 自定义子路径（如 `/comic-image`, `/by-comic-id/{comicId}`）
-* 对应 DTO 结构（字段、可空性、枚举）
+- 基础路由（`/api/app/{entity}`）
+- 分页查询参数（大小写要与后端一致：如 `Title`, `Tags`, `SkipCount`）
+- 自定义子路径（如 `/comic-image`, `/by-comic-id/{comicId}`）
+- 对应 DTO 结构（字段、可空性、枚举）
 
-无法使用 Swagger 时改为直接查看后端：
-`Vctoon.Application.Contracts/*/Dtos/*.cs` 与对应 `AppService`。
+无法使用 Swagger 时改为直接查看后端： `Vctoon.Application.Contracts/*/Dtos/*.cs` 与对应 `AppService`。
 
 ---
 
@@ -52,16 +51,16 @@ https://localhost:44364/swagger/v1/swagger.json
 1. 确定 `baseUrl`: `/api/app/<entity>`（与后端一致，单复数不要自作修改）。
 1. 写 `typing.ts`：
 
-* `XxxGetListOutput`（列表或轻量 DTO）
-* `Xxx`（详情，可 = GetListOutput & 关系）
-* `XxxCreateUpdate`（创建 / 更新输入）
-* `XxxGetListInput`（分页查询，继承 `BasePageRequest`）
+- `XxxGetListOutput`（列表或轻量 DTO）
+- `Xxx`（详情，可 = GetListOutput & 关系）
+- `XxxCreateUpdate`（创建 / 更新输入）
+- `XxxGetListInput`（分页查询，继承 `BasePageRequest`）
 
 1. 写 `index.ts`：
 
-* `const baseUrl = '/api/app/xxx'`
-* `const url = { ...createBaseCurdUrl(baseUrl), /* 自定义扩展 */ }`
-* `export const xxxApi = { url, ...createBaseCurdApi<...>(baseUrl) , /* 自定义方法 */}`
+- `const baseUrl = '/api/app/xxx'`
+- `const url = { ...createBaseCurdUrl(baseUrl), /* 自定义扩展 */ }`
+- `export const xxxApi = { url, ...createBaseCurdApi<...>(baseUrl) , /* 自定义方法 */}`
 
 1. 需要模板路径：`url.detail.format({ id })`。
 1. 运行类型检查（或依赖主项目构建脚本）。
@@ -72,30 +71,31 @@ https://localhost:44364/swagger/v1/swagger.json
 
 使用 `createMediumBaseCurdApi` / `createMediumBaseCurdUrl`，自动提供：
 
-* `create / update / delete / getById / getPage`
-* `updateCover(id, file)`（FormData）
-* `updateArtists(id, string[])`
-* `updateTags(id, string[])`
+- `create / update / delete / getById / getPage`
+- `updateCover(id, file)`（FormData）
+- `updateArtists(id, string[])`
+- `updateTags(id, string[])`
 
 调用后会为返回实体补齐 `mediumType`（前端依赖逻辑统一）。
 
 ---
 
 ## Comic 模块附加说明
+
 基础根：`/api/app/comic`
 
 当前自定义 URL（维护于 `comic/index.ts` 的 `url` 对象）：
 
 | 说明 | URL 模板 | 备注 |
-|------|----------|------|
+| --- | --- | --- |
 | 获取单张图片流 | `/api/app/comic/comic-image?comicImageId={comicImageId}&maxWidth={maxWidth}` | 直接使用 URL，前端若仅展示可不再写方法（已保留 url） |
 | 删除图片 | `/api/app/comic/comic-image/{comicImageId}` | query: `deleteFile`（可选） |
 | 根据漫画 Id 获取图片元数据 | `/api/app/comic/by-comic-id/{comicId}` | 返回 `ComicImage[]` |
 
 封装方法（存在于 `comicApi`）:
 
-* `deleteComicImage(comicImageId, deleteFile?)`
-* `getImagesByComicId(comicId)`
+- `deleteComicImage(comicImageId, deleteFile?)`
+- `getImagesByComicId(comicId)`
 
 为什么 `getComicImage` 没再提供函数：可以直接拼接 URL 放入 `<img :src="...">`、`fetch`、`URL.createObjectURL` 等，无额外逻辑。
 
@@ -167,38 +167,38 @@ export const artistApi = {
 
 ## 校验清单（提交前 Quick Check）
 
-| 项 | 通过条件 |
-|----|----------|
-| baseUrl 正确 | 与 swagger 路径完全一致（大小写、单复数） |
-| 类型同步 | 所有可空/枚举/数组字段与后端匹配 |
-| 自定义 url | 仅保留真实后端存在的路径 |
-| format 使用 | 仅在需要占位替换的路径上使用 |
-| 无冗余 expect-error | 未触发类型错误就移除 |
-| 流式资源 | 仅暴露 URL，无多余包装（除非确需） |
+| 项                  | 通过条件                                  |
+| ------------------- | ----------------------------------------- |
+| baseUrl 正确        | 与 swagger 路径完全一致（大小写、单复数） |
+| 类型同步            | 所有可空/枚举/数组字段与后端匹配          |
+| 自定义 url          | 仅保留真实后端存在的路径                  |
+| format 使用         | 仅在需要占位替换的路径上使用              |
+| 无冗余 expect-error | 未触发类型错误就移除                      |
+| 流式资源            | 仅暴露 URL，无多余包装（除非确需）        |
 
 ---
 
 ## 已实现模块速览
 
-| 模块 | 特点 |
-|------|------|
-| artist | 纯 CRUD |
-| comic | Medium 派生 + 图片相关自定义接口 |
-| video | Medium 派生（封面/作者/标签操作） |
-| audit-logs | 分页 + 详情 + 实体变更记录 |
-| security-logs | 分页 + 当前用户日志 |
+| 模块            | 特点                                        |
+| --------------- | ------------------------------------------- |
+| artist          | 纯 CRUD                                     |
+| comic           | Medium 派生 + 图片相关自定义接口            |
+| video           | Medium 派生（封面/作者/标签操作）           |
+| audit-logs      | 分页 + 详情 + 实体变更记录                  |
+| security-logs   | 分页 + 当前用户日志                         |
 | medium-resource | 封面流、批量阅读进度、批量作者/标签关联维护 |
 
 ---
 
 ## 常见问题
 
-| 问题 | 解决 |
-|------|------|
-| 404 | 检查 baseUrl / 子路径是否与 swagger 一致 |
-| 字段缺失 | Swagger 更新后未同步 typing.ts，及时补齐 |
-| format 报错 | 确认全局 d.ts 是否被包含，必要时加 `@ts-expect-error` |
-| 图片加载失败 | 直接访问构造后的 URL 手测；留意权限/登录态 |
+| 问题         | 解决                                                  |
+| ------------ | ----------------------------------------------------- |
+| 404          | 检查 baseUrl / 子路径是否与 swagger 一致              |
+| 字段缺失     | Swagger 更新后未同步 typing.ts，及时补齐              |
+| format 报错  | 确认全局 d.ts 是否被包含，必要时加 `@ts-expect-error` |
+| 图片加载失败 | 直接访问构造后的 URL 手测；留意权限/登录态            |
 
 ---
 

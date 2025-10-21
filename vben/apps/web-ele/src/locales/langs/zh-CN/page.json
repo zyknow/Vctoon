@@ -321,7 +321,19 @@
     }
   },
   "search": {
-    "title": "搜索"
+    "title": "搜索",
+    "total": "合计",
+    "history": {
+      "title": "搜索历史",
+      "clear": "清空",
+      "empty": "暂无历史"
+    },
+    "actions": {
+      "viewAllResults": "查看全部搜索结果"
+    },
+    "messages": {
+      "loadError": "搜索失败"
+    }
   },
   "setting": {
     "title": "系统设置",
