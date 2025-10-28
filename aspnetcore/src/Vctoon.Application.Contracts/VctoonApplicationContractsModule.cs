@@ -10,7 +10,6 @@ namespace Vctoon;
 [DependsOn(
     typeof(VctoonDomainSharedModule),
     typeof(AbpFeatureManagementApplicationContractsModule),
-    // typeof(AbpSettingManagementApplicationContractsModule),
     typeof(AbpIdentityApplicationContractsModule),
     typeof(AbpAccountApplicationContractsModule),
     typeof(AbpPermissionManagementApplicationContractsModule),

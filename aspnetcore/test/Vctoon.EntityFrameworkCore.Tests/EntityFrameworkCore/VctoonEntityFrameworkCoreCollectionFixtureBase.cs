@@ -1,5 +1,4 @@
-﻿using Vctoon.EntityFrameworkCore;
-using Xunit;
+﻿using Xunit;
 
 namespace Vctoon.EntityFrameworkCore;
 

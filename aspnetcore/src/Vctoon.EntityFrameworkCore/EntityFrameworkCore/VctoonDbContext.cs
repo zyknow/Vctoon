@@ -12,13 +12,14 @@ using Volo.Abp.Identity.EntityFrameworkCore;
 using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
+using Zyknow.Abp.Lucene;
 
 namespace Vctoon.EntityFrameworkCore;
 
 [ReplaceDbContext(typeof(IIdentityDbContext))]
 [ConnectionStringName("Default")]
 public class VctoonDbContext(DbContextOptions<VctoonDbContext> options) :
-    AbpDbContext<VctoonDbContext>(options),
+    LuceneAbpDbContext<VctoonDbContext>(options),
     IIdentityDbContext
 
 {

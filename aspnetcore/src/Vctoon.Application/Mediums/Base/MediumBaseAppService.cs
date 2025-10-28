@@ -1,15 +1,12 @@
 using System.Linq.Expressions;
-using Microsoft.AspNetCore.Mvc;
 using Vctoon.Mediums.Dtos.Base;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
 using Vctoon.Extensions;
 using Volo.Abp.Content; // 新增 RemoteStreamContent
 using Volo.Abp; // UserFriendlyException
-using Vctoon.Services; // CoverSaver
-using Vctoon.Libraries; // Tag / Artist
-using Vctoon.Mediums.Base;
-using Vctoon.Mediums.Dtos;
+// CoverSaver
+// Tag / Artist
 
 namespace Vctoon.Mediums.Base;
 

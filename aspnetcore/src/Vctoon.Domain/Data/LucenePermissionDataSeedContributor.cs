@@ -2,9 +2,8 @@ using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.PermissionManagement;
-using Zyknow.Abp.Lucene.Permissions;
 
-namespace Vctoon;
+namespace Vctoon.Data;
 
 public class LucenePermissionDataSeedContributor(
     IPermissionDataSeeder permissionDataSeeder)
@@ -19,7 +18,7 @@ public class LucenePermissionDataSeedContributor(
             adminRoleName,
             new[]
             {
-                ZyknowLucenePermissions.Search.Default
+                "ZyknowLucene.Search"
             },
             context?.TenantId
         );

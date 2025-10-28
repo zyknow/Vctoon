@@ -1,5 +1,4 @@
-﻿using System.IO;
-using Vctoon.Mediums.Dtos;
+﻿using Vctoon.Mediums.Dtos;
 
 namespace Vctoon.Mediums;
 

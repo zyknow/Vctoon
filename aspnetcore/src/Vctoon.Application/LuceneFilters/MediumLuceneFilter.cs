@@ -7,8 +7,20 @@ namespace Vctoon.LuceneFilters;
 public class MediumLuceneFilter(LibraryPermissionStore libraryPermissionStore)
     : VctoonService, ILuceneFilterProvider
 {
+    
+    static readonly string[] MediumEntityNames = new[]
+    {
+        nameof(Mediums.Comic),
+        nameof(Mediums.Video)
+    };
+    
     public Task<Query?> BuildAsync(SearchFilterContext ctx)
     {
+        if(!MediumEntityNames.Contains(ctx.EntityName, StringComparer.OrdinalIgnoreCase))
+        {
+            return Task.FromResult<Query?>(null);
+        }
+        
         var currentUserAccessLibraryIds = libraryPermissionStore.Permissions
             .Where(x => x.UserId == CurrentUser.Id)
             .Select(x => x.LibraryId).ToList();

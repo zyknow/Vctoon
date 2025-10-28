@@ -1,19 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Docnet.Core;
 using Docnet.Core.Models;
-using Docnet.Core.Readers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using Volo.Abp.DependencyInjection;
 using VersOne.Epub;
 
 namespace Vctoon.Services;

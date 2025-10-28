@@ -1,8 +1,7 @@
 using Volo.Abp.Domain.Services;
 using Volo.Abp.Linq;
-using Zyknow.Abp.Lucene.Services;
 
-namespace Vctoon.Mediums.Base;
+namespace Vctoon.Mediums;
 
 public class MediumManager(
     IComicRepository comicRepository,

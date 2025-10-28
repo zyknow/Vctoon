@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using SharpCompress.Archives;
 using Vctoon.Mediums;
-using Vctoon.Services;
 
 namespace Vctoon.Handlers;
 
@@ -39,8 +38,13 @@ public class ComicScanHandler(
         var imageFilePaths =
             filePaths.Where(x => ImageExtensions.Contains(Path.GetExtension(x).ToLowerInvariant())).ToList();
 
-        await ScanImageByLibraryPathAsync(libraryPath, imageFilePaths, true);
+        var totalChanges = new ScanChanges();
 
+        // 1) 目录中的纯图片
+        var dirImageChanges = await ScanImageByLibraryPathAsync(libraryPath, imageFilePaths);
+        totalChanges.Merge(dirImageChanges);
+
+        // 2) 类归档文件（压缩包/PDF/EPUB）
         var archiveLikeFilePaths = filePaths
             .Where(x =>
             {
@@ -50,6 +54,7 @@ public class ComicScanHandler(
             })
             .ToList();
 
+        // 计算需要删除的 ArchiveInfo（统一到 changes）
         var deleteArchiveIds =
             await AsyncExecuter.ToListAsync(
                 (await archiveInfoRepository.GetQueryableAsync())
@@ -59,7 +64,7 @@ public class ComicScanHandler(
 
         if (!deleteArchiveIds.IsNullOrEmpty())
         {
-            await archiveInfoRepository.DeleteManyAsync(deleteArchiveIds, true);
+            totalChanges.ArchiveInfoIdsToDelete.AddRange(deleteArchiveIds);
         }
 
         foreach (var archiveFilePath in archiveLikeFilePaths)
@@ -68,29 +73,72 @@ public class ComicScanHandler(
 
             if (ArchiveExtensions.Contains(extension))
             {
-                var archiveInfo =
+                var (archiveInfo, aiChanges) =
                     await ScanArchiveInfoDirectoryStructureAsync(archiveFilePath, libraryPath.Id);
 
-                await ScanImageByArchiveInfoAsync(archiveInfo, libraryPath.LibraryId);
+                totalChanges.Merge(aiChanges);
+
+                var archiveImageChanges = await ScanImageByArchiveInfoAsync(archiveInfo, libraryPath.LibraryId);
+                totalChanges.Merge(archiveImageChanges);
                 continue;
             }
 
-            var documentInfo = await EnsureArchiveInfoAsync(archiveFilePath, libraryPath.Id);
+            var (documentInfo, ensureChanges) = await EnsureArchiveInfoAsync(archiveFilePath, libraryPath.Id);
+            totalChanges.Merge(ensureChanges);
 
             if (PdfExtensions.Contains(extension))
             {
-                await ScanPdfAsync(documentInfo, libraryPath.LibraryId);
+                var pdfChanges = await ScanPdfAsync(documentInfo, libraryPath.LibraryId);
+                totalChanges.Merge(pdfChanges);
             }
             else if (EpubExtensions.Contains(extension))
             {
-                await ScanEpubAsync(documentInfo, libraryPath.LibraryId);
+                var epubChanges = await ScanEpubAsync(documentInfo, libraryPath.LibraryId);
+                totalChanges.Merge(epubChanges);
             }
+        }
+
+        // 统一提交所有变更（尽量保持原有顺序语义）
+        // 删除
+        if (totalChanges.ImageIdsToDelete.Count > 0)
+        {
+            await comicImageRepository.DeleteManyAsync(totalChanges.ImageIdsToDelete);
+        }
+        if (totalChanges.ComicIdsToDelete.Count > 0)
+        {
+            await comicRepository.DeleteManyAsync(totalChanges.ComicIdsToDelete);
+        }
+        if (totalChanges.ArchiveInfoIdsToDelete.Count > 0)
+        {
+            await archiveInfoRepository.DeleteManyAsync(totalChanges.ArchiveInfoIdsToDelete);
+        }
+
+        // 插入/更新
+        if (totalChanges.ArchiveInfosToInsert.Count > 0)
+        {
+            await archiveInfoRepository.InsertManyAsync(totalChanges.ArchiveInfosToInsert);
+        }
+
+        foreach (var ai in totalChanges.ArchiveInfosToUpdate)
+        {
+            await archiveInfoRepository.UpdateAsync(ai);
+        }
+
+        if (totalChanges.ComicsToInsert.Count > 0)
+        {
+            await comicRepository.InsertManyAsync(totalChanges.ComicsToInsert);
+        }
+
+        if (totalChanges.ImagesToInsert.Count > 0)
+        {
+            await comicImageRepository.InsertManyAsync(totalChanges.ImagesToInsert);
         }
     }
 
-    protected virtual async Task<ArchiveInfo> ScanArchiveInfoDirectoryStructureAsync(string archivePath,
+    protected virtual async Task<(ArchiveInfo archiveInfo, ScanChanges changes)> ScanArchiveInfoDirectoryStructureAsync(string archivePath,
         Guid libraryPathId)
     {
+        var changes = new ScanChanges();
         var query = await archiveInfoRepository.WithDetailsAsync(x => x.Paths);
 
 
@@ -105,12 +153,13 @@ public class ComicScanHandler(
             archiveInfo = new ArchiveInfo(GuidGenerator.Create(), archivePath,
                 sizeInBytes,
                 libraryPathId);
-            await archiveInfoRepository.InsertAsync(archiveInfo, true);
+            // 推迟保存
+            changes.ArchiveInfosToInsert.Add(archiveInfo);
         }
 
         if (!NeedScanArchiveInfo(archiveInfo))
         {
-            return archiveInfo;
+            return (archiveInfo, changes);
         }
 
         using var archive = ArchiveFactory.Open(archiveInfo.Path);
@@ -131,9 +180,10 @@ public class ComicScanHandler(
             .ToList();
         archiveInfo.Paths.AddRange(addArchivePaths);
 
-        await archiveInfoRepository.UpdateAsync(archiveInfo, true);
+        archiveInfo.LastResolveTime = DateTime.UtcNow;
+        changes.ArchiveInfosToUpdate.Add(archiveInfo);
 
-        return archiveInfo;
+        return (archiveInfo, changes);
     }
 
     protected virtual bool NeedScanArchiveInfo(ArchiveInfo archiveInfo)
@@ -142,8 +192,9 @@ public class ComicScanHandler(
                File.GetLastWriteTimeUtc(archiveInfo.Path) > archiveInfo.LastResolveTime;
     }
 
-    protected virtual async Task<ArchiveInfo> EnsureArchiveInfoAsync(string documentPath, Guid libraryPathId)
+    protected virtual async Task<(ArchiveInfo archiveInfo, ScanChanges changes)> EnsureArchiveInfoAsync(string documentPath, Guid libraryPathId)
     {
+        var changes = new ScanChanges();
         var query = await archiveInfoRepository.WithDetailsAsync(x => x.Paths);
         var archiveInfo = await AsyncExecuter.FirstOrDefaultAsync(query,
             x => x.Path == documentPath && x.LibraryPathId == libraryPathId);
@@ -155,7 +206,7 @@ public class ComicScanHandler(
             archiveInfo = new ArchiveInfo(GuidGenerator.Create(), documentPath, fileInfo.Length, libraryPathId,
                 fileInfo.LastWriteTimeUtc, null);
             archiveInfo.Paths.Add(new ArchiveInfoPath(GuidGenerator.Create(), null, archiveInfo.Id));
-            await archiveInfoRepository.InsertAsync(archiveInfo, true);
+            changes.ArchiveInfosToInsert.Add(archiveInfo);
         }
         else
         {
@@ -167,14 +218,15 @@ public class ComicScanHandler(
                 archiveInfo.Paths.Add(new ArchiveInfoPath(GuidGenerator.Create(), null, archiveInfo.Id));
             }
 
-            await archiveInfoRepository.UpdateAsync(archiveInfo, true);
+            changes.ArchiveInfosToUpdate.Add(archiveInfo);
         }
 
-        return archiveInfo;
+        return (archiveInfo, changes);
     }
 
-    protected virtual async Task ScanPdfAsync(ArchiveInfo archiveInfo, Guid libraryId)
+    protected virtual async Task<ScanChanges> ScanPdfAsync(ArchiveInfo archiveInfo, Guid libraryId)
     {
+        var changes = new ScanChanges();
         var archivePaths =
             archiveInfo.Paths.ToDictionary(x => x.Path ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         var rootPath = EnsureRootArchivePath(archiveInfo, archivePaths);
@@ -195,7 +247,7 @@ public class ComicScanHandler(
 
         if (!deleteImages.IsNullOrEmpty())
         {
-            await comicImageRepository.DeleteManyAsync(deleteImages.Select(x => x.Id), true);
+            changes.ImageIdsToDelete.AddRange(deleteImages.Select(x => x.Id));
         }
 
         var addImageEntities = new List<ComicImage>();
@@ -249,18 +301,21 @@ public class ComicScanHandler(
 
             if (!newComics.IsNullOrEmpty())
             {
-                await comicRepository.InsertManyAsync(newComics, true);
+                changes.ComicsToInsert.AddRange(newComics);
             }
 
-            await comicImageRepository.InsertManyAsync(addImageEntities, true);
+            changes.ImagesToInsert.AddRange(addImageEntities);
         }
 
         archiveInfo.LastResolveTime = DateTime.UtcNow;
-        await archiveInfoRepository.UpdateAsync(archiveInfo, true);
+        // 标记更新（LastResolveTime）
+        changes.ArchiveInfosToUpdate.Add(archiveInfo);
+        return changes;
     }
 
-    protected virtual async Task ScanEpubAsync(ArchiveInfo archiveInfo, Guid libraryId)
+    protected virtual async Task<ScanChanges> ScanEpubAsync(ArchiveInfo archiveInfo, Guid libraryId)
     {
+        var changes = new ScanChanges();
         var pathCache = archiveInfo.Paths.ToDictionary(x => x.Path ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         var rootPath = EnsureRootArchivePath(archiveInfo, pathCache);
 
@@ -279,7 +334,7 @@ public class ComicScanHandler(
 
         if (!deleteImages.IsNullOrEmpty())
         {
-            await comicImageRepository.DeleteManyAsync(deleteImages.Select(x => x.Id), true);
+            changes.ImageIdsToDelete.AddRange(deleteImages.Select(x => x.Id));
         }
 
         var addImageEntities = new List<ComicImage>();
@@ -346,14 +401,15 @@ public class ComicScanHandler(
 
             if (!newComics.IsNullOrEmpty())
             {
-                await comicRepository.InsertManyAsync(newComics, true);
+                changes.ComicsToInsert.AddRange(newComics);
             }
 
-            await comicImageRepository.InsertManyAsync(addImageEntities, true);
+            changes.ImagesToInsert.AddRange(addImageEntities);
         }
 
         archiveInfo.LastResolveTime = DateTime.UtcNow;
-        await archiveInfoRepository.UpdateAsync(archiveInfo, true);
+        changes.ArchiveInfosToUpdate.Add(archiveInfo);
+        return changes;
     }
 
     private ArchiveInfoPath EnsureRootArchivePath(ArchiveInfo archiveInfo,
@@ -423,12 +479,12 @@ public class ComicScanHandler(
     }
 
 
-    public async Task ScanImageByLibraryPathAsync(LibraryPath libraryPath, List<string> imageFilePaths,
-        bool autoSave = false)
+    public async Task<ScanChanges> ScanImageByLibraryPathAsync(LibraryPath libraryPath, List<string> imageFilePaths)
     {
+        var changes = new ScanChanges();
         if (imageFilePaths.IsNullOrEmpty())
         {
-            return;
+            return changes;
         }
 
         var query = (await comicImageRepository.GetQueryableAsync())
@@ -451,7 +507,7 @@ public class ComicScanHandler(
 
             var title = Path.GetFileName(libraryPath.Path);
             var comic = new Comic(GuidGenerator.Create(), title, cover, libraryPath.LibraryId, libraryPath.Id);
-            await comicRepository.InsertAsync(comic, autoSave);
+            changes.ComicsToInsert.Add(comic);
             comicId = comic.Id;
         }
 
@@ -460,10 +516,14 @@ public class ComicScanHandler(
 
         if (!deleteImages.IsNullOrEmpty())
         {
-            await comicImageRepository.DeleteManyAsync(deleteImages.Select(x => x.Id), autoSave);
+            changes.ImageIdsToDelete.AddRange(deleteImages.Select(x => x.Id));
             if (deleteImages.Count == repImages.Count)
             {
-                await comicRepository.DeleteAsync(comicId, autoSave);
+                // 删除该文件夹下的所有图片时，同时删除漫画实体
+                if (comicId != Guid.Empty)
+                {
+                    changes.ComicIdsToDelete.Add(comicId);
+                }
             }
         }
 
@@ -476,12 +536,15 @@ public class ComicScanHandler(
 
         if (!addImageFileEntities.IsNullOrEmpty())
         {
-            await comicImageRepository.InsertManyAsync(addImageFileEntities, autoSave);
+            changes.ImagesToInsert.AddRange(addImageFileEntities);
         }
+
+        return changes;
     }
 
-    public async Task ScanImageByArchiveInfoAsync(ArchiveInfo archiveInfo, Guid libraryId)
+    public async Task<ScanChanges> ScanImageByArchiveInfoAsync(ArchiveInfo archiveInfo, Guid libraryId)
     {
+        var changes = new ScanChanges();
         var archivePathIds = archiveInfo.Paths.Select(x => x.Id).ToList();
 
         var query = (await comicImageRepository.GetQueryableAsync()).Where(x =>
@@ -503,7 +566,10 @@ public class ComicScanHandler(
 
         var deleteImages = repImages.Where(x => !imageEntries.Select(a => a.Key).Contains(x.Path)).ToList();
 
-        await comicImageRepository.DeleteManyAsync(deleteImages.Select(x => x.Id), true);
+        if (!deleteImages.IsNullOrEmpty())
+        {
+            changes.ImageIdsToDelete.AddRange(deleteImages.Select(x => x.Id));
+        }
 
         var addImages = imageEntries.Where(x => !repImages.Select(a => a.Path).Contains(x.Key)).ToList();
 
@@ -576,16 +642,40 @@ public class ComicScanHandler(
 
         if (!comics.IsNullOrEmpty())
         {
-            await comicRepository.InsertManyAsync(comics, true);
+            changes.ComicsToInsert.AddRange(comics);
         }
 
         if (!addImageEntities.IsNullOrEmpty())
         {
-            await comicImageRepository.InsertManyAsync(addImageEntities, true);
+            changes.ImagesToInsert.AddRange(addImageEntities);
         }
 
         archiveInfo.LastResolveTime = DateTime.UtcNow;
+        changes.ArchiveInfosToUpdate.Add(archiveInfo);
+        return changes;
+    }
 
-        await archiveInfoRepository.UpdateAsync(archiveInfo, true);
+    // 变更聚合模型
+    public sealed class ScanChanges
+    {
+        public List<ComicImage> ImagesToInsert { get; } = [];
+        public List<Guid> ImageIdsToDelete { get; } = [];
+        public List<Comic> ComicsToInsert { get; } = [];
+        public List<Guid> ComicIdsToDelete { get; } = [];
+        public List<ArchiveInfo> ArchiveInfosToInsert { get; } = [];
+        public List<ArchiveInfo> ArchiveInfosToUpdate { get; } = [];
+        public List<Guid> ArchiveInfoIdsToDelete { get; } = [];
+
+        public void Merge(ScanChanges other)
+        {
+            if (other is null) return;
+            ImagesToInsert.AddRange(other.ImagesToInsert);
+            ImageIdsToDelete.AddRange(other.ImageIdsToDelete);
+            ComicsToInsert.AddRange(other.ComicsToInsert);
+            ComicIdsToDelete.AddRange(other.ComicIdsToDelete);
+            ArchiveInfosToInsert.AddRange(other.ArchiveInfosToInsert);
+            ArchiveInfosToUpdate.AddRange(other.ArchiveInfosToUpdate);
+            ArchiveInfoIdsToDelete.AddRange(other.ArchiveInfoIdsToDelete);
+        }
     }
 }

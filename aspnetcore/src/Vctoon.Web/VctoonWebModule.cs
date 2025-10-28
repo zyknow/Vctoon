@@ -15,7 +15,6 @@ using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation.AspNetCore;
 using Vctoon.BlobContainers;
 using Vctoon.EntityFrameworkCore;
-using Vctoon.Libraries;
 using Vctoon.Localization.Vctoon;
 using Vctoon.Mediums;
 using Vctoon.Web.HealthChecks;
@@ -128,6 +127,7 @@ public class VctoonWebModule : AbpModule
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
             });
         }
+
         ConfigureBundles();
         ConfigureUrls(configuration);
         //ConfigureHealthChecks(context);
@@ -149,12 +149,12 @@ public class VctoonWebModule : AbpModule
                 container.UseFileSystem(fileSystem => { fileSystem.BasePath = @$"Covers"; });
             });
         });
-        
+
         Configure<LuceneOptions>(opt =>
         {
             // opt.IndexRootPath = Path.Combine(AppContext.BaseDirectory, "lucene-index");
             opt.IndexRootPath = "lucene-index";
-            opt.PerTenantIndex = true;
+            opt.PerTenantIndex = false;
             opt.AnalyzerFactory = AnalyzerFactories.IcuGeneral;
             opt.ConfigureLucene(model =>
             {
@@ -162,16 +162,16 @@ public class VctoonWebModule : AbpModule
                 {
                     e.Field(x => x.Title, f => f.Store());
                     e.Field(x => x.Cover, f => f.StoreOnly());
-                    e.Field(x=> x.LibraryId,f => f.StoreOnly());
-                    e.Field(x=> x.LibraryPathId,f => f.StoreOnly());
+                    e.Field(x => x.LibraryId, f => f.Keyword());
+                    e.Field(x => x.LibraryPathId, f => f.Keyword());
                 });
-                
+
                 model.Entity<Video>(e =>
                 {
                     e.Field(x => x.Title, f => f.Store());
                     e.Field(x => x.Cover, f => f.StoreOnly());
-                    e.Field(x=> x.LibraryId,f => f.StoreOnly());
-                    e.Field(x=> x.LibraryPathId,f => f.StoreOnly());
+                    e.Field(x => x.LibraryId, f => f.Keyword());
+                    e.Field(x => x.LibraryPathId, f => f.Keyword());
                 });
             });
         });

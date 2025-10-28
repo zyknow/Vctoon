@@ -1,6 +1,4 @@
-using System.IO;
 using Vctoon.Mediums.Dtos;
-using Volo.Abp.Content;
 
 namespace Vctoon.Mediums;
 

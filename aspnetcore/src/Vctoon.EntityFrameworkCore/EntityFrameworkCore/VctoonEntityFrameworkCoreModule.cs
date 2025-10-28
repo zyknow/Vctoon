@@ -12,6 +12,7 @@ using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.Studio;
+using Zyknow.Abp.Lucene;
 
 namespace Vctoon.EntityFrameworkCore;
 
@@ -25,7 +26,8 @@ namespace Vctoon.EntityFrameworkCore;
     typeof(AbpFeatureManagementEntityFrameworkCoreModule),
     typeof(AbpIdentityEntityFrameworkCoreModule),
     typeof(AbpOpenIddictEntityFrameworkCoreModule),
-    typeof(BlobStoringDatabaseEntityFrameworkCoreModule)
+    typeof(BlobStoringDatabaseEntityFrameworkCoreModule),
+    typeof(ZyknowLuceneEntityFrameworkCoreModule)
 )]
 public class VctoonEntityFrameworkCoreModule : AbpModule
 {

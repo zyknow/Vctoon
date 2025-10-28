@@ -1,9 +1,8 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Vctoon.Handlers;
+using Vctoon.Mediums;
 using Vctoon.Mediums.Base;
 using Volo.Abp;
 using Volo.Abp.Uow;
@@ -17,8 +16,7 @@ public class LibraryScanner(
     LibraryStore libraryStore,
     IEnumerable<IMediumScanHandler> mediumScanHandlers,
     MediumManager mediumManager)
-    : VctoonService, ITransientDependency
-
+    : VctoonService, IScopedDependency
 {
     private static readonly object LockObject = new();
 
@@ -106,8 +104,8 @@ public class LibraryScanner(
                 {
                     await using var scope = uow.ServiceProvider.CreateAsyncScope();
                     var libraryScanner = scope.ServiceProvider.GetRequiredService<LibraryScanner>();
-                    // do not auto save
                     await libraryScanner.ScanningLibraryPathFileAsync(library, libraryPath);
+                    await uow.CompleteAsync(_);
                 }
             }
             catch (Exception e)

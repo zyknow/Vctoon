@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Vctoon.Hubs;
 using Vctoon.Libraries.Dtos;
+using Vctoon.Mediums;
 using Vctoon.Mediums.Base;
 using Vctoon.Permissions;
 using Volo.Abp;

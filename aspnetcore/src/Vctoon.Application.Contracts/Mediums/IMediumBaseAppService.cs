@@ -1,6 +1,4 @@
-﻿using Volo.Abp.Content;
-
-namespace Vctoon.Mediums;
+﻿namespace Vctoon.Mediums;
 
 public interface IMediumBaseAppService<TGetOutputDto, TGetListOutputDto, in TGetListInput, in TCreateInput,
     in TUpdateInput> : ICrudAppService<
