@@ -37,7 +37,6 @@ export type MediumProvider = {
   loading: Ref<boolean>
   loadItems(): Promise<void>
   loadNext(): Promise<void>
-  loadPage(page: number): Promise<void>
   loadType: Ref<MediumType>
   pageRequest: PageRequest // reactive 对象的静态类型即可
   selectedMediumIds: Ref<string[]>
@@ -83,14 +82,6 @@ export function createMediumProvider(
     skipCount?: number
   }
 
-  const resolvePageSize = () => {
-    const value = Number(pageRequest.maxResultCount ?? 50)
-    if (!Number.isFinite(value) || value <= 0) {
-      return 50
-    }
-    return Math.floor(value)
-  }
-
   const loadItems = async (options: LoadItemsOptions = {}) => {
     if (loading.value) return
 
@@ -120,13 +111,6 @@ export function createMediumProvider(
     return await loadItems({ append: true })
   }
 
-  const loadPage = async (page: number) => {
-    const pageSize = resolvePageSize()
-    const safePage = Math.max(1, Math.floor(page || 1))
-    const skipCount = (safePage - 1) * pageSize
-    await loadItems({ append: false, skipCount })
-  }
-
   const updateSorting = async (sorting: string) => {
     pageRequest.sorting = sorting
     await loadItems({ append: false })
@@ -134,7 +118,6 @@ export function createMediumProvider(
 
   const model: MediumProvider = {
     loadNext,
-    loadPage,
     currentTab,
     loading,
     items,

@@ -6,11 +6,12 @@ import {
   nextTick,
   onActivated,
   onBeforeUnmount,
+  onDeactivated,
   onMounted,
   ref,
   watch,
 } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onBeforeRouteLeave, useRoute } from 'vue-router'
 
 import { ElMessage } from 'element-plus'
 
@@ -23,7 +24,6 @@ import { $t } from '#/locales'
 import { useMediumStore } from '#/store'
 import { ItemDisplayMode } from '#/store/typing'
 
-import { getMediumAnchorId, MEDIUM_ANCHOR_PREFIX } from './anchor'
 import MediumGridItem from './medium-grid-item.vue'
 import MediumListItem from './medium-list-item.vue'
 
@@ -31,25 +31,11 @@ defineProps<{
   modelValue?: boolean
 }>()
 
-const DEFAULT_PAGE_SIZE = 50
-const PAGE_SIZE_OPTIONS = [20, 50, 100, 200] as const
-
-const route = useRoute()
-const router = useRouter()
-
-const injected = useInjectedMediumProvider()
-const { loadType } = injected
+const { loadType, loading, hasMore, loadItems, loadNext } =
+  useInjectedMediumProvider()
 const { items } = useInjectedMediumItemProvider()
 const mediumStore = useMediumStore()
 const { openEdit } = useMediumDialogService()
-
-const itemIndexMap = computed(() => {
-  const map = new Map<string, number>()
-  items.value.forEach((item, index) => {
-    map.set(item.id, index)
-  })
-  return map
-})
 
 const containerClass = computed(() =>
   mediumStore.itemDisplayMode === ItemDisplayMode.Grid
@@ -58,300 +44,180 @@ const containerClass = computed(() =>
 )
 
 const scrollWrapRef = ref<HTMLElement | null>(null)
+const loadMoreTriggerRef = ref<HTMLElement | null>(null)
+const scrollContainerRef = ref<HTMLElement | null>(null)
+const savedScrollTop = ref(0)
+const scrollRestored = ref(false)
+let boundScrollHandler: ((e: Event) => void) | null = null
 
-const pageSize = computed({
-  get: () => {
-    const value = Number(
-      injected.pageRequest.maxResultCount ?? DEFAULT_PAGE_SIZE,
-    )
-    return Number.isFinite(value) && value > 0
-      ? Math.floor(value)
-      : DEFAULT_PAGE_SIZE
-  },
-  set: (size: number) => {
-    const safeSize = Math.max(1, Math.floor(size || DEFAULT_PAGE_SIZE))
-    injected.pageRequest.maxResultCount = safeSize
-  },
-})
-const pageSizeOptions = PAGE_SIZE_OPTIONS.map((option) => option)
+const route = useRoute()
+const routeKey = computed<string>(() => route.fullPath)
 
-const totalItems = computed(() => injected.totalCount.value ?? 0)
-const totalPages = computed(() =>
-  Math.max(1, Math.ceil(totalItems.value / pageSize.value)),
-)
-
-const getQueryString = (value: unknown): null | string => {
-  if (Array.isArray(value)) {
-    return typeof value[0] === 'string' ? value[0] : null
-  }
-  return typeof value === 'string' ? value : null
+interface ScrollRecord {
+  top: number
+  ts: number
 }
 
-const parsePositiveInteger = (value: unknown): null | number => {
-  const text = getQueryString(value)
-  if (!text) return null
-  const parsed = Number.parseInt(text, 10)
-  if (!Number.isFinite(parsed) || parsed <= 0) return null
-  return parsed
-}
-
-const targetHighlightId = computed(() => getQueryString(route.query.highlight))
-const targetPage = computed(() => parsePositiveInteger(route.query.page))
-
-const currentPage = ref(targetPage.value ?? 1)
-const lastLoadedPage = ref<null | number>(null)
-
-const highlightResolved = ref(false)
-const ensureTaskRunning = ref(false)
-const paginationDisabled = computed(
-  () => injected.loading.value || ensureTaskRunning.value,
-)
-const skipNextRouteSync = ref(false)
-const skipNextRouteHighlight = ref<null | string>(null)
-const currentVisibleHighlightId = ref<null | string>(null)
-
-let intersectionObserver: IntersectionObserver | null = null
-const visibleEntryMap = new Map<string, IntersectionObserverEntry>()
-
-const waitForLoading = async () => {
-  if (!injected.loading.value) return
-  await new Promise<void>((resolve) => {
-    const stop = watch(
-      () => injected.loading.value,
-      (loading) => {
-        if (!loading) {
-          stop()
-          resolve()
-        }
-      },
-      { immediate: false },
-    )
-  })
-}
-
-const extractMediumIdFromAnchor = (anchorId: string): null | string => {
-  if (!anchorId || !anchorId.startsWith(MEDIUM_ANCHOR_PREFIX)) {
-    return null
-  }
-  return anchorId.slice(MEDIUM_ANCHOR_PREFIX.length)
-}
-
-const getTopVisibleMediumId = (): null | string => {
-  let bestId: null | string = null
-  let bestTop = Number.POSITIVE_INFINITY
-  let bestIndex = Number.POSITIVE_INFINITY
-  let bestLeft = Number.POSITIVE_INFINITY
-  visibleEntryMap.forEach((entry, id) => {
-    const index = itemIndexMap.value.get(id) ?? Number.POSITIVE_INFINITY
-    const { top, left } = entry.boundingClientRect
-    if (top < bestTop - 1) {
-      bestTop = top
-      bestIndex = index
-      bestLeft = left
-      bestId = id
-      return
-    }
-    if (Math.abs(top - bestTop) <= 1) {
-      if (index < bestIndex) {
-        bestTop = top
-        bestIndex = index
-        bestLeft = left
-        bestId = id
-        return
-      }
-      if (index === bestIndex && left < bestLeft - 1) {
-        bestTop = top
-        bestIndex = index
-        bestLeft = left
-        bestId = id
-      }
-    }
-  })
-  return bestId
-}
-
-const updateRouteHighlight = (mediumId: null | string) => {
-  const current = targetHighlightId.value
-  if (current === mediumId) return
-  const nextQuery = { ...route.query }
-  if (mediumId) {
-    nextQuery.highlight = mediumId
-  } else {
-    delete nextQuery.highlight
-  }
-  skipNextRouteSync.value = true
-  skipNextRouteHighlight.value = mediumId
-  void router.replace({ query: nextQuery }).catch(() => {
-    skipNextRouteSync.value = false
-    skipNextRouteHighlight.value = null
-  })
-}
-
-const handleIntersection: IntersectionObserverCallback = (entries) => {
-  let changed = false
-  entries.forEach((entry) => {
-    const element = entry.target as HTMLElement
-    const mediumId = extractMediumIdFromAnchor(element.id)
-    if (!mediumId) return
-    if (entry.isIntersecting && entry.intersectionRatio > 0) {
-      visibleEntryMap.set(mediumId, entry)
-    } else {
-      visibleEntryMap.delete(mediumId)
-    }
-    changed = true
-  })
-  if (!changed) return
-  if (!highlightResolved.value) return
-  const nextHighlight = getTopVisibleMediumId()
-  if (!nextHighlight || nextHighlight === currentVisibleHighlightId.value) {
-    return
-  }
-  currentVisibleHighlightId.value = nextHighlight
-  updateRouteHighlight(nextHighlight)
-}
-
-const teardownIntersectionObserver = () => {
-  if (intersectionObserver) {
-    intersectionObserver.disconnect()
-    intersectionObserver = null
-  }
-  visibleEntryMap.clear()
-}
-
-const setupIntersectionObserver = () => {
-  if (typeof IntersectionObserver === 'undefined') return
-  const root = scrollWrapRef.value
-  if (!root) return
-  teardownIntersectionObserver()
-  intersectionObserver = new IntersectionObserver(handleIntersection, {
-    root,
-    threshold: [0, 0.25, 0.5, 0.75, 1],
-  })
-  const anchors = root.querySelectorAll<HTMLElement>(
-    `[id^="${MEDIUM_ANCHOR_PREFIX}"]`,
-  )
-  anchors.forEach((anchor) => {
-    intersectionObserver?.observe(anchor)
-  })
-}
-
-const loadPageData = async (page: number) => {
-  const safePage = Math.max(1, Math.floor(page || 1))
-  if (typeof injected.loadPage === 'function') {
-    await injected.loadPage(safePage)
-  } else {
-    const skip = (safePage - 1) * pageSize.value
-    injected.pageRequest.skipCount = skip
-    await injected.loadItems()
-  }
-  await waitForLoading()
-  lastLoadedPage.value = safePage
-}
-
-const scrollToTop = () => {
-  const el = scrollWrapRef.value
-  if (!el) return
-  el.scrollTo({ top: 0, behavior: 'auto' })
-}
-
-const scrollToHighlight = async (mediumId: null | string) => {
-  if (!mediumId) return
-  if (typeof document === 'undefined') return
-  await nextTick()
-  const anchor = document.querySelector<HTMLElement>(
-    `#${getMediumAnchorId(mediumId)}`,
-  )
-  if (!anchor) return
-  anchor.scrollIntoView({ block: 'center', behavior: 'auto' })
-}
-
-const ensureInitialState = async () => {
-  if (ensureTaskRunning.value) return
-  ensureTaskRunning.value = true
+function saveScrollPosition(top: number): void {
   try {
-    currentVisibleHighlightId.value = null
-    const desiredPage = targetPage.value ?? currentPage.value ?? 1
-    if (currentPage.value !== desiredPage) {
-      currentPage.value = desiredPage
-    }
-    if (lastLoadedPage.value !== desiredPage) {
-      await loadPageData(desiredPage)
-      scrollToTop()
-    }
-    await nextTick()
-    const highlightId = targetHighlightId.value
-    if (highlightId) {
-      await scrollToHighlight(highlightId)
-    }
-    currentVisibleHighlightId.value = highlightId
-    highlightResolved.value = true
-    void nextTick(() => {
-      setupIntersectionObserver()
-    })
-  } finally {
-    ensureTaskRunning.value = false
+    const record: ScrollRecord = { top, ts: Date.now() }
+    sessionStorage.setItem(`scroll:${routeKey.value}`, JSON.stringify(record))
+  } catch {
+    // 忽略存储错误（Safari 隐私模式等）
   }
 }
 
-const syncRoutePage = (page: number) => {
-  const nextQuery = { ...route.query }
-  const pageText = page > 1 ? String(page) : null
-  const current = getQueryString(route.query.page)
-  let changed = false
-  if (pageText) {
-    if (current !== pageText) {
-      nextQuery.page = pageText
-      changed = true
+function loadScrollPosition(): number {
+  try {
+    const raw = sessionStorage.getItem(`scroll:${routeKey.value}`)
+    if (!raw) return 0
+    const rec = JSON.parse(raw) as ScrollRecord
+    return typeof rec.top === 'number' ? rec.top : 0
+  } catch {
+    return 0
+  }
+}
+
+let loadObserver: IntersectionObserver | null = null
+
+function getMainContentContainer(): HTMLElement | null {
+  const main = document.querySelector(
+    '#__vben_main_content',
+  ) as HTMLElement | null
+  if (!main) return null
+  // Page 内容容器：具有 h-full 和 p-4 的 div
+  const candidate = main.querySelector('div.h-full.p-4') as HTMLElement | null
+  if (!candidate) return null
+  const style = window.getComputedStyle(candidate)
+  const oy = style.overflowY
+  const o = style.overflow
+  const canScroll = candidate.scrollHeight > candidate.clientHeight + 1
+  const overflowMatches =
+    oy === 'auto' ||
+    oy === 'scroll' ||
+    o === 'auto' ||
+    o === 'scroll' ||
+    o.includes('auto') ||
+    o.includes('scroll')
+  if (canScroll && overflowMatches) {
+    return candidate
+  }
+  return null
+}
+
+function findNearestPageContent(el: HTMLElement | null): HTMLElement | null {
+  let parent = el?.parentElement || null
+  while (parent) {
+    if (
+      parent.classList.contains('h-full') &&
+      parent.classList.contains('p-4')
+    ) {
+      const style = window.getComputedStyle(parent)
+      const oy = style.overflowY
+      const o = style.overflow
+      if (oy === 'auto' || oy === 'scroll' || o === 'auto' || o === 'scroll') {
+        return parent
+      }
     }
-  } else if (current) {
-    delete nextQuery.page
-    changed = true
+    parent = parent.parentElement
   }
-  if ('highlight' in nextQuery) {
-    delete nextQuery.highlight
-    changed = true
+  return null
+}
+
+function findScrollContainer(el: HTMLElement | null): HTMLElement | null {
+  // 优先检查自身是否可滚动（medium-content 是实际容器）
+  if (el) {
+    const style = window.getComputedStyle(el)
+    const oy = style.overflowY
+    const o = style.overflow
+    const canScroll = el.scrollHeight > el.clientHeight + 1
+    const overflowMatches =
+      oy === 'auto' ||
+      oy === 'scroll' ||
+      o === 'auto' ||
+      o === 'scroll' ||
+      o.includes('auto') ||
+      o.includes('scroll')
+    if (canScroll && overflowMatches) {
+      return el
+    }
   }
-  if (changed) {
-    skipNextRouteSync.value = true
-    skipNextRouteHighlight.value = null
-    void router.replace({ query: nextQuery }).catch(() => {
-      skipNextRouteSync.value = false
-      skipNextRouteHighlight.value = null
-    })
+  // 其次尝试 Page 主内容容器（有时也承载滚动）
+  const mainContent = getMainContentContainer()
+  if (mainContent) return mainContent
+  const nearest = findNearestPageContent(el)
+  if (nearest) return nearest
+  let parent = el?.parentElement || null
+  while (parent) {
+    const style = window.getComputedStyle(parent)
+    const oy = style.overflowY
+    const o = style.overflow
+    if (
+      oy === 'auto' ||
+      oy === 'scroll' ||
+      o === 'auto' ||
+      o === 'scroll' ||
+      o.includes('auto') ||
+      o.includes('scroll')
+    ) {
+      return parent
+    }
+    parent = parent.parentElement
+  }
+  return (document.scrollingElement || document.documentElement) as HTMLElement
+}
+
+const setupLoadMoreObserver = () => {
+  if (typeof IntersectionObserver === 'undefined') return
+  const trigger = loadMoreTriggerRef.value
+  // 识别实际滚动容器（Page content）或回退到视口
+  const root = scrollContainerRef.value ?? null
+  if (!trigger) return
+  if (loadObserver) {
+    loadObserver.disconnect()
+    loadObserver = null
+  }
+  loadObserver = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0]
+      if (entry && entry.isIntersecting && !loading.value && hasMore.value) {
+        void loadNext().catch((error) => {
+          console.error('滚动加载失败', error)
+        })
+      }
+    },
+    { root, threshold: [0, 0.25, 0.5, 0.75, 1] },
+  )
+  loadObserver.observe(trigger)
+}
+
+const teardownLoadMoreObserver = () => {
+  if (loadObserver) {
+    loadObserver.disconnect()
+    loadObserver = null
   }
 }
 
-const handlePageChange = async (page: number) => {
-  const safePage = Math.max(1, Math.floor(page || 1))
-  currentPage.value = safePage
-  highlightResolved.value = false
-  currentVisibleHighlightId.value = null
-  await loadPageData(safePage)
-  scrollToTop()
-  await nextTick()
-  highlightResolved.value = true
-  void nextTick(() => {
-    setupIntersectionObserver()
-  })
-  syncRoutePage(safePage)
+function setupScrollListener(): void {
+  const c = scrollContainerRef.value
+  if (!c) return
+  // 避免重复绑定
+  if (boundScrollHandler) return
+  const handler = () => {
+    savedScrollTop.value = c.scrollTop
+    // 持续保存，确保路由切换前已有最新值
+    saveScrollPosition(savedScrollTop.value)
+  }
+  c.addEventListener('scroll', handler, { passive: true })
+  boundScrollHandler = handler
 }
 
-const handlePageSizeChange = async (size: number) => {
-  const safeSize = Math.max(1, Math.floor(size || DEFAULT_PAGE_SIZE))
-  if (pageSize.value === safeSize) return
-  pageSize.value = safeSize
-  injected.pageRequest.skipCount = 0
-  currentPage.value = 1
-  highlightResolved.value = false
-  currentVisibleHighlightId.value = null
-  await loadPageData(1)
-  scrollToTop()
-  await nextTick()
-  highlightResolved.value = true
-  void nextTick(() => {
-    setupIntersectionObserver()
-  })
-  syncRoutePage(1)
+function teardownScrollListener(): void {
+  const c = scrollContainerRef.value
+  if (c && boundScrollHandler) {
+    c.removeEventListener('scroll', boundScrollHandler)
+  }
+  boundScrollHandler = null
 }
 
 const handleEdit = async (medium: MediumGetListOutput) => {
@@ -373,79 +239,137 @@ const handleEdit = async (medium: MediumGetListOutput) => {
   }
 }
 
+const ensureInitialLoad = async () => {
+  if (items.value.length === 0) {
+    await loadItems()
+  }
+  await nextTick()
+  // Page 的 autoContentHeight 需等待溢出样式应用后再观察与识别容器
+  setTimeout(() => {
+    // 识别并缓存滚动容器（在 Page 溢出样式应用后）
+    scrollContainerRef.value = findScrollContainer(scrollWrapRef.value)
+    setupScrollListener()
+    setupLoadMoreObserver()
+    // 恢复滚动位置（KeepAlive 或重新挂载场景）
+    savedScrollTop.value = savedScrollTop.value || loadScrollPosition()
+    void restoreScrollWithRetries(24, 80)
+  }, 100)
+}
+
 onMounted(() => {
-  void ensureInitialState()
+  void ensureInitialLoad()
 })
 
 onActivated(() => {
-  void ensureInitialState()
+  void ensureInitialLoad()
 })
 
+onDeactivated(() => {
+  // 记录滚动位置，便于返回时恢复
+  const container =
+    scrollContainerRef.value ||
+    findScrollContainer(scrollWrapRef.value) ||
+    ((document.scrollingElement || document.documentElement) as HTMLElement)
+  if (container) {
+    savedScrollTop.value = container.scrollTop
+    saveScrollPosition(savedScrollTop.value)
+  }
+  scrollRestored.value = false
+  teardownLoadMoreObserver()
+  teardownScrollListener()
+})
+
+onBeforeUnmount(() => {
+  // 非 KeepAlive 场景也保存滚动位置
+  const container =
+    scrollContainerRef.value ||
+    findScrollContainer(scrollWrapRef.value) ||
+    ((document.scrollingElement || document.documentElement) as HTMLElement)
+  if (container) {
+    savedScrollTop.value = container.scrollTop
+    saveScrollPosition(savedScrollTop.value)
+  }
+  scrollRestored.value = false
+  teardownLoadMoreObserver()
+  teardownScrollListener()
+})
+
+// 在路由离开前保存滚动位置，避免路由滚动行为覆盖
+onBeforeRouteLeave((_to, _from, next) => {
+  const container =
+    scrollContainerRef.value ||
+    findScrollContainer(scrollWrapRef.value) ||
+    getMainContentContainer() ||
+    ((document.scrollingElement || document.documentElement) as HTMLElement)
+  if (container) {
+    savedScrollTop.value = container.scrollTop
+    saveScrollPosition(savedScrollTop.value)
+  }
+  next()
+})
+
+// hasMore 变化时动态管理观察器，避免无意义的触发
 watch(
-  () => [route.query.page, route.query.highlight],
-  () => {
-    if (skipNextRouteSync.value) {
-      const highlight = targetHighlightId.value
-      if (highlight === skipNextRouteHighlight.value) {
-        skipNextRouteSync.value = false
-        skipNextRouteHighlight.value = null
-        return
-      }
-      skipNextRouteSync.value = false
-      skipNextRouteHighlight.value = null
+  () => hasMore.value,
+  (val) => {
+    if (val) {
+      setupLoadMoreObserver()
+    } else {
+      teardownLoadMoreObserver()
     }
-    highlightResolved.value = false
-    void ensureInitialState()
   },
 )
 
-watch(
-  () => totalPages.value,
-  (pages) => {
-    if (currentPage.value > pages) {
-      void handlePageChange(pages)
+async function restoreScrollWithRetries(
+  maxTries = 8,
+  delay = 50,
+): Promise<void> {
+  const container =
+    scrollContainerRef.value ||
+    ((document.scrollingElement || document.documentElement) as HTMLElement)
+  const targetTop = savedScrollTop.value || loadScrollPosition()
+  if (!container || targetTop <= 0 || scrollRestored.value) return
+
+  let tries = 0
+  const attempt = () => {
+    if (!scrollContainerRef.value) {
+      // 尝试重新识别滚动容器
+      scrollContainerRef.value = findScrollContainer(scrollWrapRef.value)
+      if (!scrollContainerRef.value) return
     }
+    const c = scrollContainerRef.value
+    const canScroll = c.scrollHeight > c.clientHeight + 1
+    if (canScroll) {
+      c.scrollTo({ top: targetTop })
+      // 验证是否已生效
+      if (Math.abs(c.scrollTop - targetTop) < 2) {
+        scrollRestored.value = true
+        return
+      }
+    }
+    tries += 1
+    if (tries < maxTries) {
+      // 使用 rAF + 定时器，提高在异步渲染中的恢复成功率
+      requestAnimationFrame(() => setTimeout(attempt, delay))
+    }
+  }
+  attempt()
+}
+
+// 数据加载完成或列表长度变化后再次尝试恢复滚动
+watch(
+  () => loading.value,
+  (isLoading) => {
+    if (!isLoading) void restoreScrollWithRetries(10, 60)
   },
 )
 
 watch(
   () => items.value.length,
   () => {
-    if (targetHighlightId.value && !highlightResolved.value) {
-      void scrollToHighlight(targetHighlightId.value)
-    }
-    if (items.value.length === 0) {
-      currentVisibleHighlightId.value = null
-      updateRouteHighlight(null)
-    }
-    void nextTick(() => {
-      setupIntersectionObserver()
-    })
+    if (!loading.value) void restoreScrollWithRetries(6, 60)
   },
 )
-
-watch(
-  () => items.value,
-  () => {
-    void nextTick(() => {
-      setupIntersectionObserver()
-    })
-  },
-  { flush: 'post' },
-)
-
-watch(
-  () => mediumStore.itemDisplayMode,
-  () => {
-    void nextTick(() => {
-      setupIntersectionObserver()
-    })
-  },
-)
-
-onBeforeUnmount(() => {
-  teardownIntersectionObserver()
-})
 </script>
 
 <template>
@@ -476,30 +400,25 @@ onBeforeUnmount(() => {
       />
     </div>
     <div
-      v-if="!injected.loading && items.length === 0"
+      v-if="!loading && items.length === 0"
       class="text-muted-foreground py-12 text-center text-sm"
     >
       {{ $t('common.noData') }}
     </div>
     <div
-      v-else-if="injected.loading && items.length === 0"
+      v-else-if="loading && items.length === 0"
       class="text-muted-foreground py-12 text-center text-sm"
     >
       {{ $t('common.loading') }}
     </div>
-    <div class="medium-content__pagination flex justify-center py-4">
-      <el-pagination
-        :background="true"
-        :current-page="currentPage"
-        :disabled="paginationDisabled"
-        :hide-on-single-page="false"
-        layout="sizes, prev, pager, next, jumper"
-        :page-size="pageSize"
-        :page-sizes="pageSizeOptions"
-        :total="totalItems"
-        @current-change="handlePageChange"
-        @size-change="handlePageSizeChange"
-      />
+    <!-- 滚动加载触发器与状态 -->
+    <div ref="loadMoreTriggerRef" class="flex justify-center py-4">
+      <div class="text-muted-foreground text-sm" v-if="loading">
+        {{ $t('common.loading') }}
+      </div>
+      <div class="text-muted-foreground text-sm" v-else-if="!hasMore">
+        {{ $t('page.mediums.list.noMore') }}
+      </div>
     </div>
   </div>
 </template>

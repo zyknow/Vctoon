@@ -12,7 +12,6 @@ import {
   provideMediumProvider,
 } from '#/hooks/useMediumProvider'
 import { $t } from '#/locales'
-import { useMediumStore } from '#/store'
 
 import LibraryRecommend from './library-recommend.vue'
 
@@ -31,7 +30,6 @@ const resolveLibraryId = () => {
 
 const libraryId = resolveLibraryId()
 const userStore = useUserStore()
-const mediumStore = useMediumStore()
 const library = userStore.libraries.find((i) => i.id === libraryId)
 if (!library) {
   throw new Error('Library not found')
@@ -56,7 +54,7 @@ const resolveMediumTab = (value: unknown): MediumViewTabValue | null => {
 const initialTab = (() => {
   const tab = resolveMediumTab(route.query.tab)
   if (tab) return tab
-  return mediumStore.libraryTabs[library.id] ?? 'library'
+  return 'library'
 })()
 
 state.currentTab.value = initialTab
@@ -64,7 +62,6 @@ state.currentTab.value = initialTab
 watch(
   () => state.currentTab.value,
   (tab) => {
-    mediumStore.setLibraryTab(library.id, tab)
     const currentTab = normalizeQueryString(route.query.tab)
     if (currentTab === tab) {
       return

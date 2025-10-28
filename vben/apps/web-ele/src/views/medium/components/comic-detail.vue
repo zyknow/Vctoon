@@ -215,14 +215,6 @@ const mediumProvider: MediumProvider = {
     providerPageRequest.sorting = sorting
     applySortFromString(sorting)
   },
-  async loadPage(page: number) {
-    const pageSize = Number(providerPageRequest.maxResultCount ?? 1000)
-    const safePage = Math.max(1, Math.floor(page || 1))
-    providerPageRequest.skipCount =
-      (safePage - 1) *
-      (Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 1000)
-    await mediumProvider.loadItems()
-  },
 }
 
 provideMediumProvider(mediumProvider)

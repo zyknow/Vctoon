@@ -89,7 +89,6 @@ const routes: RouteRecordRaw[] = [
       hideInBreadcrumb: true,
       hideInMenu: true,
       hideInTab: true,
-      noBasicLayout: true,
       title: $t('page.comic.reader.title'),
     },
     name: 'ComicReader',

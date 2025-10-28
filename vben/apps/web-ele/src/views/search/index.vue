@@ -5,7 +5,7 @@ import type {
   SearchHit,
 } from '@vben/api'
 
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { luceneApi, MediumType } from '@vben/api'
@@ -99,14 +99,26 @@ const load = async () => {
   loading.value = true
   try {
     const result = await luceneApi.searchMany(requestParams.value)
-    items.value = result.items || []
+    const newHits = result.items || []
     total.value = result.totalCount || 0
-    const mapped = (result.items || [])
+
+    // 根据页码决定是重置还是追加
+    items.value = queryState.page <= 1 ? newHits : items.value.concat(newHits)
+
+    const mapped = newHits
       .map((h) => mapHitToMedium(h))
       .filter((m): m is MediumGetListOutput => !!m)
-    mediumItems.value = mapped
+
+    if (queryState.page <= 1) {
+      mediumItems.value = mapped
+    } else {
+      // 追加时去重（按 id）
+      const existIds = new Set(mediumItems.value.map((m) => m.id))
+      const appendList = mapped.filter((m) => !existIds.has(m.id))
+      mediumItems.value = mediumItems.value.concat(appendList)
+    }
     // 过滤无效选中项（仅保留当前结果中的选中）
-    const idSet = new Set(mapped.map((m) => m.id))
+    const idSet = new Set(mediumItems.value.map((m) => m.id))
     selectedMediumIds.value = selectedMediumIds.value.filter((id) =>
       idSet.has(id),
     )
@@ -116,6 +128,37 @@ const load = async () => {
     loading.value = false
   }
 }
+
+// 是否还有更多（根据当前已加载数量与总数）
+const hasMore = computed(() => mediumItems.value.length < total.value)
+
+// 触发加载更多的观察器
+const infiniteTrigger = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
+
+const initObserver = () => {
+  if (!infiniteTrigger.value) return
+  observer = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0]
+      if (entry?.isIntersecting && !loading.value && hasMore.value) {
+        // 触底时翻页，触发请求
+        queryState.page += 1
+      }
+    },
+    { root: null, rootMargin: '200px', threshold: 0 },
+  )
+  observer.observe(infiniteTrigger.value)
+}
+
+onMounted(() => {
+  initObserver()
+})
+
+onUnmounted(() => {
+  observer?.disconnect()
+  observer = null
+})
 
 watch(requestParams, () => {
   if (updatingFromRoute.value) return
@@ -195,13 +238,7 @@ const mapHitToMedium = (hit: SearchHit): MediumGetListOutput | null => {
   <Page content-class="flex flex-col gap-4">
     <div class="flex items-center justify-between">
       <div>{{ $t('page.search.total') }}：{{ total }}</div>
-      <el-pagination
-        v-model:current-page="queryState.page"
-        v-model:page-size="queryState.maxResultCount"
-        :page-sizes="[10, 20, 50]"
-        layout="sizes, prev, pager, next"
-        :total="total"
-      />
+      <!-- 移除分页，改为无限滚动加载 -->
     </div>
 
     <!-- 选择工具栏（当有选中项时显示） -->
@@ -215,6 +252,15 @@ const mapHitToMedium = (hit: SearchHit): MediumGetListOutput | null => {
         :model-value="item"
       />
     </div>
+
+    <!-- 底部加载状态与触发器 -->
+    <div class="text-muted-foreground py-2 text-center">
+      <span v-if="loading">{{ $t('common.loading') }}</span>
+      <span v-else-if="!hasMore && mediumItems.length > 0">
+        {{ $t('common.noMore') }}
+      </span>
+    </div>
+    <div ref="infiniteTrigger" class="h-6"></div>
   </Page>
 </template>
 
