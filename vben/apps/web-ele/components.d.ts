@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    CustomTabs: typeof import('./src/components/CustomTabs.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAutocomplete: typeof import('element-plus/es')['ElAutocomplete']
     ElButton: typeof import('element-plus/es')['ElButton']
@@ -27,6 +28,7 @@ declare module 'vue' {
     ElDropdown: typeof import('element-plus/es')['ElDropdown']
     ElDropdownItem: typeof import('element-plus/es')['ElDropdownItem']
     ElDropdownMenu: typeof import('element-plus/es')['ElDropdownMenu']
+    ElEmpty: typeof import('element-plus/es')['ElEmpty']
     ElForm: typeof import('element-plus/es')['ElForm']
     ElFormItem: typeof import('element-plus/es')['ElFormItem']
     ElIcon: typeof import('element-plus/es')['ElIcon']
@@ -39,6 +41,7 @@ declare module 'vue' {
     ElRadioButton: typeof import('element-plus/es')['ElRadioButton']
     ElRadioGroup: typeof import('element-plus/es')['ElRadioGroup']
     ElScrollbar: typeof import('element-plus/es')['ElScrollbar']
+    ElSegmented: typeof import('element-plus/es')['ElSegmented']
     ElSelect: typeof import('element-plus/es')['ElSelect']
     ElSlider: typeof import('element-plus/es')['ElSlider']
     ElSwitch: typeof import('element-plus/es')['ElSwitch']
@@ -58,6 +61,7 @@ declare module 'vue' {
     MediumContent: typeof import('./src/components/mediums/medium-content.vue')['default']
     MediumCoverCard: typeof import('./src/components/mediums/medium-cover-card.vue')['default']
     MediumEditDialog: typeof import('./src/components/mediums/medium-edit-dialog.vue')['default']
+    MediumFilterDropdown: typeof import('./src/components/mediums/medium-filter-dropdown.vue')['default']
     MediumGridItem: typeof import('./src/components/mediums/medium-grid-item.vue')['default']
     MediumInfoDialog: typeof import('./src/components/mediums/medium-info-dialog.vue')['default']
     MediumLayoutDropdownSelect: typeof import('./src/components/mediums/medium-layout-dropdown-select.vue')['default']
@@ -66,6 +70,7 @@ declare module 'vue' {
     MediumSearchInput: typeof import('./src/components/headers/medium-search-input.vue')['default']
     MediumSelectionIndicator: typeof import('./src/components/mediums/medium-selection-indicator.vue')['default']
     MediumSortDropdown: typeof import('./src/components/mediums/medium-sort-dropdown.vue')['default']
+    MediumTabs: typeof import('./src/components/medium-tabs.vue')['default']
     MediumToolbarFirst: typeof import('./src/components/mediums/medium-toolbar-first.vue')['default']
     MediumToolbarSecond: typeof import('./src/components/mediums/medium-toolbar-second.vue')['default']
     MediumToolbarSecondSelect: typeof import('./src/components/mediums/medium-toolbar-second-select.vue')['default']

@@ -14,7 +14,10 @@ export function createBaseCurdApi<
       return requestClient.get<TGetListOutputEntity>(`${baseUrl}/${id}`)
     },
     getPage(pageRequest: TPageRequest) {
-      return requestClient.get<TPageResult>(baseUrl, { params: pageRequest })
+      return requestClient.get<TPageResult>(baseUrl, {
+        params: pageRequest,
+        paramsSerializer: 'repeat',
+      })
     },
     update(input: TUpdateInputEntity, id: TId) {
       return requestClient.put<TEntity>(`${baseUrl}/${id}`, input)

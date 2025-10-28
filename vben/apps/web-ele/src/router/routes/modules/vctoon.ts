@@ -107,7 +107,7 @@ const routes: RouteRecordRaw[] = [
   {
     meta: {
       icon: 'ci:search',
-      keepAlive: false,
+      keepAlive: true,
       hideInMenu: true,
       hideInTab: true,
       order: 5000,

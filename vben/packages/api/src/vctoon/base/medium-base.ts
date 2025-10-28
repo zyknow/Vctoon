@@ -83,6 +83,7 @@ export function createMediumBaseCurdApi<
     async getPage(pageRequest: TPageRequest) {
       const result = (await requestClient.get<TPageResult>(baseUrl, {
         params: pageRequest,
+        paramsSerializer: 'repeat',
       })) as unknown as PageResult<MediumGetListOutputBase>
 
       for (const element of result.items) {

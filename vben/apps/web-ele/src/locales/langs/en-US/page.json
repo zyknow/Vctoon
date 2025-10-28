@@ -219,6 +219,40 @@
       "deleteConfirmMessage": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
       "deleteSuccess": "Deleted successfully"
     },
+    "filter": {
+      "label": "Filter",
+      "groups": {
+        "status": "Reading Status",
+        "recent": "Recently Updated",
+        "tags": "Tags",
+        "artists": "Artists"
+      },
+      "status": {
+        "all": "All",
+        "notStarted": "Not Started",
+        "inProgress": "In Progress",
+        "completed": "Completed",
+        "hasReadCount": "Has Reading Record",
+        "noReadCount": "No Reading Record"
+      },
+      "recent": {
+        "all": "All",
+        "last7": "Last 7 Days",
+        "last30": "Last 30 Days",
+        "last365": "Last Year"
+      },
+      "search": {
+        "tags": "Search tags...",
+        "artists": "Search artists..."
+      },
+      "empty": {
+        "tags": "No tags available",
+        "artists": "No artists available"
+      },
+      "actions": {
+        "clearAll": "Clear All"
+      }
+    },
     "info": {
       "basicInfo": "Basic Information",
       "technicalInfo": "Technical Information",

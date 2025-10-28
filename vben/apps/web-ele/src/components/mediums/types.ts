@@ -1,6 +1,7 @@
 export interface SortField {
   label: string
   value: string
+  listSort?: number
 }
 
 export interface SortOption {

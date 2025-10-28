@@ -278,7 +278,6 @@ const goToSearchAll = () => {
       fuzzy: '0',
       highlight: '0',
       page: '1',
-      maxResultCount: String(maxResultCount),
     },
   })
 }

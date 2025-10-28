@@ -1,11 +1,15 @@
 <script setup lang="ts">
+import type { ElScrollbar } from 'element-plus'
+
+import type { LocationQueryRaw } from 'vue-router'
+
 import type {
   MediumGetListOutput,
   MultiSearchInput,
   SearchHit,
 } from '@vben/api'
 
-import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { luceneApi, MediumType } from '@vben/api'
@@ -30,6 +34,7 @@ const loading = ref(false)
 const total = ref(0)
 const items = ref<SearchHit[]>([])
 const updatingFromRoute = ref(false)
+const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
 
 const parseBool = (v: unknown, def = false) => {
   if (Array.isArray(v)) return v.some((x) => x === '1' || x === 'true')
@@ -39,7 +44,7 @@ const parseBool = (v: unknown, def = false) => {
 
 const parsePage = (v: unknown, def = 1) => {
   const raw = Array.isArray(v) ? v[v.length - 1] : v
-  const n = Number.parseInt(String(raw ?? def), 10)
+  const n = Number.parseInt(String(raw ?? def), 20)
   return Number.isNaN(n) || n <= 0 ? def : n
 }
 
@@ -66,19 +71,48 @@ const requestParams = computed<MultiSearchInput>(() => ({
   maxResultCount: queryState.maxResultCount,
 }))
 
-const syncToUrl = () => {
-  void router.replace({
-    name: 'Search',
-    query: {
-      q: queryState.q,
-      entities: queryState.entities,
-      prefix: queryState.prefix ? '1' : '0',
-      fuzzy: queryState.fuzzy ? '1' : '0',
-      highlight: queryState.highlight ? '1' : '0',
-      page: String(queryState.page),
-      maxResultCount: String(queryState.maxResultCount),
-    },
-  })
+// 构造路由查询对象（字符串化布尔值与数字）
+const buildQueryFromState = (): LocationQueryRaw => ({
+  q: queryState.q,
+  entities: queryState.entities,
+  prefix: queryState.prefix ? '1' : '0',
+  fuzzy: queryState.fuzzy ? '1' : '0',
+  highlight: queryState.highlight ? '1' : '0',
+  page: String(queryState.page),
+  maxResultCount: String(queryState.maxResultCount),
+})
+
+// 比较是否仅 page 发生变化（避免 replace 导致滚动位置重置）
+type QueryRecord = Readonly<Record<string, unknown>>
+const normalizeEntities = (v: unknown): string[] => {
+  if (Array.isArray(v)) return v.map(String)
+  if (typeof v === 'string') return [v]
+  return []
+}
+const isOnlyPageChange = (nextQ: LocationQueryRaw, currentQ: QueryRecord) => {
+  const sameQ = String(currentQ.q ?? '') === String(nextQ.q ?? '')
+  const samePrefix =
+    String(currentQ.prefix ?? '') === String(nextQ.prefix ?? '')
+  const sameFuzzy = String(currentQ.fuzzy ?? '') === String(nextQ.fuzzy ?? '')
+  const sameHighlight =
+    String(currentQ.highlight ?? '') === String(nextQ.highlight ?? '')
+  const sameMax =
+    String(currentQ.maxResultCount ?? '') === String(nextQ.maxResultCount ?? '')
+  const currEntities = normalizeEntities(currentQ.entities)
+  const nextEntities = normalizeEntities(nextQ.entities)
+  const sameEntities =
+    currEntities.length === nextEntities.length &&
+    currEntities.every((v, i) => v === nextEntities[i])
+  const pageChanged = String(currentQ.page ?? '') !== String(nextQ.page ?? '')
+  return (
+    sameQ &&
+    samePrefix &&
+    sameFuzzy &&
+    sameHighlight &&
+    sameMax &&
+    sameEntities &&
+    pageChanged
+  )
 }
 
 // 选择支持：与首页相同的 Provider 注入（items + selectedMediumIds）
@@ -103,7 +137,7 @@ const load = async () => {
     total.value = result.totalCount || 0
 
     // 根据页码决定是重置还是追加
-    items.value = queryState.page <= 1 ? newHits : items.value.concat(newHits)
+    items.value = queryState.page <= 1 ? newHits : [...items.value, ...newHits]
 
     const mapped = newHits
       .map((h) => mapHitToMedium(h))
@@ -111,11 +145,12 @@ const load = async () => {
 
     if (queryState.page <= 1) {
       mediumItems.value = mapped
+      scrollbarRef.value?.setScrollTop?.(0)
     } else {
       // 追加时去重（按 id）
       const existIds = new Set(mediumItems.value.map((m) => m.id))
       const appendList = mapped.filter((m) => !existIds.has(m.id))
-      mediumItems.value = mediumItems.value.concat(appendList)
+      mediumItems.value = [...mediumItems.value, ...appendList]
     }
     // 过滤无效选中项（仅保留当前结果中的选中）
     const idSet = new Set(mediumItems.value.map((m) => m.id))
@@ -131,38 +166,22 @@ const load = async () => {
 
 // 是否还有更多（根据当前已加载数量与总数）
 const hasMore = computed(() => mediumItems.value.length < total.value)
+const infiniteDisabled = computed(
+  () => loading.value || !hasMore.value || !queryState.q.trim(),
+)
 
-// 触发加载更多的观察器
-const infiniteTrigger = ref<HTMLElement | null>(null)
-let observer: IntersectionObserver | null = null
-
-const initObserver = () => {
-  if (!infiniteTrigger.value) return
-  observer = new IntersectionObserver(
-    (entries) => {
-      const entry = entries[0]
-      if (entry?.isIntersecting && !loading.value && hasMore.value) {
-        // 触底时翻页，触发请求
-        queryState.page += 1
-      }
-    },
-    { root: null, rootMargin: '200px', threshold: 0 },
-  )
-  observer.observe(infiniteTrigger.value)
+const handleLoadMore = () => {
+  if (infiniteDisabled.value) return
+  queryState.page += 1
 }
-
-onMounted(() => {
-  initObserver()
-})
-
-onUnmounted(() => {
-  observer?.disconnect()
-  observer = null
-})
 
 watch(requestParams, () => {
   if (updatingFromRoute.value) return
-  syncToUrl()
+  const nextQuery = buildQueryFromState()
+  // 仅页码变化时不更新路由，防止滚动位置被重置到顶部
+  if (!isOnlyPageChange(nextQuery, route.query)) {
+    void router.replace({ name: 'Search', query: nextQuery })
+  }
   load()
 })
 
@@ -235,7 +254,7 @@ const mapHitToMedium = (hit: SearchHit): MediumGetListOutput | null => {
 </script>
 
 <template>
-  <Page content-class="flex flex-col gap-4">
+  <Page content-class="flex h-full min-h-0 flex-col gap-4 overflow-hidden">
     <div class="flex items-center justify-between">
       <div>{{ $t('page.search.total') }}：{{ total }}</div>
       <!-- 移除分页，改为无限滚动加载 -->
@@ -244,23 +263,31 @@ const mapHitToMedium = (hit: SearchHit): MediumGetListOutput | null => {
     <!-- 选择工具栏（当有选中项时显示） -->
     <MediumToolbarSecondSelect v-if="selectedMediumIds.length > 0" />
 
-    <!-- 使用 MediumListItem 渲染并支持选中（与首页一致） -->
-    <div class="mt-4 space-y-2">
-      <MediumListItem
-        v-for="item in mediumItems"
-        :key="item.id"
-        :model-value="item"
-      />
-    </div>
+    <el-scrollbar
+      ref="scrollbarRef"
+      class="mt-4 h-0 flex-1"
+      height="100%"
+      v-infinite-scroll="handleLoadMore"
+      :infinite-scroll-disabled="infiniteDisabled"
+      :infinite-scroll-distance="200"
+    >
+      <!-- 使用 MediumListItem 渲染并支持选中（与首页一致） -->
+      <div class="space-y-2">
+        <MediumListItem
+          v-for="item in mediumItems"
+          :key="item.id"
+          :model-value="item"
+        />
+      </div>
 
-    <!-- 底部加载状态与触发器 -->
-    <div class="text-muted-foreground py-2 text-center">
-      <span v-if="loading">{{ $t('common.loading') }}</span>
-      <span v-else-if="!hasMore && mediumItems.length > 0">
-        {{ $t('common.noMore') }}
-      </span>
-    </div>
-    <div ref="infiniteTrigger" class="h-6"></div>
+      <!-- 底部加载状态 -->
+      <div class="text-muted-foreground py-2 text-center">
+        <span v-if="loading">{{ $t('common.loading') }}</span>
+        <span v-else-if="!hasMore && mediumItems.length > 0">
+          {{ $t('common.noMore') }}
+        </span>
+      </div>
+    </el-scrollbar>
   </Page>
 </template>
 

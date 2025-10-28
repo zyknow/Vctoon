@@ -1,11 +1,14 @@
 <script lang="ts" setup>
-import { watch } from 'vue'
+import type { SortField } from '#/components/mediums/types'
+
+import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { Page } from '@vben/common-ui'
 import { useUserStore } from '@vben/stores'
 
 import { createLibraryMediumProvider } from '#/hooks/useLibraryMediumProvider'
+import { useMediumFilterBinding } from '#/hooks/useMediumFilterBinding'
 import {
   provideMediumAllItemProvider,
   provideMediumItemProvider,
@@ -14,6 +17,12 @@ import {
 import { $t } from '#/locales'
 
 import LibraryRecommend from './library-recommend.vue'
+
+interface SegmentedOption {
+  label: string
+  value: string
+  disabled?: boolean
+}
 
 const route = useRoute()
 const router = useRouter()
@@ -92,36 +101,30 @@ provideMediumAllItemProvider({
     main: state.items,
   },
 })
+const tabs = computed<SegmentedOption[]>(() => [
+  { label: $t('page.library.tabs.recommend'), value: 'recommend' },
+  { label: $t('page.library.tabs.library'), value: 'library' },
+  { label: $t('page.library.tabs.collection'), value: 'collection' },
+])
+
+const { filterValue: mediumFilterValue } = useMediumFilterBinding(state)
+
+const additionalSorts: SortField[] = [
+  { label: $t('page.mediums.sort.title'), value: 'title', listSort: 1 },
+]
 </script>
 
 <template>
   <Page auto-content-height content-class="flex flex-col overflow-hidden gap-6">
-    <div class="medium-toolbar">
+    <div class="medium-toolbar gap-4">
       <medium-toolbar-first :title="state.title.value">
         <template #center>
-          <el-tabs v-model="state.currentTab.value">
-            <el-tab-pane name="recommend">
-              <template #label>
-                <div class="tab-pane">
-                  {{ $t('page.library.tabs.recommend') }}
-                </div>
-              </template>
-            </el-tab-pane>
-            <el-tab-pane name="library">
-              <template #label>
-                <div class="tab-pane">
-                  {{ $t('page.library.tabs.library') }}
-                </div>
-              </template>
-            </el-tab-pane>
-            <el-tab-pane name="collection">
-              <template #label>
-                <div class="tab-pane">
-                  {{ $t('page.library.tabs.collection') }}
-                </div>
-              </template>
-            </el-tab-pane>
-          </el-tabs>
+          <el-segmented
+            class="min-w-80"
+            v-model="state.currentTab.value"
+            :options="tabs"
+            block
+          />
         </template>
       </medium-toolbar-first>
       <div class="w-full">
@@ -130,7 +133,23 @@ provideMediumAllItemProvider({
             state.currentTab.value === 'library' &&
             state.selectedMediumIds.value.length === 0
           "
-        />
+        >
+          <template #left>
+            <div class="flex flex-row items-center gap-4">
+              <medium-filter-dropdown
+                v-model:model-value="mediumFilterValue"
+                :disabled="state.loading.value"
+              />
+
+              <medium-sort-dropdown
+                v-model:model-value="state.pageRequest.sorting"
+                @change="state.updateSorting"
+                :additional-sort-field-list="additionalSorts"
+              />
+              <el-tag type="primary">{{ state.totalCount || 0 }}</el-tag>
+            </div>
+          </template>
+        </medium-toolbar-second>
         <medium-toolbar-second-select
           :show-selected-all-btn="true"
           v-else-if="state.selectedMediumIds.value.length > 0"
@@ -141,9 +160,3 @@ provideMediumAllItemProvider({
     <LibraryRecommend v-show="state.currentTab.value === 'recommend'" />
   </Page>
 </template>
-
-<style scoped>
-.tab-pane {
-  @apply w-20 text-center;
-}
-</style>

@@ -17,12 +17,8 @@ import { acceptHMRUpdate, defineStore } from 'pinia'
 interface AccessState {
   artists: Artist[]
   libraries: Library[]
-
   loadedKeys: string[]
   tags: Tag[]
-  /**
-   * 用户信息
-   */
   userInfo: CurrentUser | null
 }
 

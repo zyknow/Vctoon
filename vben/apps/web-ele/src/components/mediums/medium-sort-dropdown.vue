@@ -35,13 +35,16 @@ const emit = defineEmits<MediumSortDropdownEmits>()
 
 // 默认排序字段列表
 const defaultSortFieldList: SortField[] = [
-  { label: $t('page.mediums.sort.title'), value: 'title' },
-  { label: $t('page.mediums.sort.creationTime'), value: 'creationTime' },
+  {
+    label: $t('page.mediums.sort.creationTime'),
+    value: 'creationTime',
+    listSort: 100,
+  },
   {
     label: $t('page.mediums.sort.lastModificationTime'),
     value: 'lastModificationTime',
+    listSort: 101,
   },
-  // { label: $t('page.mediums.sort.size'), value: 'size' },
 ]
 
 // 解析排序字符串为 SortOption 对象
@@ -71,7 +74,9 @@ const formatSortString = (sortOption: SortOption): string => {
 // 计算完整的排序字段列表
 const sortFieldList = computed<SortField[]>(() =>
   props.additionalSortFieldList
-    ? [...defaultSortFieldList, ...props.additionalSortFieldList]
+    ? [...defaultSortFieldList, ...props.additionalSortFieldList].sort(
+        (a, b) => (a.listSort ?? 1000) - (b.listSort ?? 1000),
+      )
     : defaultSortFieldList,
 )
 
@@ -144,7 +149,7 @@ const dropdownButtonIcon = computed(() => {
 </script>
 
 <template>
-  <div class="medium-sort-dropdown flex items-center gap-2">
+  <div class="medium-sort-dropdown">
     <!-- 排序下拉菜单 -->
     <el-dropdown
       :size="elementSize"
@@ -185,6 +190,6 @@ const dropdownButtonIcon = computed(() => {
 
 <style scoped>
 .medium-sort-dropdown {
-  /* 确保组件样式与项目主题一致 */
+  @apply flex items-center gap-2;
 }
 </style>

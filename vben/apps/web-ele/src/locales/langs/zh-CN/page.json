@@ -221,6 +221,40 @@
       "markAsWatched": "标记为已观看",
       "markAsUnwatched": "标记为未观看"
     },
+    "filter": {
+      "label": "筛选",
+      "groups": {
+        "status": "阅读状态",
+        "recent": "最近更新",
+        "tags": "标签",
+        "artists": "作者"
+      },
+      "status": {
+        "all": "全部",
+        "notStarted": "未开始",
+        "inProgress": "进行中",
+        "completed": "已完成",
+        "hasReadCount": "有阅读记录",
+        "noReadCount": "无阅读记录"
+      },
+      "recent": {
+        "all": "全部",
+        "last7": "最近 7 天",
+        "last30": "最近 30 天",
+        "last365": "最近一年"
+      },
+      "search": {
+        "tags": "搜索标签...",
+        "artists": "搜索作者..."
+      },
+      "empty": {
+        "tags": "暂无标签",
+        "artists": "暂无作者"
+      },
+      "actions": {
+        "clearAll": "清空全部"
+      }
+    },
     "info": {
       "basicInfo": "基本信息",
       "technicalInfo": "技术信息",
