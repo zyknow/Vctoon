@@ -1,0 +1,43 @@
+{
+  "loading": "Loading...",
+  "back": "Back",
+  "backToHome": "Back To Home",
+  "login": "Login",
+  "logout": "Logout",
+  "prompt": "Prompt",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "reset": "Reset",
+  "noData": "No Data",
+  "noMore": "No more data",
+  "refresh": "Refresh",
+  "loadingMenu": "Loading Menu",
+  "query": "Search",
+  "search": "Search",
+  "enabled": "Enabled",
+  "disabled": "Disabled",
+  "edit": "Edit",
+  "delete": "Delete",
+  "create": "Create",
+  "yes": "Yes",
+  "no": "No",
+  "save": "Save",
+  "showSearchPanel": "Show search panel",
+  "hideSearchPanel": "Hide search panel",
+  "loadFailed": "Loading failed",
+  "updateSuccess": "Update successful",
+  "updateFailed": "Update failed",
+  "validation": {
+    "imageOnly": "Only image files are allowed",
+    "fileSizeLimit": "File size cannot exceed 10MB"
+  },
+  "unsavedLeave": "You have unsaved changes. Are you sure you want to close?",
+  "pagination": {
+    "total": "Total {total}"
+  },
+  "error": {
+    "requestError": "Request Error",
+    "confirmButton": "Got it"
+  },
+  "todo": "TODO"
+}

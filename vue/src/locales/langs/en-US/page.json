@@ -1,0 +1,840 @@
+{
+  "home": {
+    "title": "Home",
+    "continueWatching": "Continue Watching",
+    "newest": "Recently Added",
+    "mostViewed": "Most Viewed"
+  },
+  "library": {
+    "title": "Library",
+    "add": "Add Library",
+    "mediumType": {
+      "comic": "Comic",
+      "video": "Video"
+    },
+    "tabs": {
+      "recommend": "Recommended",
+      "library": "Library",
+      "collection": "Collections"
+    },
+    "recommend": {
+      "continueWatching": "Continue Watching {mediumType}",
+      "newest": "Recently Added {mediumType}",
+      "mostViewed": "Most Viewed {mediumType}"
+    },
+    "actions": {
+      "edit": "Edit Library",
+      "scanFiles": "Scan Files",
+      "scan": "Scan",
+      "scanFailed": "Scan failed",
+      "authorizeAccess": "Authorize Access",
+      "delete": "Delete Library",
+      "create": "Create Library"
+    },
+    "delete": {
+      "confirmTitle": "Confirm Delete",
+      "confirmMessage": "Are you sure you want to delete library \"{0}\"? This action cannot be undone.",
+      "confirmButton": "Delete",
+      "cancelButton": "Cancel",
+      "success": "Deleted successfully",
+      "failed": "Delete failed"
+    },
+    "create": {
+      "title": "Create Library",
+      "editTitle": "Edit Library",
+      "fields": {
+        "name": "Name",
+        "mediumType": "Media Type",
+        "paths": "Paths"
+      },
+      "placeholders": {
+        "name": "Enter library name",
+        "mediumType": "Select media type",
+        "paths": "Enter or select paths"
+      },
+      "medium": {
+        "image": "Comic",
+        "video": "Video"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "requirePath": "At least one path is required",
+        "browse": "Browse"
+      },
+      "hints": {
+        "pathInput": "Tip: Enter paths directly (press Enter to add), or click the Browse button to select paths",
+        "pathBrowser": "Browse and select paths (click checkbox to select):",
+        "selectedCount": "Selected {count} path(s):",
+        "loadPathFailed": "Failed to load paths",
+        "loadChildPathFailed": "Failed to load path \"{path}\""
+      },
+      "validation": {
+        "nameRequired": "Please enter library name",
+        "nameLength": "Name length should be 1-100 characters",
+        "mediumTypeRequired": "Please select media type",
+        "pathsRequired": "At least one path is required"
+      },
+      "messages": {
+        "success": "Operation successful",
+        "error": "Operation failed"
+      }
+    },
+    "permission": {
+      "title": "Library Permission Management",
+      "dialogTitle": "Library Permission Management",
+      "libraryDescription": "Configure access permissions for this library",
+      "selectUser": "Select User",
+      "searchUserPlaceholder": "Search users...",
+      "pleaseSelectUser": "Please select a user",
+      "libraryIdRequired": "Library ID is required",
+      "inactive": "Inactive",
+      "permissionSettings": "Permission Settings",
+      "canView": "View Permission",
+      "canViewDescription": "Allow viewing content in this library",
+      "canDownload": "Download Permission",
+      "canDownloadDescription": "Allow downloading resources from this library",
+      "canComment": "Comment Permission",
+      "canCommentDescription": "Allow commenting on library content",
+      "canShare": "Share Permission",
+      "canShareDescription": "Allow sharing content from this library",
+      "canStar": "Star Permission",
+      "canStarDescription": "Allow starring content in this library",
+      "confirm": "Confirm",
+      "messages": {
+        "searchFailed": "Failed to search users",
+        "fetchFailed": "Failed to fetch user permissions",
+        "saveFailed": "Failed to save permissions",
+        "setSuccess": "Permissions updated successfully",
+        "setFailed": "Failed to update permissions"
+      }
+    }
+  },
+  "medium": {
+    "readingProgress": "Reading Progress"
+  },
+  "mediums": {
+    "list": {
+      "loading": "Loading more...",
+      "loadMoreHint": "You hit the end, keep scrolling to load more",
+      "noMore": "You've reached the end"
+    },
+    "edit": {
+      "title": "Edit Media",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Please enter title",
+      "description": "Description",
+      "descriptionPlaceholder": "Please enter description",
+      "artists": "Artists",
+      "artistsPlaceholder": "Please select artists",
+      "manualEntryHint": {
+        "artist": "Type a new artist name and press Enter to add it",
+        "tag": "Type a new tag name and press Enter to add it"
+      },
+      "tags": "Tags",
+      "tagsPlaceholder": "Please select tags",
+      "cover": "Cover",
+      "uploadCover": "Upload Cover",
+      "coverTip": "Supports JPG, PNG format, file size should not exceed 10MB",
+      "coverSelect": "Select Cover",
+      "coverSelectTip": "Click any comic image below to set as cover"
+    },
+    "filter": {
+      "label": "Filter",
+      "groups": {
+        "status": "Reading Status",
+        "recent": "Recently Updated",
+        "tags": "Tags",
+        "artists": "Artists"
+      },
+      "status": {
+        "all": "All",
+        "notStarted": "Not Started",
+        "inProgress": "In Progress",
+        "completed": "Completed",
+        "hasReadCount": "Has Read Count",
+        "noReadCount": "No Read Count"
+      },
+      "recent": {
+        "all": "All",
+        "last7": "Last 7 days",
+        "last30": "Last 30 days",
+        "last365": "Last year"
+      },
+      "search": {
+        "tags": "Search tags...",
+        "artists": "Search artists..."
+      },
+      "empty": {
+        "tags": "No tags",
+        "artists": "No artists"
+      },
+      "actions": {
+        "clearAll": "Clear All"
+      }
+    },
+    "info": {
+      "basicInfo": "Basic Info",
+      "technicalInfo": "Technical Info",
+      "readingInfo": "Reading Info",
+      "relatedInfo": "Related Info",
+      "title": "Title",
+      "description": "Description",
+      "creationTime": "Creation Time",
+      "lastModificationTime": "Last Modified",
+      "readCount": "Read Count",
+      "readingProgress": "Reading Progress",
+      "readingLastTime": "Last Read",
+      "tags": "Tags",
+      "artists": "Artists",
+      "libraryId": "Library ID",
+      "library": "Library",
+      "mediumType": "Type",
+      "comic": "Comic",
+      "video": "Video",
+      "duration": "Duration",
+      "resolution": "Resolution",
+      "framerate": "Framerate",
+      "bitrate": "Bitrate",
+      "codec": "Codec",
+      "ratio": "Aspect Ratio",
+      "comicImages": "Image Count",
+      "path": "File Path",
+      "noTags": "No tags",
+      "noArtists": "No artists",
+      "never": "Never",
+      "completed": "Completed",
+      "inProgress": "In progress ({progress}%)",
+      "notStarted": "Not started"
+    },
+    "sort": {
+      "title": "Title",
+      "creationTime": "Creation Time",
+      "lastModificationTime": "Last Modified",
+      "size": "Size",
+      "ascending": "Ascending",
+      "descending": "Descending",
+      "sortBy": "Sort By",
+      "order": "Order",
+      "clear": "Clear Sort",
+      "sortByAsc": "Sort by {field} ascending",
+      "sortByDesc": "Sort by {field} descending"
+    },
+    "selection": {
+      "selectedCount": "{count} selected",
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All",
+      "cancel": "Exit Selection",
+      "artistActions": {
+        "label": "Artist Links",
+        "add": "Add Artists",
+        "update": "Set Artists",
+        "remove": "Remove Artists"
+      },
+      "tagActions": {
+        "label": "Tag Links",
+        "add": "Add Tags",
+        "update": "Set Tags",
+        "remove": "Remove Tags"
+      },
+      "actions": {
+        "info": "View Info",
+        "markAsWatched": "Mark as Watched",
+        "markAsUnwatched": "Mark as Unwatched",
+        "delete": "Delete",
+        "continueReading": "Continue Reading",
+        "restartReading": "Restart",
+        "rate": "Rate"
+      },
+      "dialog": {
+        "title": {
+          "artist": {
+            "add": "Add Artists to Selected Media",
+            "remove": "Remove Artists from Selected Media",
+            "update": "Set Artists for Selected Media"
+          },
+          "tag": {
+            "add": "Add Tags to Selected Media",
+            "remove": "Remove Tags from Selected Media",
+            "update": "Set Tags for Selected Media"
+          }
+        },
+        "description": {
+          "artist": {
+            "add": "Choose the artists to append to every selected medium.",
+            "remove": "Choose the artists to remove from the selected media.",
+            "update": "Choose the artist list to apply to all selected media; leave empty to clear all artists."
+          },
+          "tag": {
+            "add": "Choose the tags to append to every selected medium.",
+            "remove": "Choose the tags to remove from the selected media.",
+            "update": "Choose the tag list to apply to all selected media; leave empty to clear all tags."
+          }
+        },
+        "placeholder": {
+          "artist": "Select artists",
+          "tag": "Select tags"
+        },
+        "hint": {
+          "artist": "Type a new artist name and press Enter to create it",
+          "tag": "Type a new tag name and press Enter to create it"
+        },
+        "confirm": {
+          "add": "Add",
+          "remove": "Remove",
+          "update": "Update"
+        },
+        "cancel": "Cancel",
+        "createSuccess": {
+          "artist": "Artist added: {name}",
+          "tag": "Tag added: {name}"
+        }
+      }
+    },
+    "detail": {
+      "title": "Media Detail",
+      "back": "Back",
+      "untitled": "Untitled",
+      "comicImages": "Comic Images",
+      "sortLabel": "Sort by {field} ({order})",
+      "sortFieldIndex": "Original order",
+      "sortFieldName": "Name",
+      "sortFieldSize": "File size",
+      "sortAsc": "Ascending",
+      "sortDesc": "Descending",
+      "selectAllImages": "Select all images",
+      "clearSelection": "Clear selection",
+      "deleteSelectedImages": "Delete selected images",
+      "deleteImagesTitle": "Delete Images",
+      "deleteImagesConfirm": "Delete the selected {count} images? This action cannot be undone.",
+      "videoNoSelection": "Video media only shows details and does not support multi-selection.",
+      "noComicImages": "No comic images available",
+      "videoComingSoon": "Video playback is coming soon. Stay tuned."
+    },
+    "actions": {
+      "info": "View Info",
+      "markAsWatched": "Mark as Watched",
+      "markAsUnwatched": "Mark as Unwatched",
+      "delete": "Delete",
+      "deleteConfirmTitle": "Confirm Delete",
+      "deleteConfirmMessage": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+      "deleteSuccess": "Deleted successfully",
+      "startReading": "Start Reading",
+      "startPlaying": "Start Playing",
+      "continueReading": "Continue Reading",
+      "restartReading": "Restart",
+      "incognitoRead": "Incognito Read",
+      "incognitoPlay": "Incognito Play",
+      "rate": "Rate"
+    }
+  },
+  "comic": {
+    "reader": {
+      "title": "Comic Reader"
+    },
+    "actions": {
+      "back": "Back",
+      "settings": "Reader Settings",
+      "fullscreen": "Enter Fullscreen",
+      "exitFullscreen": "Exit Fullscreen",
+      "help": "Usage Tips",
+      "retry": "Retry",
+      "firstPage": "First Page",
+      "lastPage": "Last Page"
+    },
+    "states": {
+      "loading": "Loading comic...",
+      "error": "Failed to load comic",
+      "empty": "No comic images"
+    },
+    "messages": {
+      "help": "Tap the sides or top/bottom to turn pages, tap center to toggle controls.",
+      "loadFailed": "Unable to fetch comic data",
+      "firstPage": "You are already on the first page",
+      "lastPage": "You are already on the last page"
+    },
+    "hints": {
+      "previous": "Previous Page",
+      "next": "Next Page",
+      "toggleUi": "Toggle Controls"
+    },
+    "settings": {
+      "dialogTitle": "Reader Settings",
+      "sections": {
+        "readingMode": "Reading Mode",
+        "image": "Image",
+        "experience": "Experience"
+      },
+      "fields": {
+        "readingDirection": "Reading Direction",
+        "displayMode": "Display Mode",
+        "zoomMode": "Zoom Mode",
+        "qualityPreset": "Quality Preset",
+        "customQualityWidth": "Custom Width",
+        "imageSpacing": "Image Gap",
+        "pageTransition": "Page Transition",
+        "backgroundColor": "Background Color",
+        "alwaysFullscreen": "Always Fullscreen",
+        "preloadCount": "Preload Count"
+      },
+      "options": {
+        "direction": {
+          "ltr": "Left to Right",
+          "ltrDescription": "Turn pages by tapping or swiping right",
+          "rtl": "Right to Left",
+          "rtlDescription": "Turn pages by tapping or swiping left",
+          "ttb": "Top to Bottom",
+          "ttbDescription": "Scroll or tap downward to continue",
+          "btt": "Bottom to Top",
+          "bttDescription": "Scroll or tap upward to continue"
+        },
+        "display": {
+          "single": "Single Page",
+          "singleDescription": "Show one page at a time",
+          "double": "Double Page",
+          "doubleDescription": "Show two pages side by side",
+          "scroll": "Scroll",
+          "scrollDescription": "Browse all images in a continuous scroll"
+        },
+        "zoom": {
+          "fitScreen": "Fit Screen",
+          "fitScreenDescription": "Automatically adjust to the viewport",
+          "fitHeight": "Fit Height",
+          "fitHeightDescription": "Fill the height while keeping ratio",
+          "fitWidth": "Fit Width",
+          "fitWidthDescription": "Stretch to fill the available width",
+          "original": "Original Size",
+          "originalDescription": "Show at original resolution"
+        },
+        "quality": {
+          "quality480p": "480p",
+          "quality480pDescription": "Lower data usage, ideal for mobile",
+          "quality720p": "720p",
+          "quality720pDescription": "Balanced quality with faster loading",
+          "quality1080p": "1080p",
+          "quality1080pDescription": "High definition for large screens",
+          "original": "Original",
+          "originalDescription": "Use original image size",
+          "custom": "Custom",
+          "customDescription": "Specify a maximum width manually"
+        },
+        "preloadCount": "Preload {count} pages"
+      },
+      "validation": {
+        "customQualityWidth": "Please enter a width of at least 256"
+      }
+    },
+    "placeholder": {
+      "untitled": "Untitled Comic"
+    }
+  },
+  "tag": {
+    "title": "Tag Management",
+    "statistics": {
+      "total": "Total",
+      "filtered": "Filtered",
+      "totalResources": "Total Resources"
+    },
+    "search": {
+      "filterPlaceholder": "Search by tag name",
+      "reset": "Reset"
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "create": "Create Tag",
+      "edit": "Edit",
+      "delete": "Delete",
+      "multiSelect": "Multi Select",
+      "exitMultiSelect": "Exit Multi Select",
+      "selectAll": "Select All",
+      "selectedCount": "Selected {count}/{total} items",
+      "batchDelete": "Batch Delete"
+    },
+    "sort": {
+      "label": "Sort:",
+      "name": "By Name",
+      "resourceCount": "By Resource Count"
+    },
+    "resourceCount": "{count} resources",
+    "empty": {
+      "noTags": "No tags available",
+      "noResults": "No matching tags found"
+    },
+    "messages": {
+      "loadTagsError": "Failed to load tag list",
+      "loadTagError": "Failed to load tag data"
+    },
+    "create": {
+      "title": "Create Tag",
+      "fields": {
+        "name": "Tag Name"
+      },
+      "placeholders": {
+        "name": "Please enter tag name"
+      },
+      "validation": {
+        "nameRequired": "Please enter tag name",
+        "nameLength": "Tag name length should be 1-50 characters"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "confirm": "Create"
+      },
+      "messages": {
+        "success": "Tag created successfully",
+        "error": "Failed to create tag"
+      }
+    },
+    "edit": {
+      "title": "Edit Tag",
+      "actions": {
+        "cancel": "Cancel",
+        "confirm": "Save"
+      },
+      "messages": {
+        "success": "Tag updated successfully",
+        "error": "Failed to update tag"
+      }
+    },
+    "delete": {
+      "confirmTitle": "Confirm Delete",
+      "confirmMessage": "Are you sure you want to delete this tag? This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "messages": {
+        "success": "Tag deleted successfully",
+        "error": "Failed to delete tag"
+      }
+    },
+    "batchDelete": {
+      "confirmTitle": "Confirm Batch Delete",
+      "confirmMessage": "Are you sure you want to delete the selected {count} tags? This action cannot be undone.",
+      "confirm": "Batch Delete",
+      "cancel": "Cancel",
+      "noSelection": "Please select tags to delete first",
+      "messages": {
+        "success": "Successfully deleted {count} tags",
+        "error": "Failed to batch delete tags"
+      }
+    }
+  },
+  "artist": {
+    "title": "Artist Management",
+    "statistics": {
+      "total": "Total",
+      "filtered": "Filtered",
+      "totalResources": "Total Resources"
+    },
+    "search": {
+      "filterPlaceholder": "Search by artist name",
+      "reset": "Reset"
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "create": "Create Artist",
+      "edit": "Edit",
+      "delete": "Delete",
+      "multiSelect": "Multi Select",
+      "exitMultiSelect": "Exit Multi Select",
+      "selectAll": "Select All",
+      "selectedCount": "Selected {count}/{total} items",
+      "batchDelete": "Batch Delete"
+    },
+    "sort": {
+      "label": "Sort:",
+      "name": "By Name",
+      "resourceCount": "By Resource Count"
+    },
+    "resourceCount": "{count} resources",
+    "empty": {
+      "noArtists": "No artists available",
+      "noResults": "No matching artists found"
+    },
+    "messages": {
+      "loadArtistsError": "Failed to load artist list",
+      "loadArtistError": "Failed to load artist data"
+    },
+    "create": {
+      "title": "Create Artist",
+      "fields": {
+        "name": "Artist Name"
+      },
+      "placeholders": {
+        "name": "Please enter artist name"
+      },
+      "validation": {
+        "nameRequired": "Please enter artist name",
+        "nameLength": "Artist name length should be 1-50 characters"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "confirm": "Create"
+      },
+      "messages": {
+        "success": "Artist created successfully",
+        "error": "Failed to create artist"
+      }
+    },
+    "edit": {
+      "title": "Edit Artist",
+      "actions": {
+        "cancel": "Cancel",
+        "confirm": "Save"
+      },
+      "messages": {
+        "success": "Artist updated successfully",
+        "error": "Failed to update artist"
+      }
+    },
+    "delete": {
+      "confirmTitle": "Confirm Delete",
+      "confirmMessage": "Are you sure you want to delete this artist? This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "messages": {
+        "success": "Artist deleted successfully",
+        "error": "Failed to delete artist"
+      }
+    },
+    "batchDelete": {
+      "confirmTitle": "Confirm Batch Delete",
+      "confirmMessage": "Are you sure you want to delete the selected {count} artists? This action cannot be undone.",
+      "confirm": "Batch Delete",
+      "cancel": "Cancel",
+      "noSelection": "Please select artists to delete first",
+      "messages": {
+        "success": "Successfully deleted {count} artists",
+        "error": "Failed to batch delete artists"
+      }
+    }
+  },
+  "setting": {
+    "title": "System Settings",
+    "empty": "No settings available",
+    "actions": {
+      "refresh": "Refresh",
+      "save": "Save",
+      "reset": "Reset",
+      "resetAll": "Reset All"
+    },
+    "group": {
+      "reset": "Reset Group"
+    },
+    "item": {
+      "reset": "Reset"
+    },
+    "messages": {
+      "loadError": "Failed to load settings",
+      "saveSuccess": "Settings saved successfully",
+      "saveNoChange": "No changes to save",
+      "saveError": "Failed to save settings",
+      "resetSuccess": "Reset successful",
+      "resetConfirm": "Reset setting: {name}?",
+      "resetGroupConfirm": "Reset group: {group}?",
+      "resetAllConfirm": "Reset all settings?"
+    }
+  },
+  "user": {
+    "title": "User Management",
+    "table": {
+      "userName": "Username",
+      "name": "Name",
+      "email": "Email",
+      "phoneNumber": "Phone",
+      "status": "Status",
+      "emailConfirmed": "Email Confirmed",
+      "phoneNumberConfirmed": "Phone Confirmed",
+      "creationTime": "Creation Time",
+      "actions": "Actions",
+      "edit": "Edit",
+      "role": "Roles",
+      "unlock": "Unlock",
+      "delete": "Delete"
+    },
+    "search": {
+      "filter": "Search",
+      "filterPlaceholder": "Enter username, email or name",
+      "all": "All",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "search": "Search",
+      "reset": "Reset"
+    },
+    "status": {
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "actions": {
+      "create": "Create User",
+      "deleteTitle": "Confirm Delete",
+      "deleteConfirm": "Are you sure you want to delete user {userName}? This action cannot be undone.",
+      "deleteSuccess": "User deleted successfully",
+      "deleteError": "Failed to delete user",
+      "unlockSuccess": "Unlocked successfully",
+      "unlockError": "Failed to unlock user"
+    },
+    "messages": {
+      "loadUsersError": "Failed to load users",
+      "loadRolesError": "Failed to load roles",
+      "loadUserRolesError": "Failed to load user roles"
+    },
+    "create": {
+      "title": "Create User",
+      "fields": {
+        "userName": "Username",
+        "name": "Name",
+        "email": "Email",
+        "phoneNumber": "Phone Number",
+        "password": "Password",
+        "status": "Status",
+        "lockoutEnabled": "Enable Lockout",
+        "emailReminderEnabled": "Enable Email Reminder",
+        "roles": "Roles"
+      },
+      "placeholders": {
+        "userName": "Enter username",
+        "name": "Enter name",
+        "email": "Enter email",
+        "phoneNumber": "Enter phone number",
+        "password": "Enter password",
+        "roles": "Select roles"
+      },
+      "validation": {
+        "userNameRequired": "Username is required",
+        "userNameLength": "Username length should be 3-50 characters",
+        "nameRequired": "Name is required",
+        "emailRequired": "Email is required",
+        "emailFormat": "Please enter a valid email address",
+        "phoneRequired": "Phone number is required",
+        "phoneFormat": "Please enter a valid phone number",
+        "passwordRequired": "Password is required",
+        "passwordLength": "Password must be at least 6 characters"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "confirm": "Create"
+      },
+      "messages": {
+        "success": "User created successfully",
+        "error": "Failed to create user"
+      }
+    },
+    "edit": {
+      "title": "Edit User",
+      "fields": {
+        "userName": "Username",
+        "name": "Name",
+        "email": "Email",
+        "phoneNumber": "Phone Number",
+        "password": "Password",
+        "status": "Status",
+        "lockoutEnabled": "Enable Lockout",
+        "emailReminderEnabled": "Enable Email Reminder"
+      },
+      "placeholders": {
+        "userName": "Enter username",
+        "name": "Enter name",
+        "email": "Enter email",
+        "phoneNumber": "Enter phone number",
+        "password": "Leave blank to keep current password"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "confirm": "Save"
+      },
+      "messages": {
+        "success": "User updated successfully",
+        "error": "Failed to update user"
+      }
+    },
+    "role": {
+      "title": "Manage User Roles",
+      "userInfo": "User:",
+      "assignRoles": "Assign Roles",
+      "placeholders": {
+        "roles": "Select roles"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "confirm": "Save"
+      },
+      "messages": {
+        "success": "User roles updated successfully",
+        "error": "Failed to update user roles"
+      }
+    }
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search comics or videos...",
+    "total": "Total found",
+    "history": {
+      "title": "Search History",
+      "clear": "Clear",
+      "empty": "No search history"
+    },
+    "actions": {
+      "viewAllResults": "View All Results"
+    },
+    "messages": {
+      "loadError": "Search failed",
+      "noResults": "No matching results found",
+      "minCharacters": "Please enter at least 2 characters"
+    }
+  },
+  "securityLogs": {
+    "title": "Security Logs",
+    "viewMode": {
+      "all": "All Logs",
+      "current": "My Logs"
+    },
+    "search": {
+      "timeRange": "Time Range",
+      "selectDateRange": "Select date range",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "applicationName": "Application Name",
+      "applicationNamePlaceholder": "Enter application name",
+      "userName": "Username",
+      "userNamePlaceholder": "Enter username",
+      "action": "Action",
+      "actionPlaceholder": "Enter action name",
+      "clientIp": "Client IP",
+      "clientIpPlaceholder": "Enter IP address",
+      "search": "Search",
+      "reset": "Reset"
+    },
+    "table": {
+      "applicationName": "Application Name",
+      "identity": "Identity",
+      "action": "Action",
+      "userName": "Username",
+      "clientId": "Client ID",
+      "clientIpAddress": "Client IP",
+      "browserInfo": "Browser Info",
+      "creationTime": "Creation Time"
+    },
+    "messages": {
+      "loadError": "Failed to load security logs",
+      "noData": "No data"
+    }
+  }
+  ,
+  "profile": {
+    "title": "Profile",
+    "fields": {
+      "surname": "Surname",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm Password"
+    },
+    "actions": {
+      "changePassword": "Change Password"
+    },
+    "hints": {
+      "externalPasswordManaged": "Your password is managed by an external provider and cannot be changed here."
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "locale": "Language",
+  "theme": "Theme",
+  "themes": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "userMenu": {
+    "profile": "Profile",
+    "theme": {
+      "label": "Theme colors",
+      "primary": "Primary",
+      "neutral": "Neutral",
+      "radius": "Radius"
+    },
+    "appearance": "Appearance",
+    "logout": "Log out"
+  }
+}

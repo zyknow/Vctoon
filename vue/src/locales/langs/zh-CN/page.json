@@ -1,0 +1,831 @@
+{
+  "home": {
+    "title": "首页",
+    "continueWatching": "继续观看",
+    "newest": "最新添加",
+    "mostViewed": "最多观看"
+  },
+  "library": {
+    "title": "库",
+    "add": "添加库",
+    "mediumType": {
+      "comic": "漫画",
+      "video": "视频"
+    },
+    "tabs": {
+      "recommend": "推荐",
+      "library": "库",
+      "collection": "合集"
+    },
+    "recommend": {
+      "continueWatching": "继续观看的{mediumType}",
+      "newest": "最新添加的{mediumType}",
+      "mostViewed": "最多观看的{mediumType}"
+    },
+    "actions": {
+      "edit": "编辑资料库",
+      "scanFiles": "扫描文件",
+      "scan": "扫描",
+      "scanFailed": "扫描失败",
+      "authorizeAccess": "授权访问",
+      "delete": "删除资料库",
+      "create": "创建资料库"
+    },
+    "delete": {
+      "confirmTitle": "确认删除",
+      "confirmMessage": "确定要删除资料库 \"{0}\" 吗？此操作不可恢复。",
+      "confirmButton": "删除",
+      "cancelButton": "取消",
+      "success": "删除成功",
+      "failed": "删除失败"
+    },
+    "create": {
+      "title": "创建资料库",
+      "editTitle": "编辑资料库",
+      "fields": {
+        "name": "名称",
+        "mediumType": "媒体类型",
+        "paths": "路径"
+      },
+      "placeholders": {
+        "name": "请输入资料库名称",
+        "mediumType": "请选择媒体类型",
+        "paths": "请输入或选择路径"
+      },
+      "medium": {
+        "image": "漫画",
+        "video": "视频"
+      },
+      "actions": {
+        "cancel": "取消",
+        "confirm": "确认",
+        "requirePath": "请至少添加一个路径",
+        "browse": "浏览"
+      },
+      "hints": {
+        "pathInput": "提示：可以直接输入路径（按回车添加），或点击浏览按钮选择路径",
+        "pathBrowser": "浏览并选择路径（点击复选框选择）：",
+        "selectedCount": "已选择 {count} 个路径：",
+        "loadPathFailed": "加载路径失败",
+        "loadChildPathFailed": "加载路径 \"{path}\" 失败"
+      },
+      "validation": {
+        "nameRequired": "请输入资料库名称",
+        "nameLength": "名称长度应为1-100个字符",
+        "mediumTypeRequired": "请选择媒体类型",
+        "pathsRequired": "请至少添加一个路径"
+      },
+      "messages": {
+        "success": "操作成功",
+        "error": "操作失败"
+      }
+    },
+    "permission": {
+      "title": "资料库权限管理",
+      "dialogTitle": "资料库权限管理",
+      "libraryDescription": "为指定用户配置此资料库的访问权限",
+      "selectUser": "选择用户",
+      "searchUserPlaceholder": "搜索用户...",
+      "pleaseSelectUser": "请选择一个用户",
+      "libraryIdRequired": "资料库ID不能为空",
+      "inactive": "未激活",
+      "permissionSettings": "权限设置",
+      "canView": "查看权限",
+      "canViewDescription": "允许查看此资料库的内容",
+      "canDownload": "下载权限",
+      "canDownloadDescription": "允许下载资料库中的资源",
+      "canComment": "评论权限",
+      "canCommentDescription": "允许对资料库内容发表评论",
+      "canShare": "分享权限",
+      "canShareDescription": "允许分享资料库中的内容",
+      "canStar": "收藏权限",
+      "canStarDescription": "允许收藏资料库中的内容",
+      "confirm": "确认",
+      "messages": {
+        "searchFailed": "搜索用户失败",
+        "fetchFailed": "获取用户权限失败",
+        "saveFailed": "保存权限失败",
+        "setSuccess": "权限设置成功",
+        "setFailed": "权限设置失败"
+      }
+    }
+  },
+  "medium": {
+    "readingProgress": "阅读进度"
+  },
+  "mediums": {
+    "list": {
+      "loading": "正在加载更多...",
+      "loadMoreHint": "已到列表底部，继续滚动即可加载更多",
+      "noMore": "已经到底了，没有更多内容"
+    },
+    "edit": {
+      "title": "编辑媒体",
+      "titleLabel": "标题",
+      "titlePlaceholder": "请输入标题",
+      "description": "描述",
+      "descriptionPlaceholder": "请输入描述",
+      "artists": "作者",
+      "artistsPlaceholder": "请选择作者",
+      "manualEntryHint": {
+        "artist": "可手动输入新作者名称并按回车添加",
+        "tag": "可手动输入新标签名称并按回车添加"
+      },
+      "tags": "标签",
+      "tagsPlaceholder": "请选择标签",
+      "cover": "封面",
+      "uploadCover": "上传封面",
+      "coverTip": "支持 JPG、PNG 格式，文件大小不超过 10MB",
+      "coverSelect": "选择封面",
+      "coverSelectTip": "点击下方任意漫画图片以设置为封面"
+    },
+    "filter": {
+      "label": "筛选",
+      "groups": {
+        "status": "阅读状态",
+        "recent": "最近更新",
+        "tags": "标签",
+        "artists": "作者"
+      },
+      "status": {
+        "all": "全部",
+        "notStarted": "未开始",
+        "inProgress": "进行中",
+        "completed": "已完成",
+        "hasReadCount": "有阅读记录",
+        "noReadCount": "无阅读记录"
+      },
+      "recent": {
+        "all": "全部",
+        "last7": "最近 7 天",
+        "last30": "最近 30 天",
+        "last365": "最近一年"
+      },
+      "search": {
+        "tags": "搜索标签...",
+        "artists": "搜索作者..."
+      },
+      "empty": {
+        "tags": "暂无标签",
+        "artists": "暂无作者"
+      },
+      "actions": {
+        "clearAll": "清空全部"
+      }
+    },
+    "info": {
+      "basicInfo": "基本信息",
+      "technicalInfo": "技术信息",
+      "readingInfo": "阅读信息",
+      "relatedInfo": "关联信息",
+      "title": "标题",
+      "description": "描述",
+      "creationTime": "创建时间",
+      "lastModificationTime": "修改时间",
+      "readCount": "阅读次数",
+      "readingProgress": "阅读进度",
+      "readingLastTime": "最后阅读",
+      "tags": "标签",
+      "artists": "作者",
+      "libraryId": "库ID",
+      "library": "所属库",
+      "mediumType": "类型",
+      "comic": "漫画",
+      "video": "视频",
+      "duration": "时长",
+      "resolution": "分辨率",
+      "framerate": "帧率",
+      "bitrate": "码率",
+      "codec": "编码",
+      "ratio": "宽高比",
+      "comicImages": "图片数量",
+      "path": "文件路径",
+      "noTags": "无标签",
+      "noArtists": "无作者",
+      "never": "从未",
+      "completed": "已完成",
+      "inProgress": "进行中 ({progress}%)",
+      "notStarted": "未开始"
+    },
+    "sort": {
+      "title": "标题",
+      "creationTime": "创建时间",
+      "lastModificationTime": "最近修改时间",
+      "size": "大小",
+      "ascending": "升序",
+      "descending": "降序",
+      "sortBy": "排序方式",
+      "order": "排序顺序",
+      "clear": "清空排序",
+      "sortByAsc": "按{field}正序排序",
+      "sortByDesc": "按{field}倒序排序"
+    },
+    "selection": {
+      "selectedCount": "已选择 {count} 项",
+      "selectAll": "全选",
+      "deselectAll": "取消全选",
+      "cancel": "退出选择模式",
+      "artistActions": {
+        "label": "作者关联",
+        "add": "添加作者",
+        "update": "设置作者",
+        "remove": "移除作者"
+      },
+      "tagActions": {
+        "label": "标签关联",
+        "add": "添加标签",
+        "update": "设置标签",
+        "remove": "移除标签"
+      },
+      "dialog": {
+        "title": {
+          "artist": {
+            "add": "为选中媒体添加作者",
+            "remove": "从选中媒体移除作者",
+            "update": "设置选中媒体的作者"
+          },
+          "tag": {
+            "add": "为选中媒体添加标签",
+            "remove": "从选中媒体移除标签",
+            "update": "设置选中媒体的标签"
+          }
+        },
+        "description": {
+          "artist": {
+            "add": "选择要追加到所有选中媒体的作者。",
+            "remove": "选择需要从选中媒体移除的作者。",
+            "update": "选择将应用到所有选中媒体的作者列表，留空表示清除全部作者。"
+          },
+          "tag": {
+            "add": "选择要追加到所有选中媒体的标签。",
+            "remove": "选择需要从选中媒体移除的标签。",
+            "update": "选择将应用到所有选中媒体的标签列表，留空表示清除全部标签。"
+          }
+        },
+        "placeholder": {
+          "artist": "请选择作者",
+          "tag": "请选择标签"
+        },
+        "hint": {
+          "artist": "可输入新作者名称并按回车快速创建",
+          "tag": "可输入新标签名称并按回车快速创建"
+        },
+        "confirm": {
+          "add": "添加",
+          "remove": "移除",
+          "update": "更新"
+        },
+        "cancel": "取消",
+        "createSuccess": {
+          "artist": "已添加作者：{name}",
+          "tag": "已添加标签：{name}"
+        }
+      }
+    },
+    "detail": {
+      "title": "媒体详情",
+      "back": "返回",
+      "untitled": "未命名作品",
+      "comicImages": "漫画图片",
+      "sortLabel": "按{field}（{order}）",
+      "sortFieldIndex": "原始顺序",
+      "sortFieldName": "名称",
+      "sortFieldSize": "文件大小",
+      "sortAsc": "升序",
+      "sortDesc": "降序",
+      "selectAllImages": "全选图片",
+      "clearSelection": "清除选择",
+      "deleteSelectedImages": "删除所选图片",
+      "deleteImagesTitle": "删除图片",
+      "deleteImagesConfirm": "确认删除选中的 {count} 张图片吗？此操作不可恢复。",
+      "videoNoSelection": "视频仅展示详情信息，不支持多选操作。",
+      "noComicImages": "暂无漫画图片",
+      "videoComingSoon": "视频播放功能即将上线，敬请期待。"
+    },
+    "actions": {
+      "info": "查看信息",
+      "markAsWatched": "标记已读",
+      "markAsUnwatched": "标记未读",
+      "delete": "删除",
+      "deleteConfirmTitle": "确认删除",
+      "deleteConfirmMessage": "确定要删除 \"{title}\" 吗？此操作不可撤销。",
+      "deleteSuccess": "删除成功",
+      "startReading": "开始阅读",
+      "startPlaying": "开始播放",
+      "continueReading": "继续阅读",
+      "restartReading": "重新阅读",
+      "incognitoRead": "无痕阅读",
+      "incognitoPlay": "无痕播放",
+      "rate": "评分"
+    }
+  },
+  "comic": {
+    "reader": {
+      "title": "漫画阅读"
+    },
+    "actions": {
+      "back": "返回",
+      "settings": "阅读设置",
+      "fullscreen": "进入全屏",
+      "exitFullscreen": "退出全屏",
+      "help": "操作提示",
+      "retry": "重试",
+      "firstPage": "第一页",
+      "lastPage": "最后一页"
+    },
+    "states": {
+      "loading": "正在加载漫画...",
+      "error": "加载漫画失败",
+      "empty": "暂无漫画图片"
+    },
+    "messages": {
+      "help": "点击两侧或上下区域翻页，点击中央切换工具栏显示。",
+      "loadFailed": "获取漫画数据失败",
+      "firstPage": "已经是第一页",
+      "lastPage": "已经是最后一页"
+    },
+    "hints": {
+      "previous": "上一页",
+      "next": "下一页",
+      "toggleUi": "显示/隐藏工具栏"
+    },
+    "settings": {
+      "dialogTitle": "阅读设置",
+      "sections": {
+        "readingMode": "阅读方式",
+        "image": "图片显示",
+        "experience": "阅读体验"
+      },
+      "fields": {
+        "readingDirection": "阅读方向",
+        "displayMode": "显示模式",
+        "zoomMode": "缩放模式",
+        "qualityPreset": "画质预设",
+        "customQualityWidth": "自定义宽度",
+        "imageSpacing": "图片间距",
+        "pageTransition": "页间过渡动画",
+        "backgroundColor": "背景颜色",
+        "alwaysFullscreen": "始终全屏",
+        "preloadCount": "预加载数量"
+      },
+      "options": {
+        "direction": {
+          "ltr": "从左到右",
+          "ltrDescription": "点击右侧或向右翻页",
+          "rtl": "从右到左",
+          "rtlDescription": "点击左侧或向左翻页",
+          "ttb": "从上到下",
+          "ttbDescription": "点击下方或向下翻页",
+          "btt": "从下到上",
+          "bttDescription": "点击上方或向上翻页"
+        },
+        "display": {
+          "single": "单页",
+          "singleDescription": "一次显示一页，适合手机阅读",
+          "double": "双页",
+          "doubleDescription": "一次显示两页，适合宽屏设备",
+          "scroll": "滚动",
+          "scrollDescription": "垂直或水平滚动浏览全部图片"
+        },
+        "zoom": {
+          "fitScreen": "适应屏幕",
+          "fitScreenDescription": "根据当前窗口自动调整大小",
+          "fitHeight": "适应高度",
+          "fitHeightDescription": "高度铺满，宽度按比例缩放",
+          "fitWidth": "适应宽度",
+          "fitWidthDescription": "宽度铺满可视区域",
+          "original": "原始尺寸",
+          "originalDescription": "显示原图尺寸，可滚动查看"
+        },
+        "quality": {
+          "quality480p": "480p",
+          "quality480pDescription": "更省流量，适合移动端",
+          "quality720p": "720p",
+          "quality720pDescription": "节省流量，加载更快",
+          "quality1080p": "1080p",
+          "quality1080pDescription": "高清画质，适合桌面端",
+          "original": "原图",
+          "originalDescription": "使用原始图片尺寸",
+          "custom": "自定义",
+          "customDescription": "手动设置图片最大宽度"
+        },
+        "preloadCount": "预加载 {count} 页"
+      },
+      "validation": {
+        "customQualityWidth": "请输入大于等于 256 的有效宽度"
+      }
+    },
+    "placeholder": {
+      "untitled": "未命名漫画"
+    }
+  },
+  "tag": {
+    "title": "标签管理",
+    "statistics": {
+      "total": "总数",
+      "filtered": "筛选结果",
+      "totalResources": "总资源数"
+    },
+    "search": {
+      "filterPlaceholder": "请输入标签名称搜索",
+      "reset": "重置"
+    },
+    "actions": {
+      "refresh": "刷新",
+      "create": "创建标签",
+      "edit": "编辑",
+      "delete": "删除",
+      "multiSelect": "批量选择",
+      "exitMultiSelect": "退出批量选择",
+      "selectAll": "全选",
+      "selectedCount": "已选择 {count}/{total} 项",
+      "batchDelete": "批量删除"
+    },
+    "sort": {
+      "label": "排序：",
+      "name": "按名称",
+      "resourceCount": "按资源数"
+    },
+    "resourceCount": "{count} 个资源",
+    "empty": {
+      "noTags": "暂无标签数据",
+      "noResults": "未找到匹配的标签"
+    },
+    "messages": {
+      "loadTagsError": "加载标签列表失败",
+      "loadTagError": "加载标签数据失败"
+    },
+    "create": {
+      "title": "创建标签",
+      "fields": {
+        "name": "标签名称"
+      },
+      "placeholders": {
+        "name": "请输入标签名称"
+      },
+      "validation": {
+        "nameRequired": "请输入标签名称",
+        "nameLength": "标签名称长度应为1-50个字符"
+      },
+      "actions": {
+        "cancel": "取消",
+        "confirm": "创建"
+      },
+      "messages": {
+        "success": "创建标签成功",
+        "error": "创建标签失败"
+      }
+    },
+    "edit": {
+      "title": "编辑标签",
+      "actions": {
+        "cancel": "取消",
+        "confirm": "保存"
+      },
+      "messages": {
+        "success": "更新标签成功",
+        "error": "更新标签失败"
+      }
+    },
+    "delete": {
+      "confirmTitle": "确认删除",
+      "confirmMessage": "确定要删除这个标签吗？此操作不可恢复。",
+      "confirm": "删除",
+      "cancel": "取消",
+      "messages": {
+        "success": "删除标签成功",
+        "error": "删除标签失败"
+      }
+    },
+    "batchDelete": {
+      "confirmTitle": "确认批量删除",
+      "confirmMessage": "确定要删除选中的 {count} 个标签吗？此操作不可恢复。",
+      "confirm": "批量删除",
+      "cancel": "取消",
+      "noSelection": "请先选择要删除的标签",
+      "messages": {
+        "success": "成功删除 {count} 个标签",
+        "error": "批量删除标签失败"
+      }
+    }
+  },
+  "artist": {
+    "title": "艺术家管理",
+    "statistics": {
+      "total": "总数",
+      "filtered": "筛选结果",
+      "totalResources": "总资源数"
+    },
+    "search": {
+      "filterPlaceholder": "请输入艺术家名称搜索",
+      "reset": "重置"
+    },
+    "actions": {
+      "refresh": "刷新",
+      "create": "创建艺术家",
+      "edit": "编辑",
+      "delete": "删除",
+      "multiSelect": "批量选择",
+      "exitMultiSelect": "退出批量选择",
+      "selectAll": "全选",
+      "selectedCount": "已选择 {count}/{total} 项",
+      "batchDelete": "批量删除"
+    },
+    "sort": {
+      "label": "排序：",
+      "name": "按名称",
+      "resourceCount": "按资源数"
+    },
+    "resourceCount": "{count} 个资源",
+    "empty": {
+      "noArtists": "暂无艺术家数据",
+      "noResults": "未找到匹配的艺术家"
+    },
+    "messages": {
+      "loadArtistsError": "加载艺术家列表失败",
+      "loadArtistError": "加载艺术家数据失败"
+    },
+    "create": {
+      "title": "创建艺术家",
+      "fields": {
+        "name": "艺术家名称"
+      },
+      "placeholders": {
+        "name": "请输入艺术家名称"
+      },
+      "validation": {
+        "nameRequired": "请输入艺术家名称",
+        "nameLength": "艺术家名称长度应为1-50个字符"
+      },
+      "actions": {
+        "cancel": "取消",
+        "confirm": "创建"
+      },
+      "messages": {
+        "success": "创建艺术家成功",
+        "error": "创建艺术家失败"
+      }
+    },
+    "edit": {
+      "title": "编辑艺术家",
+      "actions": {
+        "cancel": "取消",
+        "confirm": "保存"
+      },
+      "messages": {
+        "success": "更新艺术家成功",
+        "error": "更新艺术家失败"
+      }
+    },
+    "delete": {
+      "confirmTitle": "确认删除",
+      "confirmMessage": "确定要删除这个艺术家吗？此操作不可恢复。",
+      "confirm": "删除",
+      "cancel": "取消",
+      "messages": {
+        "success": "删除艺术家成功",
+        "error": "删除艺术家失败"
+      }
+    },
+    "batchDelete": {
+      "confirmTitle": "确认批量删除",
+      "confirmMessage": "确定要删除选中的 {count} 个艺术家吗？此操作不可恢复。",
+      "confirm": "批量删除",
+      "cancel": "取消",
+      "noSelection": "请先选择要删除的艺术家",
+      "messages": {
+        "success": "成功删除 {count} 个艺术家",
+        "error": "批量删除艺术家失败"
+      }
+    }
+  },
+  "setting": {
+    "title": "系统设置",
+    "empty": "暂无设置项",
+    "actions": {
+      "refresh": "刷新",
+      "save": "保存",
+      "reset": "重置",
+      "resetAll": "重置全部"
+    },
+    "group": {
+      "reset": "重置分组"
+    },
+    "item": {
+      "reset": "重置"
+    },
+    "messages": {
+      "loadError": "加载设置失败",
+      "saveSuccess": "设置保存成功",
+      "saveNoChange": "没有需要保存的更改",
+      "saveError": "保存设置失败",
+      "resetSuccess": "重置成功",
+      "resetConfirm": "是否重置设置：{name}？",
+      "resetGroupConfirm": "是否重置分组：{group}？",
+      "resetAllConfirm": "是否重置全部设置？"
+    }
+  },
+  "user": {
+    "title": "用户管理",
+    "table": {
+      "userName": "用户名",
+      "name": "姓名",
+      "email": "邮箱",
+      "phoneNumber": "手机号",
+      "status": "状态",
+      "emailConfirmed": "邮箱确认",
+      "phoneNumberConfirmed": "手机确认",
+      "creationTime": "创建时间",
+      "actions": "操作",
+      "edit": "编辑",
+      "role": "角色管理",
+      "unlock": "解锁",
+      "delete": "删除"
+    },
+    "search": {
+      "filter": "搜索",
+      "filterPlaceholder": "请输入用户名、邮箱或姓名",
+      "all": "全部",
+      "enabled": "启用",
+      "disabled": "禁用",
+      "search": "搜索",
+      "reset": "重置"
+    },
+    "status": {
+      "enabled": "启用",
+      "disabled": "禁用",
+      "yes": "是",
+      "no": "否"
+    },
+    "actions": {
+      "create": "创建用户",
+      "deleteTitle": "确认删除",
+      "deleteConfirm": "确定要删除用户 {userName} 吗？此操作不可恢复。",
+      "deleteSuccess": "删除用户成功",
+      "deleteError": "删除用户失败",
+      "unlockSuccess": "解锁成功",
+      "unlockError": "解锁用户失败"
+    },
+    "messages": {
+      "loadUsersError": "加载用户列表失败",
+      "loadRolesError": "加载角色列表失败",
+      "loadUserRolesError": "加载用户角色失败"
+    },
+    "create": {
+      "title": "创建用户",
+      "fields": {
+        "userName": "用户名",
+        "name": "姓名",
+        "email": "邮箱",
+        "phoneNumber": "手机号",
+        "password": "密码",
+        "status": "状态",
+        "lockoutEnabled": "启用锁定",
+        "emailReminderEnabled": "启用邮件提醒",
+        "roles": "角色"
+      },
+      "placeholders": {
+        "userName": "请输入用户名",
+        "name": "请输入姓名",
+        "email": "请输入邮箱",
+        "phoneNumber": "请输入手机号",
+        "password": "请输入密码",
+        "roles": "请选择角色"
+      },
+      "validation": {
+        "userNameRequired": "请输入用户名",
+        "userNameLength": "用户名长度应为3-50个字符",
+        "nameRequired": "请输入姓名",
+        "emailRequired": "请输入邮箱",
+        "emailFormat": "请输入正确的邮箱格式",
+        "phoneRequired": "请输入手机号",
+        "phoneFormat": "请输入正确的手机号格式",
+        "passwordRequired": "请输入密码",
+        "passwordLength": "密码长度至少6个字符"
+      },
+      "actions": {
+        "cancel": "取消",
+        "confirm": "创建"
+      },
+      "messages": {
+        "success": "创建用户成功",
+        "error": "创建用户失败"
+      }
+    },
+    "edit": {
+      "title": "编辑用户",
+      "fields": {
+        "userName": "用户名",
+        "name": "姓名",
+        "email": "邮箱",
+        "phoneNumber": "手机号",
+        "password": "密码",
+        "status": "状态",
+        "lockoutEnabled": "启用锁定",
+        "emailReminderEnabled": "启用邮件提醒"
+      },
+      "placeholders": {
+        "userName": "请输入用户名",
+        "name": "请输入姓名",
+        "email": "请输入邮箱",
+        "phoneNumber": "请输入手机号",
+        "password": "留空则不修改密码"
+      },
+      "actions": {
+        "cancel": "取消",
+        "confirm": "保存"
+      },
+      "messages": {
+        "success": "更新用户成功",
+        "error": "更新用户失败"
+      }
+    },
+    "role": {
+      "title": "管理用户角色",
+      "userInfo": "用户信息：",
+      "assignRoles": "分配角色",
+      "placeholders": {
+        "roles": "请选择角色"
+      },
+      "actions": {
+        "cancel": "取消",
+        "confirm": "保存"
+      },
+      "messages": {
+        "success": "更新用户角色成功",
+        "error": "更新用户角色失败"
+      }
+    }
+  },
+  "search": {
+    "title": "搜索",
+    "placeholder": "搜索漫画或视频...",
+    "total": "共找到",
+    "history": {
+      "title": "搜索历史",
+      "clear": "清空",
+      "empty": "暂无搜索历史"
+    },
+    "actions": {
+      "viewAllResults": "查看全部结果"
+    },
+    "messages": {
+      "loadError": "搜索失败",
+      "noResults": "未找到匹配结果",
+      "minCharacters": "请至少输入 2 个字符"
+    }
+  },
+  "securityLogs": {
+    "title": "安全日志",
+    "viewMode": {
+      "all": "所有日志",
+      "current": "我的日志"
+    },
+    "search": {
+      "timeRange": "时间范围",
+      "selectDateRange": "选择日期范围",
+      "startTime": "开始时间",
+      "endTime": "结束时间",
+      "applicationName": "应用名称",
+      "applicationNamePlaceholder": "请输入应用名称",
+      "userName": "用户名",
+      "userNamePlaceholder": "请输入用户名",
+      "action": "操作",
+      "actionPlaceholder": "请输入操作名称",
+      "clientIp": "客户端IP",
+      "clientIpPlaceholder": "请输入IP地址",
+      "search": "搜索",
+      "reset": "重置"
+    },
+    "table": {
+      "applicationName": "应用名称",
+      "identity": "身份标识",
+      "action": "操作",
+      "userName": "用户名",
+      "clientId": "客户端ID",
+      "clientIpAddress": "客户端IP",
+      "browserInfo": "浏览器信息",
+      "creationTime": "创建时间"
+    },
+    "messages": {
+      "loadError": "加载安全日志失败",
+      "noData": "暂无数据"
+    }
+  }
+  ,
+  "profile": {
+    "title": "个人资料",
+    "fields": {
+      "surname": "姓氏",
+      "currentPassword": "当前密码",
+      "newPassword": "新密码",
+      "confirmPassword": "确认密码"
+    },
+    "actions": {
+      "changePassword": "更改密码"
+    },
+    "hints": {
+      "externalPasswordManaged": "您的密码由外部身份提供方管理，此处无法修改。"
+    }
+  }
+}

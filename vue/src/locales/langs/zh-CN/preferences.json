@@ -1,0 +1,20 @@
+{
+  "locale": "界面语言",
+  "theme": "主题模式",
+  "themes": {
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统"
+  },
+  "userMenu": {
+    "profile": "个人资料",
+    "theme": {
+      "label": "主题色",
+      "primary": "主色",
+      "neutral": "中性色",
+      "radius": "圆角"
+    },
+    "appearance": "外观模式",
+    "logout": "退出登录"
+  }
+}
