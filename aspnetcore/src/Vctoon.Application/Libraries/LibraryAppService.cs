@@ -33,11 +33,12 @@ public class LibraryAppService(
             .Select(x => x.LibraryId);
 
         var libraries =
-            await repository.GetListAsync(x => libraryIds.Contains(x.Id), includeDetails: true);
+            await repository.GetListAsync(x => libraryIds.Contains(x.Id), includeDetails: false);
 
         var dtos = ObjectMapper.Map<List<Library>, List<LibraryDto>>(libraries);
         return dtos;
     }
+    
 
     [Authorize(VctoonPermissions.Library.Create)]
     public async Task<LibraryDto> CreateAsync(LibraryCreateUpdateDto input)

@@ -4,6 +4,10 @@
     "Medium": "媒体",
     "Medium.Comic": "漫画",
     "Comic": "漫画",
+    "System": "系统",
+    "Mail": "邮件",
+    "Others" : "其他",
+    "Description:System.Localization" : "本地化",
     "DisplayName:Medium.ComicDetailVisibleImages": "详情显示漫画图片",
     "Description:Medium.ComicDetailVisibleImages": "在漫画详情页面显示漫画图片。"
   }

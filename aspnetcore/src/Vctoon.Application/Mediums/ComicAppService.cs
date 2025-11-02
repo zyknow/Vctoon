@@ -91,7 +91,7 @@ public class ComicAppService(
             return new RemoteStreamContent(steam, contentType: contentType);
         }
     }
-
+    
     [Authorize(VctoonPermissions.Comic.Default)]
     public async Task<List<ComicImageDto>> GetListByComicIdAsync(Guid comicId)
     {

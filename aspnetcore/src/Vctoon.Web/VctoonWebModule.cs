@@ -130,7 +130,7 @@ public class VctoonWebModule : AbpModule
 
         ConfigureBundles();
         ConfigureUrls(configuration);
-        //ConfigureHealthChecks(context);
+        ConfigureHealthChecks(context);
         ConfigureAuthentication(context);
         ConfigureAutoMapper();
         ConfigureVirtualFileSystem(hostingEnvironment);

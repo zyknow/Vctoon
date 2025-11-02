@@ -42,7 +42,7 @@ public class TagAppService(ITagRepository repository)
             new TagDto
             {
                 Name = x.Name,
-                Id = x.Id
+                Id = x.Id,
             }));
         return tags;
     }
