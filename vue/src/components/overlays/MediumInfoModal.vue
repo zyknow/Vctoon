@@ -6,7 +6,6 @@ import { mediumResourceApi } from '@/api/http/medium-resource'
 import type { MediumDto } from '@/api/http/typing'
 import { videoApi } from '@/api/http/video'
 import type { Video } from '@/api/http/video/typing'
-import { useEnvConfig } from '@/hooks/useEnvConfig'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { $t } from '@/locales/i18n'
 import { useUserStore } from '@/stores'
@@ -28,7 +27,6 @@ defineEmits<{
 }>()
 
 const { isMobile } = useIsMobile()
-const { apiURL } = useEnvConfig()
 const userStore = useUserStore()
 
 const loading = ref(true)
@@ -37,10 +35,7 @@ const numberFormatter = new Intl.NumberFormat()
 
 const coverUrl = computed(() => {
   if (!medium.value?.cover) return undefined
-  const url = mediumResourceApi.url.getCover.format({
-    cover: medium.value.cover,
-  })
-  return `${apiURL}${url}`
+  return mediumResourceApi.getCoverUrl(medium.value.cover)
 })
 const descriptionText = computed(() => medium.value?.description?.trim())
 

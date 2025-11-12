@@ -2,6 +2,7 @@ import type { CreateAxiosDefaults } from 'axios'
 import axios from 'axios'
 
 import { useEnvConfig } from '@/hooks/useEnvConfig'
+// use helper from OIDC to avoid direct router dependency here
 import { usePreferenceStore } from '@/stores/preferences'
 
 import { useOidcManager } from './oidc'
@@ -83,7 +84,7 @@ function createRequestClient(
       // 检查是否未授权
       if (status === 401) {
         const oidc = useOidcManager()
-        await oidc.manager.signinRedirect()
+        await oidc.signinRedirectWithState()
         return
       }
 

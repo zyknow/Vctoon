@@ -50,10 +50,7 @@ const needLoadImages = abpSettings.isTrue('Medium.ComicDetailVisibleImages')
 const mediumTitle = computed(() => medium.value.title ?? '')
 const coverUrl = computed(() => {
   if (!medium.value.cover) return undefined
-  const url = mediumResourceApi.url.getCover.format({
-    cover: medium.value.cover,
-  })
-  return `${apiURL}${url}`
+  return mediumResourceApi.getCoverUrl(medium.value.cover)
 })
 
 const creationTimeText = computed(() => {

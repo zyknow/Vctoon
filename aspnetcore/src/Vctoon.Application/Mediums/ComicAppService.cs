@@ -91,7 +91,7 @@ public class ComicAppService(
             return new RemoteStreamContent(steam, contentType: contentType);
         }
     }
-    
+
     [Authorize(VctoonPermissions.Comic.Default)]
     public async Task<List<ComicImageDto>> GetListByComicIdAsync(Guid comicId)
     {
@@ -117,19 +117,14 @@ public class ComicAppService(
     {
         var file = deleteFile ? await comicImageRepository.GetAsync(comicImageId) : null;
 
-        await repository.DeleteAsync(comicImageId);
+        await repository.DeleteAsync(comicImageId, deleteFile);
 
         if (deleteFile)
         {
-            UnitOfWorkManager.Current!.OnCompleted(() =>
+            if (file != null && File.Exists(file.Path))
             {
-                if (file != null && File.Exists(file.Path))
-                {
-                    File.Delete(file.Path);
-                }
-
-                return Task.CompletedTask;
-            });
+                File.Delete(file.Path);
+            }
         }
     }
 }

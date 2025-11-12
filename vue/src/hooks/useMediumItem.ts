@@ -14,7 +14,6 @@ import MediumEditModal from '@/components/overlays/MediumEditModal.vue'
 import MediumInfoModal from '@/components/overlays/MediumInfoModal.vue'
 import { $t } from '@/locales/i18n'
 
-import { useEnvConfig } from './useEnvConfig'
 import {
   useInjectedMediumAllItemProvider,
   useInjectedMediumItemProvider,
@@ -28,7 +27,6 @@ const toDate = (value: string | Date | undefined | null) => {
 }
 
 export function useMediumItem(mediumRef: ComputedRef<MediumGetListOutput>) {
-  const { apiURL } = useEnvConfig()
   const router = useRouter()
   const { selectedMediumIds, items } = useInjectedMediumItemProvider()
   const overlay = useOverlay()
@@ -327,25 +325,7 @@ export function useMediumItem(mediumRef: ComputedRef<MediumGetListOutput>) {
   })
 
   const cover = computed(() => {
-    let mediumUrl
-    switch (mediumType.value) {
-      case MediumType.Comic: {
-        mediumUrl = mediumResourceApi.url.getCover.format({
-          cover: mediumRef.value?.cover,
-        })
-        break
-      }
-      case MediumType.Video: {
-        mediumUrl = mediumResourceApi.url.getCover.format({
-          cover: mediumRef.value?.cover,
-        })
-        break
-      }
-      default: {
-        break
-      }
-    }
-    return `${apiURL}${mediumUrl}`
+    return mediumResourceApi.getCoverUrl(mediumRef.value.cover!)
   })
 
   return {

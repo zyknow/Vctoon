@@ -34,7 +34,27 @@ export function useOidcManager() {
               console.error(`signin-callback-oidc error${error}`),
             )
           if (user) {
-            return { path: '/', replace: true }
+            let target: string | undefined
+            if ('state' in user) {
+              const s = (user as unknown as { state?: unknown }).state
+              if (typeof s === 'string') target = s
+            }
+            if (!target) return { path: '/', replace: true }
+            try {
+              const url = new URL(target, window.location.origin)
+              const query: Record<string, string> = {}
+              url.searchParams.forEach((v, k) => {
+                query[k] = v
+              })
+              return {
+                path: url.pathname,
+                query,
+                hash: url.hash || undefined,
+                replace: true,
+              }
+            } catch {
+              return { path: target, replace: true }
+            }
           }
         }
       },
@@ -42,9 +62,34 @@ export function useOidcManager() {
     signOut: {
       url: '/signout-callback-oidc',
       handler: async (to) => {
-        if (to.path === signCallBack.signIn?.url) {
+        if (to.path === signCallBack.signOut?.url) {
           await manager.signoutRedirectCallback()
-          return { path: '/', replace: true }
+          let target: string | undefined
+          try {
+            const stored = sessionStorage.getItem(POST_LOGOUT_RETURN_KEY)
+            if (stored) {
+              target = stored
+              sessionStorage.removeItem(POST_LOGOUT_RETURN_KEY)
+            }
+          } catch (e) {
+            void e
+          }
+          if (!target) return { path: '/', replace: true }
+          try {
+            const url = new URL(target, window.location.origin)
+            const query: Record<string, string> = {}
+            url.searchParams.forEach((v, k) => {
+              query[k] = v
+            })
+            return {
+              path: url.pathname,
+              query,
+              hash: url.hash || undefined,
+              replace: true,
+            }
+          } catch {
+            return { path: target, replace: true }
+          }
         }
       },
     },
@@ -53,6 +98,30 @@ export function useOidcManager() {
   const getAccessToken = async () => {
     const user = await manager.getUser()
     return user?.access_token
+  }
+
+  async function signinRedirectWithState(target?: string) {
+    let desired = target
+    if (!desired) {
+      const { router } = await import('@/router')
+      desired = router.currentRoute.value.fullPath
+    }
+    await manager.signinRedirect({ state: desired })
+  }
+
+  const POST_LOGOUT_RETURN_KEY = 'oidc:postLogoutRedirect'
+  async function signoutRedirectWithState(target?: string) {
+    let desired = target
+    if (!desired) {
+      const { router } = await import('@/router')
+      desired = router.currentRoute.value.fullPath
+    }
+    try {
+      sessionStorage.setItem(POST_LOGOUT_RETURN_KEY, desired)
+    } catch (e) {
+      void e
+    }
+    await manager.signoutRedirect()
   }
 
   function redirectHandler(to: any) {
@@ -68,5 +137,11 @@ export function useOidcManager() {
     // await manager.signinRedirect()
   })
 
-  return { manager, redirectHandler, getAccessToken }
+  return {
+    manager,
+    redirectHandler,
+    getAccessToken,
+    signinRedirectWithState,
+    signoutRedirectWithState,
+  }
 }

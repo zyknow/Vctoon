@@ -32,7 +32,7 @@ const items = computed<DropdownMenuItem[][]>(() => {
         icon: 'i-lucide-log-out',
         onSelect: async () => {
           const oidcManager = useOidcManager()
-          await oidcManager.manager.signoutRedirect()
+          await oidcManager.signoutRedirectWithState()
         },
       },
     ],

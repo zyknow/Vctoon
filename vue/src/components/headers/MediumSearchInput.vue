@@ -6,7 +6,6 @@ import { useRoute, useRouter } from 'vue-router'
 import type { SearchHit } from '@/api/http/lucene'
 import { luceneApi } from '@/api/http/lucene'
 import { mediumResourceApi } from '@/api/http/medium-resource'
-import { useEnvConfig } from '@/hooks/useEnvConfig'
 import { $t } from '@/locales/i18n'
 
 defineOptions({ name: 'MediumSearchInput' })
@@ -17,7 +16,6 @@ const dropdownVisible = ref(false)
 const inputRef = ref<HTMLElement | null>(null)
 const dropdownRef = ref<HTMLElement | null>(null)
 
-const { apiURL } = useEnvConfig()
 const toast = useToast()
 
 // 点击外部关闭下拉框
@@ -98,8 +96,7 @@ const resolveTypeFromPayload = (
 const resolveCoverFromPayload = (payload: Record<string, any>) => {
   const raw = (payload as any).Cover || (payload as any).cover
   if (!raw) return undefined
-  const url = mediumResourceApi.url.getCover.format({ cover: raw })
-  return `${apiURL}${url}`
+  return mediumResourceApi.getCoverUrl(raw)
 }
 
 const toSuggestion = (hit: SearchHit): null | SuggestionItem => {

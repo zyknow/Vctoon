@@ -49,10 +49,7 @@ const selectingCoverImageId = ref<null | string>(null)
 
 const currentCoverUrl = computed(() => {
   if (!mediumState.value?.cover) return ''
-  const coverPath = mediumResourceApi.url.getCover.format({
-    cover: mediumState.value.cover,
-  })
-  return `${apiURL}${coverPath}`
+  return mediumResourceApi.getCoverUrl(mediumState.value.cover)
 })
 
 function isSelectedComicImage(id: string) {

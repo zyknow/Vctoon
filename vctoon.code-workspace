@@ -5,8 +5,8 @@
       "path": "aspnetcore",
     },
     {
-      "name": "vben",
-      "path": "vben",
+      "name": "vue",
+      "path": "vue",
     }
   ],
   "settings": {},

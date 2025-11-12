@@ -1,3 +1,5 @@
+import { useEnvConfig } from '@/hooks/useEnvConfig'
+
 import {
   createMediumBaseCurdApi,
   createMediumBaseCurdUrl,
@@ -13,8 +15,11 @@ import type {
 /** Video API 根路径 */
 const baseUrl = '/api/app/video'
 
+const envConfig = useEnvConfig()
+
 const url = {
   ...createMediumBaseCurdUrl(baseUrl),
+  videoStreamUrl: `${baseUrl}/{id}/video-stream`,
 }
 
 export const videoApi = {
@@ -28,6 +33,15 @@ export const videoApi = {
     VideoGetListInput,
     PageResult<VideoGetListOutput>
   >(baseUrl, MediumType.Video),
+  getVideoUrl(id: string) {
+    return `${envConfig.apiURL}${this.url.videoStreamUrl.format({ id })}`
+  },
+  getVideoWebUrl(id: string) {
+    return `${envConfig.apiURL}${this.url.videoStreamUrl.format({ id })}?web=true`
+  },
+  getVideoUrlRaw(id: string) {
+    return `${envConfig.apiURL}${this.url.videoStreamUrl.format({ id })}`
+  },
 }
 
 export * from './typing'

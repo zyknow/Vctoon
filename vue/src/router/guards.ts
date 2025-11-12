@@ -30,7 +30,7 @@ export function setupRouteGuards(router: Router) {
     ) => {
       const user = await oidc.manager.getUser()
       if (!user) {
-        await oidc.manager.signinRedirect()
+        await oidc.signinRedirectWithState(to.fullPath)
         return
       }
 

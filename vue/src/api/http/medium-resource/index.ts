@@ -1,3 +1,5 @@
+import { useEnvConfig } from '@/hooks/useEnvConfig'
+
 import { requestClient } from '../../request'
 import type {
   MediumMultiUpdateDto,
@@ -6,6 +8,8 @@ import type {
 
 /** MediumResource API 根路径 */
 const baseUrl = '/api/app/medium-resource'
+
+const envConfig = useEnvConfig()
 
 export const mediumResourceApi = {
   url: {
@@ -57,6 +61,9 @@ export const mediumResourceApi = {
   /** 媒体关联：删除标签列表（PUT） */
   deleteTagList(input: MediumMultiUpdateDto) {
     return requestClient.put(this.url.deleteTagList, input)
+  },
+  getCoverUrl(cover: string) {
+    return `${envConfig.apiURL}${this.url.getCover.format({ cover })}`
   },
 }
 

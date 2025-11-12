@@ -31,7 +31,7 @@ public class VideoScanHandler(IVideoRepository videoRepository, CoverSaver cover
 
         var videos = await videoRepository.GetListAsync(x => x.LibraryId == libraryPath.LibraryId);
 
-        var deleteVideos = videos.Where(x => !videoFilePaths.Contains(x!.Path)).ToList();
+        var deleteVideos = videos.Where(x => x.LibraryPathId == libraryPath.Id && !videoFilePaths.Contains(x!.Path)).ToList();
 
         if (!deleteVideos.IsNullOrEmpty())
         {

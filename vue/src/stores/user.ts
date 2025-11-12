@@ -174,9 +174,8 @@ export const useUserStore = defineStore('user', {
       } catch (error: any) {
         console.error('Error starting dataChangedHub:', error)
         if (error.message.includes("Status code '401'")) {
-          // 401 错误，说明登录态过期，触发重新登录
           const oidcManager = useOidcManager()
-          await oidcManager.manager.signinRedirect()
+          await oidcManager.signinRedirectWithState()
           return
         }
         throw error
