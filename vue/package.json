@@ -8,7 +8,8 @@
     "preview": "vite preview --port 5777",
     "lint": "eslint --ext .js,.ts,.vue src",
     "format": "npx eslint \"src/**/*.{ts,tsx,js,jsx,vue,css,scss,md,json,yml,yaml}\" --fix",
-    "typecheck": "vue-tsc -p ./tsconfig.app.json"
+    "typecheck": "vue-tsc -p ./tsconfig.app.json",
+    "tauri": "tauri"
   },
   "dependencies": {
     "@microsoft/signalr": "^9.0.6",
@@ -29,7 +30,9 @@
     "vue": "^3.5.22",
     "vue-i18n": "^9.14.0",
     "vue-router": "^4.6.3",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-opener": "^2"
   },
   "devDependencies": {
     "@types/dplayer": "^1.25.5",
@@ -47,7 +50,8 @@
     "typescript-eslint": "^8.46.2",
     "vite": "^7.1.12",
     "vite-plugin-vue-devtools": "^8.0.3",
-    "vue-tsc": "^3.1.2"
+    "vue-tsc": "^3.1.2",
+    "@tauri-apps/cli": "^2"
   },
   "resolutions": {
     "unimport": "4.1.1"

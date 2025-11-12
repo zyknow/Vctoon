@@ -3,6 +3,9 @@ import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vueDevTools from 'vite-plugin-vue-devtools'
+
+const host = process.env.TAURI_DEV_HOST
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -41,5 +44,18 @@ export default defineConfig({
   },
   server: {
     port: 5777,
+    strictPort: true,
+    host: host || false,
+    hmr: host
+      ? {
+          protocol: 'ws',
+          host,
+          port: 5778,
+        }
+      : undefined,
+    watch: {
+      // 3. tell Vite to ignore watching `src-tauri`
+      ignored: ['**/src-tauri/**'],
+    },
   },
 })
