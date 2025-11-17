@@ -43,13 +43,6 @@ public class VideoScanHandler(IVideoRepository videoRepository, CoverSaver cover
 
         foreach (var videoFilePath in videoFilePaths.Where(path => videos.All(x => x!.Path != path)))
         {
-            // video.Framerate = videoStream.FrameRate;
-            // video.Codec = videoStream.CodecName;
-            // video.Width = videoStream.Width;
-            // video.Height = videoStream.Height;
-            // video.Bitrate = videoStream.BitRate;
-            // video.Duration = mediaAnalysis.Duration;
-            // video.Ratio = @$"{videoStream.DisplayAspectRatio.Width}:{videoStream.DisplayAspectRatio.Height}";
             try
             {
                 var mediaInfo = await FFProbe.AnalyseAsync(videoFilePath);
@@ -57,6 +50,37 @@ public class VideoScanHandler(IVideoRepository videoRepository, CoverSaver cover
                 var name = Path.GetFileNameWithoutExtension(videoFilePath);
                 await using var coverSteam = await FFmpegHelper.GetCoverAsync(videoFilePath);
                 var coverPath = await coverSaver.SaveAsync(coverSteam);
+
+                // Calculate aspect ratio. Prefer DisplayAspectRatio; fallback to Width/Height simplified via GCD.
+                string ratio;
+                var displayAspect = videoStream?.DisplayAspectRatio ?? (0,0);
+                if (displayAspect.Width > 0 && displayAspect.Height > 0)
+                {
+                    ratio = $"{displayAspect.Width}:{displayAspect.Height}";
+                }
+                else
+                {
+                    int w = videoStream?.Width ?? 0;
+                    int h = videoStream?.Height ?? 0;
+                    if (w > 0 && h > 0)
+                    {
+                        int Gcd(int a, int b)
+                        {
+                            while (b != 0)
+                            {
+                                (a, b) = (b, a % b);
+                            }
+                            return a;
+                        }
+                        var g = Gcd(w, h);
+                        ratio = $"{w / g}:{h / g}";
+                    }
+                    else
+                    {
+                        ratio = "0:0"; // Unable to determine
+                    }
+                }
+
                 var mediumInfo = new Video(
                     GuidGenerator.Create(),
                     videoFilePath,
@@ -70,7 +94,7 @@ public class VideoScanHandler(IVideoRepository videoRepository, CoverSaver cover
                     videoStream.Height,
                     videoStream.BitRate,
                     mediaInfo.Duration,
-                    @$"{videoStream.DisplayAspectRatio.Width}:{videoStream.DisplayAspectRatio.Height}");
+                    ratio);
                 addVideos.Add(mediumInfo);
             }
             catch (Exception e)

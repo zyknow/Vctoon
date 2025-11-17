@@ -92,7 +92,7 @@ const dropdownItems = computed(() => buildMediumDropdown())
         <div
           :title="title"
           class="hover:text-primary cursor-pointer text-base leading-tight font-medium"
-          @click.stop="navigateToDetail"
+          @click.stop="navigateToDetail()"
         >
           {{ title }}
         </div>

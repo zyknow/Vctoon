@@ -12,6 +12,8 @@ const props = defineProps<{
 }>()
 
 const router = useRouter()
+type VideoBrowserExpose = { saveProgress: () => Promise<void> }
+const videoBrowserRef = ref<VideoBrowserExpose | null>(null)
 
 const medium = toRef(props, 'medium')
 const loading = toRef(props, 'loading')
@@ -22,7 +24,7 @@ const creationTimeText = computed(() => {
   if (!value) return '--'
   return formatMediumDateTime(value)
 })
-
+const autoPlay = router.currentRoute.value.query.autoplay === 'true'
 const descriptionText = computed(() => medium.value.description?.trim() ?? '')
 const hasTags = computed(() => (medium.value.tags?.length ?? 0) > 0)
 const hasArtists = computed(() => (medium.value.artists?.length ?? 0) > 0)
@@ -38,24 +40,18 @@ const progressText = computed(() =>
   formatMediumProgress(medium.value.readingProgress),
 )
 
-const resolutionText = computed(() => {
-  if (!medium.value.width || !medium.value.height) return undefined
-  return `${medium.value.width} × ${medium.value.height}`
-})
+// 分辨率由宽度/高度分别展示
 
-const hasTechnicalInfo = computed(() => {
-  return (
-    Boolean(resolutionText.value) ||
-    Boolean(medium.value.framerate) ||
-    Boolean(medium.value.codec) ||
-    Boolean(medium.value.bitrate)
-  )
-})
+// 技术信息改为全部展示，缺失值以占位符显示
 
 const isWide = ref(false)
 
 const goBack = () => {
-  router.back()
+  const fn = videoBrowserRef.value?.saveProgress
+  const p = fn ? fn() : Promise.resolve()
+  void p.finally(() => {
+    router.back()
+  })
 }
 </script>
 
@@ -85,7 +81,9 @@ const goBack = () => {
             :class="isWide ? '2xl:aspect-[18/9]' : ''"
           >
             <VideoBrowser
+              ref="videoBrowserRef"
               :video="medium"
+              :autoplay="autoPlay"
               prefer-web
               :on-toggle-wide="(v) => (isWide = v)"
             />
@@ -171,44 +169,75 @@ const goBack = () => {
               </div>
             </div>
 
-            <div
-              v-if="hasTechnicalInfo"
-              class="border-border space-y-3 rounded-lg border p-4"
-            >
+            <div class="border-border space-y-3 rounded-lg border p-4">
               <div
                 class="text-muted-foreground text-sm font-medium tracking-wide uppercase"
               >
                 {{ $t('page.mediums.info.technicalInfo') }}
               </div>
               <div class="grid gap-3 text-sm sm:grid-cols-2">
-                <div v-if="resolutionText">
+                <div>
                   <div class="text-muted-foreground text-xs">
-                    {{ $t('page.mediums.info.resolution') }}
+                    {{ $t('page.mediums.info.duration') }}
                   </div>
                   <div class="mt-1 font-medium">
-                    {{ resolutionText }}
+                    {{ medium.duration || '-' }}
                   </div>
                 </div>
-                <div v-if="medium.framerate">
+                <div>
+                  <div class="text-muted-foreground text-xs">
+                    {{ $t('page.mediums.info.width') }}
+                  </div>
+                  <div class="mt-1 font-medium">
+                    {{ medium.width ?? '-' }}
+                  </div>
+                </div>
+                <div>
+                  <div class="text-muted-foreground text-xs">
+                    {{ $t('page.mediums.info.height') }}
+                  </div>
+                  <div class="mt-1 font-medium">
+                    {{ medium.height ?? '-' }}
+                  </div>
+                </div>
+                <div>
                   <div class="text-muted-foreground text-xs">
                     {{ $t('page.mediums.info.framerate') }}
                   </div>
-                  <div class="mt-1 font-medium">{{ medium.framerate }} fps</div>
-                </div>
-                <div v-if="medium.codec">
-                  <div class="text-muted-foreground text-xs">
-                    {{ $t('page.mediums.info.codec') }}
-                  </div>
                   <div class="mt-1 font-medium">
-                    {{ medium.codec }}
+                    {{ medium.framerate ? `${medium.framerate} fps` : '-' }}
                   </div>
                 </div>
-                <div v-if="medium.bitrate">
+                <div>
                   <div class="text-muted-foreground text-xs">
                     {{ $t('page.mediums.info.bitrate') }}
                   </div>
                   <div class="mt-1 font-medium">
-                    {{ medium.bitrate }}
+                    {{ typeof medium.bitrate === 'number' ? Math.round(medium.bitrate / 1000) + ' kbps' : '-' }}
+                  </div>
+                </div>
+                <div>
+                  <div class="text-muted-foreground text-xs">
+                    {{ $t('page.mediums.info.codec') }}
+                  </div>
+                  <div class="mt-1 font-medium">
+                    {{ medium.codec || '-' }}
+                  </div>
+                </div>
+                <div>
+                  <div class="text-muted-foreground text-xs">
+                    {{ $t('page.mediums.info.ratio') }}
+                  </div>
+                  <div class="mt-1 font-medium">
+                    {{ medium.ratio || '-' }}
+                  </div>
+                </div>
+                <div class="sm:col-span-2">
+                  <div class="text-muted-foreground text-xs">
+                    {{ $t('page.mediums.info.path') }}
+                  </div>
+                  <div class="mt-1 font-medium break-all">
+                    {{ medium.path || '-' }}
                   </div>
                 </div>
               </div>

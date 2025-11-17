@@ -36,12 +36,6 @@ export const videoApi = {
   getVideoUrl(id: string) {
     return `${envConfig.apiURL}${this.url.videoStreamUrl.format({ id })}`
   },
-  getVideoWebUrl(id: string) {
-    return `${envConfig.apiURL}${this.url.videoStreamUrl.format({ id })}?web=true`
-  },
-  getVideoUrlRaw(id: string) {
-    return `${envConfig.apiURL}${this.url.videoStreamUrl.format({ id })}`
-  },
 }
 
 export * from './typing'

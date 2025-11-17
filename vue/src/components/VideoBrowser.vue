@@ -14,9 +14,11 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import DPlayer from 'dplayer'
+import { useEventListener } from '@vueuse/core'
+import DPlayer, { DPlayerEvents } from 'dplayer'
 import { useI18n } from 'vue-i18n'
 
+import { MediumType } from '@/api/http/library'
 import { mediumResourceApi } from '@/api/http/medium-resource'
 import { Video, videoApi, VideoGetListOutput } from '@/api/http/video'
 
@@ -38,24 +40,86 @@ const dpLang = computed(
     (String(locale.value).toLowerCase().startsWith('zh') ? 'zh-cn' : 'en'),
 )
 
-const url = computed(() =>
-  props.preferWeb === false
-    ? videoApi.getVideoUrlRaw(props.video.id)
-    : videoApi.getVideoWebUrl(props.video.id),
-)
+const url = computed(() => videoApi.getVideoUrl(props.video.id))
 
 const dpType = computed<'auto' | 'hls' | 'flv' | 'dash'>(() => {
-  if (props.type) return props.type
-  const u = (url.value || '').toLowerCase()
-  if (u.endsWith('.m3u8')) return 'hls'
-  if (u.endsWith('.flv')) return 'flv'
-  if (u.endsWith('.mpd')) return 'dash'
-  return 'auto'
+  return 'hls'
+  // if (props.type) return props.type
+  // const u = (url.value || '').toLowerCase()
+  // if (u.endsWith('.m3u8')) return 'hls'
+  // if (u.endsWith('.flv')) return 'flv'
+  // if (u.endsWith('.mpd')) return 'dash'
+  // return 'auto'
 })
 
 const container = ref<HTMLDivElement | null>(null)
 let dp: DPlayer | null = null
 let wideBtnInjected = false
+let lastSavedProgress = -1
+let progressDirty = false
+
+const getProgress = () => {
+  const current = (dp?.video?.currentTime ?? 0) as number
+  const duration = (dp?.video?.duration ?? 0) as number
+  if (
+    !Number.isFinite(current) ||
+    !Number.isFinite(duration) ||
+    duration <= 0
+  ) {
+    return 0
+  }
+  const value = Math.min(Math.max(current / duration, 0), 1)
+  return Number.parseFloat(value.toFixed(4))
+}
+
+const saveProgress = async () => {
+  if (!progressDirty) return
+  const id = props.video.id
+  if (!id) return
+  const progress = getProgress()
+  if (!Number.isFinite(progress)) return
+  if (
+    progress >= 0 &&
+    lastSavedProgress >= 0 &&
+    Math.abs(progress - lastSavedProgress) < 0.001
+  ) {
+    return
+  }
+  try {
+    await mediumResourceApi.updateReadingProcess([
+      {
+        mediumId: id,
+        mediumType: MediumType.Video,
+        progress,
+        readingLastTime: new Date().toISOString(),
+      },
+    ])
+    lastSavedProgress = progress
+    progressDirty = false
+  } catch {
+    // ignore
+  }
+}
+
+defineExpose({ saveProgress })
+
+const resumePlayback = () => {
+  const player = dp
+  const saved = lastSavedProgress
+  const video = player?.video as HTMLVideoElement | undefined
+  if (!player || !video) return
+  const duration = video.duration
+  if (!Number.isFinite(duration) || duration <= 0) return
+  const p = Math.min(Math.max(saved, 0), 1)
+  if (p <= 0) return
+  const target = Math.min(Math.max(duration * p, 0), duration * 0.995)
+  if (!Number.isFinite(target) || target <= 0) return
+  try {
+    player.seek(target)
+  } catch {
+    video.currentTime = target
+  }
+}
 
 function init() {
   if (!container.value || !url.value) return
@@ -118,6 +182,31 @@ function init() {
     },
   })
   injectWideButton()
+  lastSavedProgress = props.video.readingProgress ?? 0
+  progressDirty = false
+  dp.on(DPlayerEvents.timeupdate, () => {
+    progressDirty = true
+  })
+  dp.on(DPlayerEvents.pause, () => {
+    void saveProgress()
+  })
+  dp.on(DPlayerEvents.ended, () => {
+    progressDirty = true
+    void saveProgress()
+  })
+  if (dp?.video) {
+    if (Number.isFinite(dp.video.duration) && dp.video.duration > 0) {
+      resumePlayback()
+    } else {
+      dp.video.addEventListener(
+        'loadedmetadata',
+        () => {
+          resumePlayback()
+        },
+        { once: true },
+      )
+    }
+  }
 }
 
 function injectWideButton() {
@@ -163,16 +252,48 @@ watch(
     }
     if (dp) {
       dp.switchVideo({ url: url.value }, undefined as any)
-      if (props.autoplay ?? true) dp.play()
+      if (props.autoplay ?? true) {
+        dp.play()
+      }
+      lastSavedProgress = props.video.readingProgress ?? 0
+      progressDirty = false
+      if (dp.video) {
+        dp.video.addEventListener(
+          'loadedmetadata',
+          () => {
+            resumePlayback()
+          },
+          { once: true },
+        )
+      }
     }
   },
 )
 
 onBeforeUnmount(() => {
+  void saveProgress()
   if (dp) {
     dp.destroy()
     dp = null
   }
+})
+
+useEventListener(window, 'visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    void saveProgress()
+  }
+})
+
+useEventListener(window, 'pagehide', () => {
+  void saveProgress()
+})
+
+useEventListener(window, 'beforeunload', () => {
+  void saveProgress()
+})
+
+useEventListener(window, 'blur', () => {
+  void saveProgress()
 })
 </script>
 <style scoped>

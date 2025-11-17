@@ -541,7 +541,7 @@ const setCoverFromComicImage = async (image: ComicImage) => {
           </UForm>
 
           <!-- 选择封面图片（Comic） -->
-          <div
+          <!-- <div
             v-if="mediumState.mediumType === MediumType.Comic"
             class="space-y-2"
           >
@@ -580,7 +580,7 @@ const setCoverFromComicImage = async (image: ComicImage) => {
                 </div>
               </div>
             </div>
-          </div>
+          </div> -->
         </div>
       </div>
     </template>

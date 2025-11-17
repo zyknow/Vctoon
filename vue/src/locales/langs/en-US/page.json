@@ -198,6 +198,8 @@
       "bitrate": "Bitrate",
       "codec": "Codec",
       "ratio": "Aspect Ratio",
+      "width": "Width",
+      "height": "Height",
       "comicImages": "Image Count",
       "path": "File Path",
       "noTags": "No tags",

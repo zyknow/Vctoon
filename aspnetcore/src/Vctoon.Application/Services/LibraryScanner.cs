@@ -136,7 +136,7 @@ public class LibraryScanner(
         {
             if (!Directory.Exists(libraryPath.Path))
             {
-                deleteLibraryPaths.AddRange(library.Paths.Where(x => x.Path.StartsWith(libraryPath.Path)));
+                deleteLibraryPaths.AddRange(library.Paths.Where(x => !x.IsRoot && x.Path.StartsWith(libraryPath.Path)));
                 // 不存在则跳过该根路径，继续处理其它根路径
                 continue;
             }

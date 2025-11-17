@@ -11,7 +11,6 @@ type RelationMode = 'add' | 'remove' | 'update'
 
 defineOptions({
   name: 'MediumBatchRelationModal',
-  inheritAttrs: false,
 })
 
 const props = defineProps<{
@@ -24,12 +23,15 @@ const props = defineProps<{
   /** 影响的媒体数量 */
   targetCount: number
 }>()
-
 const emit = defineEmits<{
   close: [value: string[] | undefined]
 }>()
 
 const userStore = useUserStore()
+
+userStore.reloadArtists()
+userStore.reloadTags()
+
 const toast = useToast()
 
 const loadingOptions = ref(false)
@@ -61,8 +63,7 @@ const placeholder = computed(() => {
 
 const description = computed(() => {
   const key = `page.mediums.selection.dialog.description.${props.entity}.${props.mode}`
-  const translation = $t(key, { count: props.targetCount })
-  return translation === key ? '' : translation
+  return $t(key)
 })
 
 const confirmText = computed(() => {
@@ -205,7 +206,12 @@ const handleConfirm = async () => {
 </script>
 
 <template>
-  <UModal :title="$t(`page.mediums.selection.dialog.title.${props.mode}`)">
+  <UModal
+    :title="
+      $t(`page.mediums.selection.dialog.title.${props.entity}.${props.mode}`)
+    "
+    :dismissible="false"
+  >
     <template #body>
       <div class="space-y-4">
         <div v-if="description" class="bg-muted/60 rounded-lg p-3 text-sm">

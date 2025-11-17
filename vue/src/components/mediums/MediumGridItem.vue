@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { MediumType } from '@/api/http/library'
 import type { MediumGetListOutput } from '@/api/http/typing'
 import { useMediumItem } from '@/hooks/useMediumItem'
 import { useMediumStore } from '@/stores'
@@ -11,9 +12,16 @@ const props = defineProps<{
 
 const mediumStore = useMediumStore()
 
+// 判断是否为视频类型
+const isVideo = computed(() => props.modelValue.mediumType === MediumType.Video)
+
+// 计算封面尺寸
+const coverBaseWidth = computed(() => (isVideo.value ? '16rem' : '10rem'))
+const coverBaseHeight = computed(() => (isVideo.value ? '9rem' : '14rem'))
+
 const cardStyleVars = computed<Record<string, string>>(() => ({
-  '--cover-base-height': '14rem',
-  '--cover-base-width': '10rem',
+  '--cover-base-width': coverBaseWidth.value,
+  '--cover-base-height': coverBaseHeight.value,
   '--cover-zoom': String(mediumStore.itemZoom ?? 1),
 }))
 
@@ -55,6 +63,8 @@ const dropdownOpen = ref(false)
     <MediumCoverCard
       :id="mediumAnchorId"
       :src="cover"
+      :base-width="coverBaseWidth"
+      :base-height="coverBaseHeight"
       class="relative border transition-colors"
       :class="{
         'group-hover:border-primary border-transparent': !isSelected,
@@ -102,11 +112,9 @@ const dropdownOpen = ref(false)
 
       <div
         v-show="!isInSelectionMode"
-        class="absolute inset-0 hidden items-center justify-center gap-3 rounded-lg group-hover:flex"
+        class="absolute inset-0 hidden items-center justify-center gap-3 group-hover:flex"
       >
-        <div
-          class="pointer-events-none absolute inset-0 rounded-lg bg-black/40"
-        ></div>
+        <div class="pointer-events-none absolute inset-0 bg-black/40"></div>
         <!-- 非选择模式：显示所有操作图标 -->
         <!-- left-bottom: edit icon -->
         <div class="pointer-events-auto absolute bottom-3 left-2 text-white/90">
@@ -156,14 +164,13 @@ const dropdownOpen = ref(false)
       <!-- 阅读进度条 - 显示在图片底部 -->
       <div
         v-if="showReadingProgress"
-        class="absolute right-0 bottom-0 left-0 h-1 overflow-hidden rounded-b-lg"
+        class="absolute right-0 bottom-0 left-0 h-1 overflow-hidden"
       >
-        <div class="absolute inset-0 bg-black/20"></div>
+        <div class="absolute inset-0 bg-black/50"></div>
         <div
-          class="relative z-10 h-full transition-all duration-300 ease-out"
+          class="bg-primary relative z-10 h-full transition-all duration-300 ease-out"
           :style="{
             width: `${readingProgress}%`,
-            backgroundColor: `hsl(var(--primary))`,
           }"
         ></div>
       </div>
@@ -174,7 +181,7 @@ const dropdownOpen = ref(false)
       <div
         :title="title"
         class="hover:text-primary line-clamp-2 cursor-pointer text-sm leading-snug font-medium"
-        @click.stop="navigateToDetail"
+        @click.stop="navigateToDetail()"
       >
         {{ title }}
       </div>
@@ -188,7 +195,6 @@ const dropdownOpen = ref(false)
 
 <style scoped>
 .medium-card {
-  /* 基础宽度：10rem（原 w-40），支持 0.8x ~ 1.6x 缩放 */
   width: calc(
     var(--cover-base-width, 10rem) * clamp(0.8, var(--cover-zoom, 1), 1.6)
   );

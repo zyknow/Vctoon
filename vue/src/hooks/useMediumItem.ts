@@ -134,7 +134,7 @@ export function useMediumItem(mediumRef: ComputedRef<MediumGetListOutput>) {
     }
   }
 
-  const navigateToDetail = () => {
+  const navigateToDetail = (query?: Record<string, string>) => {
     if (isInSelectionMode.value) return
     const id = mediumRef.value?.id
     if (!id) return
@@ -143,6 +143,7 @@ export function useMediumItem(mediumRef: ComputedRef<MediumGetListOutput>) {
     void router.push({
       name: 'MediumDetail',
       params: { mediumId: id, type: typeSegment },
+      query,
     })
   }
 
@@ -170,6 +171,13 @@ export function useMediumItem(mediumRef: ComputedRef<MediumGetListOutput>) {
         page: String(page),
       }
       void router.push({ name: 'ComicReader', params: { id: id }, query })
+      return
+    }
+    if (mediumType.value === MediumType.Video) {
+      const query: Record<string, string> = {
+        autoplay: 'true',
+      }
+      navigateToDetail(query)
       return
     }
     navigateToDetail()

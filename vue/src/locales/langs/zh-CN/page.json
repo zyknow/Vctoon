@@ -198,6 +198,8 @@
       "bitrate": "码率",
       "codec": "编码",
       "ratio": "宽高比",
+      "width": "宽度",
+      "height": "高度",
       "comicImages": "图片数量",
       "path": "文件路径",
       "noTags": "无标签",
