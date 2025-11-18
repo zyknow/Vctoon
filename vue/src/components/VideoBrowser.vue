@@ -184,13 +184,13 @@ function init() {
   injectWideButton()
   lastSavedProgress = props.video.readingProgress ?? 0
   progressDirty = false
-  dp.on(DPlayerEvents.timeupdate, () => {
+  dp.on('timeupdate' as DPlayerEvents, () => {
     progressDirty = true
   })
-  dp.on(DPlayerEvents.pause, () => {
+  dp.on('pause' as DPlayerEvents, () => {
     void saveProgress()
   })
-  dp.on(DPlayerEvents.ended, () => {
+  dp.on('ended' as DPlayerEvents, () => {
     progressDirty = true
     void saveProgress()
   })

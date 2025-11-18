@@ -44,7 +44,7 @@ public abstract class VctoonService
         LazyServiceProvider.LazyGetService<IGuidGenerator>(SimpleGuidGenerator.Instance);
 
     protected IHubContext<LibraryHub> LibraryScanHub => LazyServiceProvider.LazyGetRequiredService<IHubContext<LibraryHub>>();
-    
+
     protected IHubContext<DataChangedHub> DataChangedHub => LazyServiceProvider.LazyGetRequiredService<IHubContext<DataChangedHub>>();
 
     protected ILoggerFactory LoggerFactory => LazyServiceProvider.LazyGetRequiredService<ILoggerFactory>();
@@ -128,13 +128,14 @@ public abstract class VctoonService
     }
 
 
-    public virtual async Task SendLibraryScanMessageAsync(Guid libraryId, string title, string? message = null)
+    public virtual async Task SendLibraryScanMessageAsync(Guid libraryId, string title, string? message = null, bool updated = false)
     {
         await LibraryScanHub.Clients.All.SendAsync(HubEventConst.Library.OnScanning, new LibraryScanHubMessage
         {
             LibraryId = libraryId,
             Title = title,
-            Message = message
+            Message = message,
+            Updated = updated
         });
     }
 

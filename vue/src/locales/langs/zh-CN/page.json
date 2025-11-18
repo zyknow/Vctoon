@@ -108,6 +108,10 @@
         "setSuccess": "权限设置成功",
         "setFailed": "权限设置失败"
       }
+    },
+    "messages": {
+      "updatedTitle": "库有更新",
+      "updatedDescription": "当前库内容有更新，点击刷新以获取最新数据。"
     }
   },
   "medium": {
@@ -213,6 +217,8 @@
       "title": "标题",
       "creationTime": "创建时间",
       "lastModificationTime": "最近修改时间",
+      "readingLastTime": "最后阅读时间",
+      "readingProgress": "阅读进度",
       "size": "大小",
       "ascending": "升序",
       "descending": "降序",
@@ -813,8 +819,7 @@
       "loadError": "加载安全日志失败",
       "noData": "暂无数据"
     }
-  }
-  ,
+  },
   "profile": {
     "title": "个人资料",
     "fields": {

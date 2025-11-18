@@ -108,6 +108,10 @@
         "setSuccess": "Permissions updated successfully",
         "setFailed": "Failed to update permissions"
       }
+    },
+    "messages": {
+      "updatedTitle": "Library Updated",
+      "updatedDescription": "This library has updates. Click refresh to load the latest."
     }
   },
   "medium": {
@@ -213,6 +217,8 @@
       "title": "Title",
       "creationTime": "Creation Time",
       "lastModificationTime": "Last Modified",
+      "readingLastTime": "Last Read Time",
+      "readingProgress": "Reading Progress",
       "size": "Size",
       "ascending": "Ascending",
       "descending": "Descending",
@@ -822,8 +828,7 @@
       "loadError": "Failed to load security logs",
       "noData": "No data"
     }
-  }
-  ,
+  },
   "profile": {
     "title": "Profile",
     "fields": {

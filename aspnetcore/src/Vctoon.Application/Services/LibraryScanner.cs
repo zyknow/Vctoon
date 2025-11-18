@@ -186,9 +186,25 @@ public class LibraryScanner(
     {
         if (NeedScanLibraryPathFiles(libraryPath))
         {
+            var deleted = 0;
+            var updated = 0;
+            var added = 0;
+
             foreach (var mediumScanHandler in mediumScanHandlers)
             {
-                await mediumScanHandler.ScanAsync(libraryPath, library.MediumType);
+                var result = await mediumScanHandler.ScanAsync(libraryPath, library.MediumType);
+                if (result is null)
+                {
+                    continue;
+                }
+                deleted += result.Deleted;
+                updated += result.Updated;
+                added += result.Added;
+            }
+
+            if (deleted + updated + added > 0)
+            {
+                await SendLibraryScanMessageAsync(library.Id, L["ScanningLibraryPathFiles"], updated: true);
             }
 
             libraryPath.LastModifyTime = Directory.GetLastWriteTimeUtc(libraryPath.Path);

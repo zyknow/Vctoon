@@ -8,6 +8,7 @@ type OnReceive = {
     libraryId: string
     message: string
     title: string
+    updated: boolean
   }) => void
 }
 

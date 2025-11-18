@@ -1,4 +1,4 @@
-﻿using FFMpegCore;
+using FFMpegCore;
 using Microsoft.Extensions.Logging;
 using Vctoon.Helper;
 using Vctoon.Mediums;
@@ -11,11 +11,11 @@ public class VideoScanHandler(IVideoRepository videoRepository, CoverSaver cover
     public readonly List<string> VideoExtensions =
         [".mp4", ".mkv", ".avi", ".mov", ".wmv", ".flv", ".webm"];
 
-    public virtual async Task ScanAsync(LibraryPath libraryPath, MediumType mediaType)
+    public virtual async Task<ScanResult?> ScanAsync(LibraryPath libraryPath, MediumType mediaType)
     {
         if (mediaType != MediumType.Video)
         {
-            return;
+            return null;
         }
 
         await SendLibraryScanMessageAsync(libraryPath.LibraryId, L["ScanningLibraryPathDirectory"],
@@ -26,16 +26,18 @@ public class VideoScanHandler(IVideoRepository videoRepository, CoverSaver cover
 
         if (videoFilePaths.IsNullOrEmpty())
         {
-            return;
+            return null;
         }
 
         var videos = await videoRepository.GetListAsync(x => x.LibraryId == libraryPath.LibraryId);
 
         var deleteVideos = videos.Where(x => x.LibraryPathId == libraryPath.Id && !videoFilePaths.Contains(x!.Path)).ToList();
 
+        var deletedCount = 0;
         if (!deleteVideos.IsNullOrEmpty())
         {
             await videoRepository.DeleteManyAsync(deleteVideos.Select(x => x.Id), true);
+            deletedCount = deleteVideos.Count;
         }
 
 
@@ -107,5 +109,12 @@ public class VideoScanHandler(IVideoRepository videoRepository, CoverSaver cover
         {
             await videoRepository.InsertManyAsync(addVideos, true);
         }
+
+        if (deletedCount == 0 && addVideos.Count == 0)
+        {
+            return null;
+        }
+
+        return new ScanResult(deletedCount, 0, addVideos.Count);
     }
 }

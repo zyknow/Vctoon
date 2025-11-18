@@ -34,6 +34,16 @@ const defaultSortFieldList: SortField[] = [
     value: 'lastModificationTime',
     listSort: 101,
   },
+  {
+    label: $t('page.mediums.sort.readingLastTime'),
+    value: 'readingLastTime',
+    listSort: 102,
+  },
+  {
+    label: $t('page.mediums.sort.readingProgress'),
+    value: 'readingProgress',
+    listSort: 103,
+  },
 ]
 
 // 解析排序字符串为 SortOption 对象

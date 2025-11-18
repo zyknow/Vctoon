@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { useIsMobile } from '@/hooks/useIsMobile'
+import { useRefresh } from '@/hooks/useRefresh'
 import { getKeepAliveKey } from '@/router/keepAlive'
 
 import MainLayoutSider from './MainLayoutSider.vue'
 
 const { isMobile } = useIsMobile()
 const router = useRouter()
+const { isRouteAlive, refreshCurrentRoute } = useRefresh()
 
 // 刷新功能
-const isRouteAlive = ref(true)
 
 // 收集所有需要缓存的路由名称
 const keepAliveRoutes = computed(() => {
@@ -32,12 +33,6 @@ const keepAliveRoutes = computed(() => {
   return routes
 })
 
-// 刷新当前路由页面
-const refreshCurrentRoute = async () => {
-  isRouteAlive.value = false
-  await nextTick()
-  isRouteAlive.value = true
-}
 </script>
 
 <template>

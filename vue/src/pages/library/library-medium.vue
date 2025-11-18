@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { dataChangedHub } from '@/api/signalr/data-changed'
+import { libraryHub } from '@/api/signalr/library'
 import type { SortField } from '@/components/mediums/types'
 import Page from '@/components/Page.vue'
 import { createLibraryMediumProvider } from '@/hooks/useLibraryMediumProvider'
@@ -8,14 +10,16 @@ import {
   provideMediumItemProvider,
   provideMediumProvider,
 } from '@/hooks/useMediumProvider'
+import { useRefresh } from '@/hooks/useRefresh'
 import { $t } from '@/locales/i18n'
 import { useUserStore } from '@/stores'
 
 import LibraryRecommend from './library-recommend.vue'
 const route = useRoute()
 const router = useRouter()
+const refresh = useRefresh()
 
-const libraryId = route.params.id
+const libraryId = route.params.id as string
 
 const userStore = useUserStore()
 const library = userStore.libraries.find((i) => i.id === libraryId)
@@ -67,6 +71,55 @@ const additionalSorts: SortField[] = [
   { label: $t('page.mediums.sort.title'), value: 'title', listSort: 1 },
 ]
 
+const hasUpdate = ref(false)
+
+const updateToastId = ref<string | number | null>(null)
+
+const showUpdateToast = () => {
+  const id = `library-update-${libraryId}`
+  if (updateToastId.value === id || hasUpdate.value) return
+  updateToastId.value = id
+  hasUpdate.value = true
+}
+
+libraryHub.start()
+
+// const onScanned = (id: string) => {
+//   if (id === libraryId) {
+//     hasUpdate.value = true
+//     showUpdateToast()
+//   }
+// }
+
+const onScanning = (item: {
+  libraryId: string
+  message: string
+  title: string
+  updated: boolean
+}) => {
+  if (item.libraryId === libraryId && item.updated) {
+    hasUpdate.value = true
+    showUpdateToast()
+  }
+}
+
+// libraryHub.on('OnScanned', onScanned)
+libraryHub.on('OnScanning', onScanning)
+
+const onDeleted = (entityName: 'artist' | 'library' | 'tag', ids: any[]) => {
+  if (entityName === 'library' && ids.includes(libraryId)) {
+    void router.replace('/home')
+  }
+}
+
+dataChangedHub.on('OnDeleted', onDeleted)
+
+onUnmounted(() => {
+  // libraryHub.off('OnScanned', onScanned)
+  libraryHub.off('OnScanning', onScanning)
+  dataChangedHub.off('OnDeleted', onDeleted)
+})
+
 // 使用 KeepAlive 按 libraryId 分键后，组件会在切换库时重建并自动加载，无需额外监听
 </script>
 
@@ -115,4 +168,37 @@ const additionalSorts: SortField[] = [
     <MediumContent v-show="state.currentTab.value === 'library'" />
     <LibraryRecommend v-show="state.currentTab.value === 'recommend'" />
   </Page>
+  <div v-if="hasUpdate" class="fixed right-4 bottom-4 z-50">
+    <UCard>
+      <div class="flex items-start gap-3">
+        <UIcon name="i-lucide-refresh-cw" class="text-info text-lg" />
+        <div class="flex-1">
+          <div class="text-sm font-medium">
+            {{ $t('page.library.messages.updatedTitle') }}
+          </div>
+          <div class="text-muted-foreground text-sm">
+            {{ $t('page.library.messages.updatedDescription') }}
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <UButton
+            variant="ghost"
+            size="sm"
+            @click="refresh.refreshCurrentRoute()"
+          >
+            <template #leading>
+              <UIcon name="i-lucide-refresh-cw" />
+            </template>
+            {{ $t('common.refresh') }}
+          </UButton>
+          <UButton variant="ghost" size="sm" @click="hasUpdate = false">
+            <template #leading>
+              <UIcon name="i-lucide-x" />
+            </template>
+            {{ $t('common.cancel') }}
+          </UButton>
+        </div>
+      </div>
+    </UCard>
+  </div>
 </template>

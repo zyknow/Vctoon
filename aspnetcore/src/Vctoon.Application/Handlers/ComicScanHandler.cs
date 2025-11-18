@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using SharpCompress.Archives;
 using Vctoon.Mediums;
 
@@ -23,11 +23,11 @@ public class ComicScanHandler(
         [".jpg", ".png", ".jpeg", ".bmp", ".gif", ".webp"];
 
 
-    public virtual async Task ScanAsync(LibraryPath libraryPath, MediumType mediaType)
+    public virtual async Task<ScanResult?> ScanAsync(LibraryPath libraryPath, MediumType mediaType)
     {
         if (mediaType != MediumType.Comic)
         {
-            return;
+            return null;
         }
 
         await SendLibraryScanMessageAsync(libraryPath.LibraryId, L["ScanningLibraryPathDirectory"],
@@ -133,6 +133,21 @@ public class ComicScanHandler(
         {
             await comicImageRepository.InsertManyAsync(totalChanges.ImagesToInsert);
         }
+
+        var deletedCount = totalChanges.ImageIdsToDelete.Count
+                           + totalChanges.ComicIdsToDelete.Count
+                           + totalChanges.ArchiveInfoIdsToDelete.Count;
+        var updatedCount = totalChanges.ArchiveInfosToUpdate.Count;
+        var addedCount = totalChanges.ArchiveInfosToInsert.Count
+                         + totalChanges.ComicsToInsert.Count
+                         + totalChanges.ImagesToInsert.Count;
+
+        if (deletedCount == 0 && updatedCount == 0 && addedCount == 0)
+        {
+            return null;
+        }
+
+        return new ScanResult(deletedCount, updatedCount, addedCount);
     }
 
     protected virtual async Task<(ArchiveInfo archiveInfo, ScanChanges changes)> ScanArchiveInfoDirectoryStructureAsync(string archivePath,
