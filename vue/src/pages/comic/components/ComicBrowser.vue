@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useEventListener, useFullscreen } from '@vueuse/core'
 import type { CSSProperties } from 'vue'
 import type { LocationQueryRaw } from 'vue-router'
@@ -1172,48 +1172,14 @@ useEventListener(window, 'blur', () => {
 const {
   isFullscreen,
   enter: enterFullscreen,
-  exit: exitFullscreen,
   toggle,
 } = useFullscreen(viewerContainerRef)
 
-const forcedFullscreen = ref(false)
-
-watch(
-  () => settings.alwaysFullscreen,
-  async (value) => {
-    if (value) {
-      if (isFullscreen.value) {
-        forcedFullscreen.value = false
-        return
-      }
-      forcedFullscreen.value = true
-      await enterFullscreen()
-    } else if (forcedFullscreen.value) {
-      if (isFullscreen.value) {
-        await exitFullscreen()
-      }
-      forcedFullscreen.value = false
-    }
-  },
-  { immediate: true },
-)
-
-watch(
-  isFullscreen,
-  async (value) => {
-    if (!settings.alwaysFullscreen) {
-      forcedFullscreen.value = false
-      return
-    }
-    if (value) {
-      forcedFullscreen.value = false
-      return
-    }
-    forcedFullscreen.value = true
-    await enterFullscreen()
-  },
-  { flush: 'post' },
-)
+onMounted(() => {
+  if (settings.alwaysFullscreen && !isFullscreen.value) {
+    void enterFullscreen()
+  }
+})
 
 const comicTitle = computed(() => {
   return (
@@ -1541,6 +1507,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div
+    id="comic-viewer-container"
     ref="viewerContainerRef"
     class="comic-viewer relative flex h-screen min-h-screen flex-col text-white"
     :style="viewerStyle"
@@ -1739,9 +1706,12 @@ onBeforeUnmount(() => {
         </div>
       </footer>
     </transition>
-  </div>
 
-  <ComicSettingsDrawer v-model="settingsDrawerVisible" />
+    <ComicSettingsDrawer
+      v-model="settingsDrawerVisible"
+      portal="#comic-viewer-container"
+    />
+  </div>
 </template>
 
 <style scoped>

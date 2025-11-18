@@ -18,9 +18,15 @@ defineOptions({
   name: 'ComicSettingsDrawer',
 })
 
-const props = defineProps<{
-  modelValue: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    modelValue: boolean
+    portal?: boolean | string
+  }>(),
+  {
+    portal: true,
+  },
+)
 
 const emit = defineEmits<{
   (event: 'update:modelValue', value: boolean): void
@@ -208,6 +214,8 @@ const preloadCountOptions = computed(() =>
     v-model:open="drawerVisible"
     :direction="drawerDirection"
     :handle="false"
+    :portal="portal"
+    :ui="{ overlay: 'z-50', content: 'z-50' }"
   >
     <template #title>
       {{ $t('page.comic.settings.dialogTitle') }}
