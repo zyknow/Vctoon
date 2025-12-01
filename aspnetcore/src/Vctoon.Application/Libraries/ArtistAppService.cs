@@ -22,21 +22,41 @@ public class ArtistAppService(IArtistRepository repository)
 
     public override async Task<ArtistDto> CreateAsync(ArtistCreateUpdateDto input)
     {
+        await CheckCreatePolicyAsync();
         var existing = await Repository.FindAsync(x => x.Name == input.Name);
         if (existing != null)
         {
             throw new UserFriendlyException(L["ArtistAlreadyExists", input.Name]);
         }
 
-        return await base.CreateAsync(input);
+        var entity = new Artist(GuidGenerator.Create(), input.Name);
+        await Repository.InsertAsync(entity, true);
+        var dto = ObjectMapper.Map<Artist, ArtistDto>(entity);
+
+        UnitOfWorkManager.Current!.OnCompleted(async () =>
+        {
+            await DataChangedHub.Clients.All.SendAsync(HubEventConst.DataChangedHub.OnCreated,
+                typeof(Artist).Name.ToLowerInvariant(), new List<ArtistDto> { dto });
+        });
+
+        return dto;
     }
 
-    protected override async Task<IQueryable<Artist>> CreateFilteredQueryAsync(ArtistGetListInput input)
+    public override async Task<ArtistDto> UpdateAsync(Guid id, ArtistCreateUpdateDto input)
     {
-        // TODO: AbpHelper generated
-        return (await base.CreateFilteredQueryAsync(input))
-            .WhereIf(!input.Filter.IsNullOrWhiteSpace(), x => x.Name.Contains(input.Filter!))
-            ;
+        await CheckUpdatePolicyAsync();
+        var entity = await GetEntityByIdAsync(id);
+        entity.Name = input.Name;
+        await Repository.UpdateAsync(entity, true);
+        var dto = ObjectMapper.Map<Artist, ArtistDto>(entity);
+
+        UnitOfWorkManager.Current!.OnCompleted(async () =>
+        {
+            await DataChangedHub.Clients.All.SendAsync(HubEventConst.DataChangedHub.OnUpdated,
+                typeof(Artist).Name.ToLowerInvariant(), new List<ArtistDto> { dto });
+        });
+
+        return dto;
     }
 
     public async Task DeleteManyAsync(List<Guid> ids)
@@ -49,6 +69,14 @@ public class ArtistAppService(IArtistRepository repository)
             await DataChangedHub.Clients.All.SendAsync(HubEventConst.DataChangedHub.OnDeleted,
                 typeof(Artist).Name.ToLowerInvariant(), ids);
         });
+    }
+
+    protected override async Task<IQueryable<Artist>> CreateFilteredQueryAsync(ArtistGetListInput input)
+    {
+        // TODO: AbpHelper generated
+        return (await base.CreateFilteredQueryAsync(input))
+            .WhereIf(!input.Filter.IsNullOrWhiteSpace(), x => x.Name.Contains(input.Filter!))
+            ;
     }
 
 

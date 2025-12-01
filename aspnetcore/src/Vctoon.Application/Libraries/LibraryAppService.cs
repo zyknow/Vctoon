@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Vctoon.Hubs;
 using Vctoon.Libraries.Dtos;
 using Vctoon.Mediums;
-using Vctoon.Mediums.Base;
 using Vctoon.Permissions;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
@@ -36,9 +35,15 @@ public class LibraryAppService(
             await repository.GetListAsync(x => libraryIds.Contains(x.Id), includeDetails: false);
 
         var dtos = ObjectMapper.Map<List<Library>, List<LibraryDto>>(libraries);
+        var dict = libraries.ToDictionary(x => x.Id);
+        foreach (var dto in dtos)
+        {
+            dto.Paths = dict[dto.Id].Paths.Select(p => p.Path).ToList();
+        }
+
         return dtos;
     }
-    
+
 
     [Authorize(VctoonPermissions.Library.Create)]
     public async Task<LibraryDto> CreateAsync(LibraryCreateUpdateDto input)
@@ -61,16 +66,17 @@ public class LibraryAppService(
         }
 
         var resDto = ObjectMapper.Map<Library, LibraryDto>(entity);
+        resDto.Paths = entity.Paths.Select(p => p.Path).ToList();
 
         UnitOfWorkManager.Current!.OnCompleted(async () =>
         {
             await DataChangedHub.Clients.All.SendAsync(HubEventConst.DataChangedHub.OnCreated,
-                typeof(Library).Name.ToLowerInvariant(),new List<LibraryDto>()
+                typeof(Library).Name.ToLowerInvariant(), new List<LibraryDto>
                 {
                     resDto
-                } );
+                });
         });
-        
+
         return resDto;
     }
 
@@ -91,17 +97,18 @@ public class LibraryAppService(
         await libraryStore.UpdateLibraryAsync(library);
         await libraryStore.UpdateLibraryPathsAsync(library, input.Paths);
 
-        var resDto =  ObjectMapper.Map<Library, LibraryDto>(library);
-        
+        var resDto = ObjectMapper.Map<Library, LibraryDto>(library);
+        resDto.Paths = library.Paths.Select(p => p.Path).ToList();
+
         UnitOfWorkManager.Current!.OnCompleted(async () =>
         {
             await DataChangedHub.Clients.All.SendAsync(HubEventConst.DataChangedHub.OnUpdated,
-                typeof(Library).Name.ToLowerInvariant(),new List<LibraryDto>()
+                typeof(Library).Name.ToLowerInvariant(), new List<LibraryDto>
                 {
                     resDto
-                } );
+                });
         });
-        
+
         return resDto;
     }
 
@@ -130,8 +137,9 @@ public class LibraryAppService(
         query = query.Where(x => x.Id == id);
 
         var library = await AsyncExecuter.FirstAsync(query);
-
-        return ObjectMapper.Map<Library, LibraryDto>(library);
+        var dto = ObjectMapper.Map<Library, LibraryDto>(library);
+        dto.Paths = library.Paths.Select(p => p.Path).ToList();
+        return dto;
     }
 
     [Authorize(VctoonPermissions.Library.Delete)]
@@ -139,7 +147,7 @@ public class LibraryAppService(
     {
         await repository.DeleteAsync(id);
         await mediumManager.DeleteMediumByLibraryIdAsync(id);
-        
+
         UnitOfWorkManager.Current!.OnCompleted(async () =>
         {
             await DataChangedHub.Clients.All.SendAsync(HubEventConst.DataChangedHub.OnDeleted,

@@ -24,12 +24,41 @@ public class TagAppService(ITagRepository repository)
 
     public override async Task<TagDto> CreateAsync(TagCreateUpdateDto input)
     {
+        await CheckCreatePolicyAsync();
         var existing = await Repository.FirstOrDefaultAsync(x => x.Name == input.Name);
         if (existing != null)
         {
             throw new UserFriendlyException(L["TagAlreadyExists", input.Name]);
         }
-        return await base.CreateAsync(input);
+
+        var entity = new Tag(GuidGenerator.Create(), input.Name);
+        await Repository.InsertAsync(entity, true);
+        var dto = ObjectMapper.Map<Tag, TagDto>(entity);
+
+        UnitOfWorkManager.Current!.OnCompleted(async () =>
+        {
+            await DataChangedHub.Clients.All.SendAsync(HubEventConst.DataChangedHub.OnCreated,
+                typeof(Tag).Name.ToLowerInvariant(), new List<TagDto> { dto });
+        });
+
+        return dto;
+    }
+
+    public override async Task<TagDto> UpdateAsync(Guid id, TagCreateUpdateDto input)
+    {
+        await CheckUpdatePolicyAsync();
+        var entity = await GetEntityByIdAsync(id);
+        entity.SetName(input.Name);
+        await Repository.UpdateAsync(entity, true);
+        var dto = ObjectMapper.Map<Tag, TagDto>(entity);
+
+        UnitOfWorkManager.Current!.OnCompleted(async () =>
+        {
+            await DataChangedHub.Clients.All.SendAsync(HubEventConst.DataChangedHub.OnUpdated,
+                typeof(Tag).Name.ToLowerInvariant(), new List<TagDto> { dto });
+        });
+
+        return dto;
     }
 
 
@@ -51,11 +80,11 @@ public class TagAppService(ITagRepository repository)
     {
         await CheckDeletePolicyAsync();
         await Repository.DeleteManyAsync(ids);
-        
+
         UnitOfWorkManager.Current!.OnCompleted(async () =>
         {
             await DataChangedHub.Clients.All.SendAsync(HubEventConst.DataChangedHub.OnDeleted,
-                typeof(Tag).Name.ToLowerInvariant() , ids);
+                typeof(Tag).Name.ToLowerInvariant(), ids);
         });
     }
 
