@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Vctoon.Handlers;
 using Vctoon.Mediums;
-using Vctoon.Mediums.Base;
 using Volo.Abp;
 using Volo.Abp.Uow;
 
@@ -165,8 +164,6 @@ public class LibraryScanner(
         {
             library.Paths.RemoveAll(x => deleteLibraryPaths.Contains(x));
             await mediumManager.DeleteMediumByLibraryPathIdsAsync(deleteLibraryPaths.Select(x => x.Id));
-
-
         }
     }
 
@@ -197,6 +194,7 @@ public class LibraryScanner(
                 {
                     continue;
                 }
+
                 deleted += result.Deleted;
                 updated += result.Updated;
                 added += result.Added;

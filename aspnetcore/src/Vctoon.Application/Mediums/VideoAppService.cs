@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +8,6 @@ using Vctoon.Mediums.Base;
 using Vctoon.Mediums.Dtos;
 using Vctoon.Permissions;
 using Volo.Abp;
-using Volo.Abp.Authorization;
 using Volo.Abp.Content;
 
 namespace Vctoon.Mediums;
@@ -101,7 +99,7 @@ public class VideoAppService(IVideoRepository repository)
 #if !DEBUG
         await CheckCurrentUserLibraryPermissionAsync(video.LibraryId, x => x.CanView);
 #endif
-        if (string.IsNullOrWhiteSpace(video.Path) || !System.IO.File.Exists(video.Path))
+        if (string.IsNullOrWhiteSpace(video.Path) || !File.Exists(video.Path))
         {
             return new List<SubtitleDto>();
         }
@@ -143,10 +141,12 @@ public class VideoAppService(IVideoRepository repository)
         {
             throw new UserFriendlyException("Video id is empty");
         }
+
         if (string.IsNullOrWhiteSpace(file))
         {
             throw new UserFriendlyException("Subtitle file is empty");
         }
+
         if (!IsSafeFileName(file))
         {
             throw new UserFriendlyException("Invalid subtitle file name");
@@ -166,7 +166,7 @@ public class VideoAppService(IVideoRepository repository)
         await CheckCurrentUserLibraryPermissionAsync(video.LibraryId, x => x.CanView);
 #endif
 
-        if (string.IsNullOrWhiteSpace(video.Path) || !System.IO.File.Exists(video.Path))
+        if (string.IsNullOrWhiteSpace(video.Path) || !File.Exists(video.Path))
         {
             throw new UserFriendlyException("Video file not found");
         }
@@ -183,7 +183,7 @@ public class VideoAppService(IVideoRepository repository)
             throw new UserFriendlyException("Invalid subtitle request");
         }
 
-        if (!System.IO.File.Exists(fullPath))
+        if (!File.Exists(fullPath))
         {
             throw new UserFriendlyException("Subtitle not found");
         }
@@ -192,13 +192,13 @@ public class VideoAppService(IVideoRepository repository)
         // 如果是 vtt，直接返回；srt/ass 可按需转换成 vtt
         if (ext == ".vtt")
         {
-            var stream = System.IO.File.OpenRead(fullPath);
+            var stream = File.OpenRead(fullPath);
             return new RemoteStreamContent(stream, contentType: "text/vtt");
         }
 
         if (ext is ".srt" or ".ass")
         {
-            var text = await System.IO.File.ReadAllTextAsync(fullPath, Encoding.UTF8);
+            var text = await File.ReadAllTextAsync(fullPath, Encoding.UTF8);
             var vtt = ext == ".srt" ? ConvertSrtToVtt(text) : ConvertAssToVtt(text);
             var bytes = Encoding.UTF8.GetBytes(vtt);
             var ms = new MemoryStream(bytes);
@@ -233,6 +233,7 @@ public class VideoAppService(IVideoRepository repository)
                 return (maybeLang.ToLowerInvariant(), maybeLang);
             }
         }
+
         return (null, null);
     }
 

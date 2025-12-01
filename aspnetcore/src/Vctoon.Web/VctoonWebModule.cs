@@ -27,7 +27,6 @@ using Volo.Abp.AspNetCore.Mvc.UI.Theme.Basic;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.AspNetCore.SignalR;
 using Volo.Abp.Autofac;
-using Volo.Abp.AutoMapper;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.BlobStoring.FileSystem;
 using Volo.Abp.Identity.AspNetCore;
@@ -132,7 +131,6 @@ public class VctoonWebModule : AbpModule
         ConfigureUrls(configuration);
         ConfigureHealthChecks(context);
         ConfigureAuthentication(context);
-        ConfigureAutoMapper();
         ConfigureVirtualFileSystem(hostingEnvironment);
         ConfigureAutoApiControllers();
         ConfigureSwaggerServices(context.Services);
@@ -238,11 +236,6 @@ public class VctoonWebModule : AbpModule
         {
             options.IsDynamicClaimsEnabled = true;
         });
-    }
-
-    private void ConfigureAutoMapper()
-    {
-        Configure<AbpAutoMapperOptions>(options => { options.AddMaps<VctoonWebModule>(); });
     }
 
     private void ConfigureVirtualFileSystem(IWebHostEnvironment hostingEnvironment)
