@@ -2,6 +2,8 @@
 import { computed, nextTick, onMounted, ref, useTemplateRef } from 'vue'
 import type { StyleValue } from 'vue'
 
+import { useIsMobile } from '@/hooks/useIsMobile'
+
 interface PageProps {
   title?: string
   description?: string
@@ -24,11 +26,14 @@ defineOptions({
   name: 'Page',
 })
 
-const { autoContentHeight = false, heightOffset = 48 } =
-  defineProps<PageProps>()
+const { autoContentHeight = false, heightOffset = 0 } = defineProps<PageProps>()
+
+const { isMobile } = useIsMobile()
 
 const headerHeight = ref(0)
 const footerHeight = ref(0)
+const layoutFooterHeight = ref(0)
+const layoutHeaderHeight = ref(0)
 const shouldAutoHeight = ref(false)
 
 const headerRef = useTemplateRef<HTMLDivElement>('headerRef')
@@ -36,8 +41,14 @@ const footerRef = useTemplateRef<HTMLDivElement>('footerRef')
 
 const contentStyle = computed<StyleValue>(() => {
   if (autoContentHeight) {
+    const totalOffset =
+      heightOffset +
+      headerHeight.value +
+      footerHeight.value +
+      layoutFooterHeight.value +
+      layoutHeaderHeight.value
     return {
-      height: `calc(100vh - ${headerHeight.value}px - ${typeof heightOffset === 'number' ? `${heightOffset}px` : heightOffset})`,
+      height: `calc(100vh - ${totalOffset}px)`,
       overflowY: shouldAutoHeight.value ? 'auto' : 'unset',
     }
   }
@@ -51,6 +62,21 @@ async function calcContentHeight() {
   await nextTick()
   headerHeight.value = headerRef.value?.offsetHeight || 0
   footerHeight.value = footerRef.value?.offsetHeight || 0
+
+  const mobileFooter = document.querySelector('.layout-footer')
+  if (mobileFooter) {
+    layoutFooterHeight.value = (mobileFooter as HTMLElement).offsetHeight
+  } else {
+    layoutFooterHeight.value = 0
+  }
+
+  const globalHeader = document.querySelector('.layout-header')
+  if (globalHeader) {
+    layoutHeaderHeight.value = (globalHeader as HTMLElement).offsetHeight
+  } else {
+    layoutHeaderHeight.value = 0
+  }
+
   setTimeout(() => {
     shouldAutoHeight.value = true
   }, 30)
@@ -72,7 +98,7 @@ onMounted(() => {
         $slots.extra
       "
       ref="headerRef"
-      class="bg-card border-border relative flex items-end border-b px-6 py-4"
+      class="bg-card border-border relative flex items-end border-b px-6 py-2"
       :class="headerClass"
     >
       <div class="flex-auto">
@@ -94,7 +120,11 @@ onMounted(() => {
       </div>
     </div>
 
-    <div class="h-full p-4" :class="contentClass" :style="contentStyle">
+    <div
+      class="h-full"
+      :class="`${isMobile ? 'p-4 py-1' : 'p-4'} ${contentClass}`"
+      :style="contentStyle"
+    >
       <slot></slot>
     </div>
 

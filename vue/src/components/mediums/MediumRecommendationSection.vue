@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useIsMobile } from '@/hooks/useIsMobile'
 import type { RecommendMediumProvider } from '@/hooks/useRecommendProvider'
 
 interface Props {
@@ -6,6 +7,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const { isMobile } = useIsMobile()
 
 const scrollContainer = ref<HTMLElement>()
 // 编辑逻辑由子项统一处理（medium.ts）
@@ -160,7 +163,11 @@ const hasItems = computed(
           v-for="i in 6"
           :key="`skeleton-${i}`"
           class="bg-muted animate-pulse rounded-xl"
-          style="flex-shrink: 0; width: 10rem; height: 14rem"
+          :style="{
+            flexShrink: 0,
+            width: isMobile ? '8rem' : '10rem',
+            height: isMobile ? '11.2rem' : '14rem',
+          }"
         ></div>
       </div>
 
@@ -190,10 +197,13 @@ const hasItems = computed(
             v-for="item in props.data.items.value"
             :key="item.id"
             class="flex-shrink-0"
+            :style="{ width: isMobile ? '7rem' : 'auto' }"
           >
             <MediumGridItem
+              class="h-full"
               :model-value="item"
               :medium-type="item.mediumType"
+              :fluid="isMobile"
             />
           </div>
         </TransitionGroup>

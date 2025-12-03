@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useIsMobile } from '@/hooks/useIsMobile'
+
 import { memoryStore, Position } from './UScrollbar'
 
 // 自实现的 Scrollbar 组件，遵循 Element Plus Scrollbar 的 API
@@ -7,22 +9,77 @@ import { memoryStore, Position } from './UScrollbar'
 defineOptions({ name: 'UScrollbar' })
 
 interface Props {
+  /**
+   * 滚动容器的高度
+   */
   height?: string | number
+  /**
+   * 滚动容器的最大高度
+   */
   maxHeight?: string | number
+  /**
+   * 是否使用原生滚动条样式，默认为 true
+   * - true: 使用浏览器默认滚动条（样式受操作系统/浏览器控制）
+   * - false: 使用自定义样式的滚动条（类似 Element Plus）
+   */
   native?: boolean
+  /**
+   * 包裹容器的自定义样式
+   */
   wrapStyle?: string | Record<string, string | number>
+  /**
+   * 包裹容器的自定义类名
+   */
   wrapClass?: string
+  /**
+   * 视图容器的自定义样式
+   */
   viewStyle?: string | Record<string, string | number>
+  /**
+   * 视图容器的自定义类名
+   */
   viewClass?: string
+  /**
+   * 是否不响应容器尺寸变化
+   * - true: 不监听容器大小变化
+   * - false: 监听容器大小变化并自动更新滚动条（默认）
+   */
   noresize?: boolean
+  /**
+   * 视图容器的标签类型，默认为 'div'
+   */
   tag?: string
+  /**
+   * 是否始终显示滚动条（仅在 native=false 时有效）
+   */
   always?: boolean
+  /**
+   * 滚动条最小尺寸（仅在 native=false 时有效）
+   */
   minSize?: number
+  /**
+   * 容器 ID
+   */
   id?: string
+  /**
+   * ARIA role
+   */
   role?: string
+  /**
+   * ARIA label
+   */
   ariaLabel?: string
+  /**
+   * ARIA orientation
+   */
   ariaOrientation?: 'horizontal' | 'vertical' | undefined
+  /**
+   * tabindex
+   */
   tabindex?: number | string
+  /**
+   * 触发触底/触顶事件的距离阈值
+   */
   distance?: number
   /**
    * 是否在 keep-alive 场景记忆并恢复滚动位置（横纵向均记忆）
@@ -80,6 +137,8 @@ const emit = defineEmits<{
 // refs for wrap and view
 const wrapRef = ref<HTMLElement | null>(null)
 const viewRef = ref<HTMLElement | null>(null)
+
+const { isMobile } = useIsMobile()
 
 // 路由路径（若可用）用于生成默认记忆 key
 let routePath: string | undefined
@@ -152,6 +211,10 @@ onMounted(() => {
 onUnmounted(() => {
   resizeObserver?.disconnect()
   resizeObserver = null
+  if (saveTimer !== null) {
+    cancelAnimationFrame(saveTimer)
+    saveTimer = null
+  }
 })
 
 // expose methods (对齐 Element Plus Scrollbar)
@@ -249,16 +312,19 @@ function onScroll() {
   emit('scroll', { scrollLeft: el.scrollLeft, scrollTop: el.scrollTop })
   checkEndReached(el)
   // 滚动中按需记录位置（节流）
-  // if (props.remember) scheduleSavePosition()
+  if (props.remember) scheduleSavePosition()
 }
 
 // --- 位置记忆/恢复 ---------------------------------------------------------
 
 function getPersistKey(): string | null {
   // 优先级：rememberKey > id > route.fullPath > 组件 uid
+  // 使用 routePath 可以确保在 keep-alive 失效或组件重新挂载（但未刷新页面）时仍能恢复位置
   const instance = getCurrentInstance()
   const base = props.rememberKey || props.id || routePath
+
   if (base) return `UScrollbar:${base}`
+
   return instance ? `UScrollbar:uid:${instance.uid}` : null
 }
 
@@ -296,7 +362,8 @@ function loadPosition(key: string): Position | undefined {
 
 function savePositionNow() {
   const el = wrapRef.value
-  if (!el) return
+  // 确保元素仍在文档中，避免因 keep-alive deactivate 导致读取到 0
+  if (!el || !el.isConnected) return
   const p: Position = { left: el.scrollLeft, top: el.scrollTop }
   const key = getPersistKey()
   if (!key) return
@@ -321,15 +388,15 @@ function savePositionNow() {
   }
 }
 
-// let saveTimer: number | null = null
-// function scheduleSavePosition() {
-//   if (saveTimer !== null) return
-//   // 使用 rAF 节流，足够轻量
-//   saveTimer = requestAnimationFrame(() => {
-//     saveTimer = null
-//     savePositionNow()
-//   }) as unknown as number
-// }
+let saveTimer: number | null = null
+function scheduleSavePosition() {
+  if (saveTimer !== null) return
+  // 使用 rAF 节流，足够轻量
+  saveTimer = requestAnimationFrame(() => {
+    saveTimer = null
+    savePositionNow()
+  }) as unknown as number
+}
 
 function restorePosition() {
   const key = getPersistKey()
@@ -364,12 +431,11 @@ onMounted(() => {
 onActivated?.(() => {
   if (props.remember) restorePosition()
 })
-onDeactivated?.(() => {
-  if (props.remember) savePositionNow()
-})
-onBeforeUnmount(() => {
-  if (props.remember) savePositionNow()
-})
+// onDeactivated & onBeforeUnmount:
+// 不再在此处保存位置，因为：
+// 1. onScroll 中已启用了节流保存，能确保记录用户最后的滚动位置。
+// 2. 在 deactivate/unmount 时，元素可能已隐藏或脱离文档流，导致 scrollTop 读取为 0，
+//    从而覆盖了正确的记忆位置。
 </script>
 
 <template>
@@ -386,6 +452,7 @@ onBeforeUnmount(() => {
         'uscrollbar__wrap',
         props.wrapClass,
         props.native ? 'uscrollbar--native' : 'uscrollbar--custom',
+        isMobile && 'uscrollbar--mobile',
       ]"
       :style="
         typeof props.wrapStyle === 'string' ? props.wrapStyle : wrapMergedStyle
@@ -429,5 +496,14 @@ onBeforeUnmount(() => {
 .uscrollbar--custom {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.uscrollbar--mobile::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+.uscrollbar--mobile {
+  scrollbar-width: none;
 }
 </style>

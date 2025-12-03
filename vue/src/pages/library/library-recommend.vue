@@ -73,6 +73,7 @@ itemsMap.mostViewed = mostViewed.items
     class="min-h-0 flex-1"
     aria-orientation="vertical"
     view-class="flex flex-col gap-6 pb-10"
+    remember
   >
     <MediumRecommendationSection
       v-if="lastReading.items.value.length > 0"

@@ -37,7 +37,7 @@ const attrs = useAttrs()
 const mediumStore = useMediumStore()
 
 const resolvedZoom = computed(() => {
-  const value = props.zoom ?? mediumStore.itemZoom ?? 1
+  const value = props.zoom ?? mediumStore.mediumZoom ?? 1
   return Number.isFinite(value) ? value : 1
 })
 
@@ -89,7 +89,7 @@ const hasImage = computed(() => Boolean(props.src))
   );
   overflow: hidden;
   background-color: hsl(var(--muted));
-  border-radius: 0.75rem;
+  border-radius: var(--ui-radius);
 }
 
 .medium-cover-card__image,

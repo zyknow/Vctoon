@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { MediumType } from '@/api/http/library'
 import type { MediumGetListOutput } from '@/api/http/typing'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { useMediumItem } from '@/hooks/useMediumItem'
 import { useMediumStore } from '@/stores'
 
 const props = defineProps<{
   modelValue: MediumGetListOutput
+  fluid?: boolean
 }>()
 
 // 移除对外 emit，改为内部统一处理
@@ -16,23 +18,35 @@ const mediumStore = useMediumStore()
 const isVideo = computed(() => props.modelValue.mediumType === MediumType.Video)
 
 // 计算封面尺寸
-const coverBaseWidth = computed(() => (isVideo.value ? '16rem' : '10rem'))
+const coverBaseWidth = computed(() => {
+  if (props.fluid) return '100%'
+  return isVideo.value ? '16rem' : '10rem'
+})
 const coverBaseHeight = computed(() => (isVideo.value ? '9rem' : '14rem'))
 
 const cardStyleVars = computed<Record<string, string>>(() => ({
   '--cover-base-width': coverBaseWidth.value,
   '--cover-base-height': coverBaseHeight.value,
-  '--cover-zoom': String(mediumStore.itemZoom ?? 1),
+  '--cover-zoom': props.fluid ? '1' : String(mediumStore.mediumZoom ?? 1),
 }))
 
+const mobileCoverStyle = computed(() => {
+  if (!props.fluid) return {}
+  return {
+    height: 'auto',
+    aspectRatio: isVideo.value ? '16 / 9' : '10 / 14',
+  }
+})
+
 const mediumRef = computed(() => props.modelValue)
+
+const { isMobile } = useIsMobile()
 
 const {
   mediumAnchorId,
   isSelected,
   isInSelectionMode,
   title,
-  year,
   timeAgo,
   readingProgress,
   showReadingProgress,
@@ -55,8 +69,9 @@ const dropdownOpen = ref(false)
 
 <template>
   <div
-    :style="cardStyleVars"
+    :style="[cardStyleVars, fluid ? { width: '100%' } : {}]"
     class="text-foreground medium-card group relative cursor-pointer transition-colors select-none"
+    :class="{ 'w-full': fluid }"
     @click="handleCardClick"
   >
     <!-- Cover -->
@@ -65,6 +80,7 @@ const dropdownOpen = ref(false)
       :src="cover"
       :base-width="coverBaseWidth"
       :base-height="coverBaseHeight"
+      :style="mobileCoverStyle"
       class="relative border transition-colors"
       :class="{
         'group-hover:border-primary border-transparent': !isSelected,
@@ -177,7 +193,7 @@ const dropdownOpen = ref(false)
     </MediumCoverCard>
 
     <!-- Meta -->
-    <div class="mt-3 space-y-1">
+    <div :class="isMobile ? 'mt-1' : 'mt-3 space-y-1'">
       <div
         :title="title"
         class="hover:text-primary line-clamp-2 cursor-pointer text-sm leading-snug font-medium"
@@ -185,8 +201,7 @@ const dropdownOpen = ref(false)
       >
         {{ title }}
       </div>
-      <div class="text-muted-foreground text-xs">{{ year }}</div>
-      <div class="text-muted-foreground text-xs">{{ timeAgo }}</div>
+      <div class="text-xs text-neutral-500">{{ timeAgo }}</div>
     </div>
 
     <!-- 编辑对话框已移除，由父组件统一管理 -->

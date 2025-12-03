@@ -146,7 +146,7 @@ const detailTopGridClasses = computed(() => {
 const comicCardStyleVars = computed(() => ({
   '--cover-base-height': '14rem',
   '--cover-base-width': '10rem',
-  '--cover-zoom': String(mediumStore.itemZoom || 1),
+  '--cover-zoom': String(mediumStore.mediumZoom || 1),
 }))
 
 const selectedCount = computed(() => selectedImageIds.value.length)

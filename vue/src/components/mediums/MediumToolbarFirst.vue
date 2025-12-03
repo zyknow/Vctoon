@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { useDebounceFn } from '@vueuse/core'
 
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { useMediumStore } from '@/stores/medium'
 
 defineProps<{
   title?: string
 }>()
+
+const { isMobile } = useIsMobile()
 
 const mediumStore = useMediumStore()
 
@@ -40,12 +43,12 @@ watch(
 <template>
   <div class="flex w-full flex-row items-center justify-between">
     <slot name="left">
-      <div class="text-xl font-bold">{{ title }}</div>
+      <div v-if="!isMobile" class="text-xl font-bold">{{ title }}</div>
     </slot>
     <slot name="center">
       <div></div>
     </slot>
-    <div name="right">
+    <div v-if="!isMobile" name="right">
       <div class="flex w-40 flex-row items-center gap-2">
         <USlider
           v-model="localItemZoom"

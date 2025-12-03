@@ -16,17 +16,20 @@ export const mainRoutes: RouteRecordRaw[] = [
       requiresAuth: false,
       keepAlive: true,
       icon: 'i-lucide-house',
+      isMobileBottomNav: true,
     },
   },
   {
     path: '/library',
     name: 'Library',
+    component: () => import('@/pages/library/index.vue'),
     meta: {
       menuSelectable: false,
       title: $t('page.library.title'),
       requiresAuth: false,
       trailingComponent: markRaw(MainLibraryTrailingComponent),
       icon: 'mdi:page-layout-sidebar-right',
+      isMobileBottomNav: true,
     },
     children: [],
   },
@@ -93,6 +96,7 @@ export const mainRoutes: RouteRecordRaw[] = [
       title: $t('page.setting.title'),
       requiresAuth: false,
       icon: 'i-lucide-settings',
+      isMobileBottomNav: true,
     },
   },
   {

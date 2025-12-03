@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UScrollbar from '@/components/nuxt-ui-extensions/UScrollbar.vue'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import {
   useInjectedMediumItemProvider,
   useInjectedMediumProvider,
@@ -7,20 +9,30 @@ import { $t } from '@/locales/i18n'
 import { useMediumStore } from '@/stores'
 import { ItemDisplayMode } from '@/stores/typing'
 
-defineProps<{
-  modelValue?: boolean
-}>()
+withDefaults(
+  defineProps<{
+    modelValue?: boolean
+    useScrollbar?: boolean
+  }>(),
+  {
+    useScrollbar: true,
+  },
+)
 
 const { loadType, loading, hasMore, loadItems, loadNext } =
   useInjectedMediumProvider()
 const { items } = useInjectedMediumItemProvider()
 const mediumStore = useMediumStore()
+const { isMobile } = useIsMobile()
 
-const containerClass = computed(() =>
-  mediumStore.itemDisplayMode === ItemDisplayMode.Grid
-    ? 'flex flex-wrap gap-6'
-    : 'flex flex-col gap-2',
-)
+const containerClass = computed(() => {
+  if (mediumStore.itemDisplayMode === ItemDisplayMode.Grid) {
+    return isMobile.value
+      ? 'grid grid-cols-3 gap-1 gap-y-2'
+      : 'flex flex-wrap gap-6'
+  }
+  return 'flex flex-col gap-2'
+})
 
 const endReachedDisabled = computed(
   () => loading.value || !hasMore.value || loadType === undefined,
@@ -33,6 +45,10 @@ const onEndReached = (direction: 'top' | 'bottom' | 'left' | 'right') => {
     console.error('滚动加载失败', error)
   })
 }
+
+defineExpose({
+  onEndReached,
+})
 
 // 编辑逻辑由子项统一处理（medium.ts）
 
@@ -52,10 +68,11 @@ onActivated(() => {
 </script>
 
 <template>
-  <UScrollbar
+  <component
+    :is="useScrollbar ? UScrollbar : 'div'"
     remember
     class="medium-content"
-    aria-orientation="vertical"
+    :aria-orientation="useScrollbar ? 'vertical' : undefined"
     @end-reached="onEndReached"
   >
     <div class="medium-content__body">
@@ -72,6 +89,7 @@ onActivated(() => {
           :key="`grid-${item.id}`"
           :medium-type="loadType"
           :model-value="item"
+          :fluid="isMobile"
         />
       </TransitionGroup>
       <!-- List 模式渲染容器 -->
@@ -104,7 +122,7 @@ onActivated(() => {
         </div>
       </div>
     </div>
-  </UScrollbar>
+  </component>
 </template>
 
 <style scoped>

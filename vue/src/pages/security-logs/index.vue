@@ -24,7 +24,7 @@ const pageSize = ref(10)
 
 // 排序状态
 const sorting = ref<SortingState>([
-  { id: 'CreationTime', desc: true }, // 默认按创建时间降序
+  { id: 'creationTime', desc: true }, // 默认按创建时间降序
 ])
 
 // 搜索表单
@@ -41,20 +41,6 @@ const searchForm = reactive<IdentitySecurityLogPageRequest>({
   clientIpAddress: '',
   correlationId: '',
 })
-
-const showReset = computed(() =>
-  Boolean(
-    searchForm.startTime ||
-      searchForm.endTime ||
-      searchForm.applicationName ||
-      searchForm.identity ||
-      searchForm.actionName ||
-      searchForm.userName ||
-      searchForm.clientId ||
-      searchForm.clientIpAddress ||
-      searchForm.correlationId,
-  ),
-)
 
 // 查看模式切换
 const viewMode = ref<'all' | 'current'>('all')

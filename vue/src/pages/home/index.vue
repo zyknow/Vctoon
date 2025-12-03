@@ -74,6 +74,7 @@ provideMediumAllItemProvider({
     <medium-toolbar-first :title="$t('page.home.title')" />
     <MediumToolbarSecondSelect v-if="selectedMediumIds.length > 0" />
     <UScrollbar
+      remember
       class="min-h-0 flex-1"
       aria-orientation="vertical"
       view-class="flex flex-col gap-6 pb-10"

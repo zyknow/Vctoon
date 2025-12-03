@@ -2,7 +2,9 @@
 import { dataChangedHub } from '@/api/signalr/data-changed'
 import { libraryHub } from '@/api/signalr/library'
 import type { SortField } from '@/components/mediums/types'
+import UScrollbar from '@/components/nuxt-ui-extensions/UScrollbar.vue'
 import Page from '@/components/Page.vue'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { createLibraryMediumProvider } from '@/hooks/useLibraryMediumProvider'
 import { useMediumFilterBinding } from '@/hooks/useMediumFilterBinding'
 import {
@@ -14,19 +16,32 @@ import { useRefresh } from '@/hooks/useRefresh'
 import { $t } from '@/locales/i18n'
 import { useUserStore } from '@/stores'
 
+import LibraryMobileHeaderLeft from './components/LibraryMobileHeaderLeft.vue'
 import LibraryRecommend from './library-recommend.vue'
+
 const route = useRoute()
 const router = useRouter()
 const refresh = useRefresh()
+const { isMobile } = useIsMobile()
+const userStore = useUserStore()
 
 const libraryId = route.params.id as string
 
-const userStore = useUserStore()
 const library = userStore.libraries.find((i) => i.id === libraryId)
 if (!library) {
   throw new Error('Library not found')
 }
 const state = createLibraryMediumProvider(library)
+
+const mediumContentRef = ref<{
+  onEndReached: (direction: 'top' | 'bottom' | 'left' | 'right') => void
+} | null>(null)
+
+const onScrollEnd = (direction: 'top' | 'bottom' | 'left' | 'right') => {
+  if (state.currentTab.value === 'library') {
+    mediumContentRef.value?.onEndReached(direction)
+  }
+}
 
 const normalizeQueryString = (value: unknown): null | string => {
   if (Array.isArray(value)) {
@@ -124,49 +139,65 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <Page auto-content-height content-class="flex flex-col overflow-hidden gap-6">
-    <div class="medium-toolbar gap-4">
-      <medium-toolbar-first :title="state.title.value">
-        <template #center>
-          <UTabs
-            v-model="state.currentTab.value"
-            size="xs"
-            class="min-w-80"
-            :items="tabs"
-          />
-        </template>
-      </medium-toolbar-first>
-      <div class="w-full">
-        <medium-toolbar-second
-          v-if="
-            state.currentTab.value === 'library' &&
-            state.selectedMediumIds.value.length === 0
-          "
-        >
-          <template #left>
-            <div class="flex flex-row items-center gap-4">
-              <medium-filter-dropdown
-                v-model:model-value="mediumFilterValue"
-                :disabled="state.loading.value"
-              />
+  <LibraryMobileHeaderLeft :library="library" />
 
-              <medium-sort-dropdown
-                v-model:model-value="state.pageRequest.sorting"
-                :additional-sort-field-list="additionalSorts"
-                @change="state.updateSorting"
-              />
-              <UBadge variant="subtle">{{ state.totalCount || 0 }}</UBadge>
-            </div>
+  <Page auto-content-height>
+    <component
+      :is="isMobile ? UScrollbar : 'div'"
+      class="flex h-full min-h-0 flex-col"
+      :class="[isMobile ? 'gap-2' : 'gap-6', !isMobile && 'overflow-hidden']"
+      :aria-orientation="'vertical'"
+      remember
+      @end-reached="onScrollEnd"
+    >
+      <div class="medium-toolbar" :class="isMobile ? 'mb-2' : 'gap-4'">
+        <medium-toolbar-first :title="state.title.value">
+          <template #center>
+            <UTabs
+              v-model="state.currentTab.value"
+              size="xs"
+              class="min-w-80"
+              :class="isMobile ? 'w-full' : ''"
+              :items="tabs"
+            />
           </template>
-        </medium-toolbar-second>
-        <medium-toolbar-second-select
-          v-else-if="state.selectedMediumIds.value.length > 0"
-          :show-selected-all-btn="true"
-        />
+        </medium-toolbar-first>
+        <div class="w-full">
+          <medium-toolbar-second
+            v-if="
+              state.currentTab.value === 'library' &&
+              state.selectedMediumIds.value.length === 0
+            "
+          >
+            <template #left>
+              <div class="flex flex-row items-center gap-4">
+                <medium-filter-dropdown
+                  v-model:model-value="mediumFilterValue"
+                  :disabled="state.loading.value"
+                />
+
+                <medium-sort-dropdown
+                  v-model:model-value="state.pageRequest.sorting"
+                  :additional-sort-field-list="additionalSorts"
+                  @change="state.updateSorting"
+                />
+                <UBadge variant="subtle">{{ state.totalCount || 0 }}</UBadge>
+              </div>
+            </template>
+          </medium-toolbar-second>
+          <medium-toolbar-second-select
+            v-else-if="state.selectedMediumIds.value.length > 0"
+            :show-selected-all-btn="true"
+          />
+        </div>
       </div>
-    </div>
-    <MediumContent v-show="state.currentTab.value === 'library'" />
-    <LibraryRecommend v-show="state.currentTab.value === 'recommend'" />
+      <MediumContent
+        v-show="state.currentTab.value === 'library'"
+        ref="mediumContentRef"
+        :use-scrollbar="!isMobile"
+      />
+      <LibraryRecommend v-show="state.currentTab.value === 'recommend'" />
+    </component>
   </Page>
   <div v-if="hasUpdate" class="fixed right-4 bottom-4 z-50">
     <UCard>

@@ -211,4 +211,100 @@ const mode = computed({
       />
     </UDropdownMenu>
   </div>
+
+  <!-- 完整模式：在 Drawer 中直接显示所有设置 -->
+  <div v-else class="flex flex-col gap-6">
+    <!-- 语言设置 -->
+    <div class="space-y-3">
+      <h4 class="text-sm leading-none font-medium">
+        {{ t('preferences.locale') }}
+      </h4>
+      <USelect
+        v-model="locale"
+        :items="SUPPORTED_LOCALES"
+        value-key="code"
+        class="w-full"
+      />
+    </div>
+
+    <USeparator />
+
+    <!-- Primary 主题色 -->
+    <fieldset>
+      <legend class="mb-2 text-[11px] leading-none font-semibold">
+        {{ t('preferences.userMenu.theme.primary') }}
+      </legend>
+      <div class="-mx-2 grid grid-cols-5 gap-1">
+        <ThemePickerButton
+          v-for="color in primaryColors"
+          :key="color"
+          :label="color"
+          :chip="color"
+          :selected="primary === color"
+          @click="primary = color"
+        />
+      </div>
+    </fieldset>
+
+    <!-- Neutral 中性色 -->
+    <fieldset>
+      <legend class="mb-2 text-[11px] leading-none font-semibold">
+        {{ t('preferences.userMenu.theme.neutral') }}
+      </legend>
+      <div class="-mx-2 grid grid-cols-5 gap-1">
+        <ThemePickerButton
+          v-for="color in neutralColors"
+          :key="color"
+          :label="color"
+          :chip="color === 'neutral' ? 'old-neutral' : color"
+          :selected="neutral === color"
+          @click="neutral = color"
+        />
+      </div>
+    </fieldset>
+
+    <!-- Radius 圆角 -->
+    <fieldset>
+      <legend class="mb-2 text-[11px] leading-none font-semibold">
+        {{ t('preferences.userMenu.theme.radius') }}
+      </legend>
+      <div class="-mx-2 grid grid-cols-5 gap-1">
+        <ThemePickerButton
+          v-for="r in radiuses"
+          :key="r"
+          class="items-center justify-center"
+          :label="String(r)"
+          :selected="radius === r"
+          @click="radius = r"
+        />
+      </div>
+    </fieldset>
+
+    <!-- Theme 主题模式 -->
+    <fieldset>
+      <legend class="mb-2 text-[11px] leading-none font-semibold">
+        {{ t('preferences.userMenu.appearance') }}
+      </legend>
+      <div class="-mx-2 grid grid-cols-3 gap-1">
+        <ThemePickerButton
+          :label="t('preferences.themes.light')"
+          :icon="modes[0].icon"
+          :selected="mode === 'light'"
+          @click="mode = 'light'"
+        />
+        <ThemePickerButton
+          :label="t('preferences.themes.dark')"
+          :icon="modes[1].icon"
+          :selected="mode === 'dark'"
+          @click="mode = 'dark'"
+        />
+        <ThemePickerButton
+          :label="t('preferences.themes.system')"
+          :icon="modes[2].icon"
+          :selected="mode === 'auto'"
+          @click="mode = 'auto'"
+        />
+      </div>
+    </fieldset>
+  </div>
 </template>
