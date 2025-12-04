@@ -119,13 +119,13 @@ const keepAliveRoutes = computed(() => {
     />
     <nav
       v-else
-      class="bg-background pb-safe mobile-nav-footer layout-footer flex h-16 shrink-0 items-center justify-around"
+      class="bg-background pb-safe mobile-nav-footer layout-footer flex h-16 shrink-0"
     >
       <RouterLink
         v-for="item in mobilePrimaryMenus"
         :key="item.name"
         :to="item.to || ''"
-        class="flex flex-col items-center gap-1 transition-colors"
+        class="flex flex-1 flex-col items-center justify-center gap-1 transition-colors"
         :class="[
           isMenuActive(item)
             ? 'text-primary'
@@ -138,7 +138,7 @@ const keepAliveRoutes = computed(() => {
 
       <button
         v-if="mobileSecondaryMenus.length > 0"
-        class="text-muted-foreground hover:text-primary flex flex-col items-center gap-1 transition-colors"
+        class="text-muted-foreground hover:text-primary flex flex-1 flex-col items-center justify-center gap-1 transition-colors"
         @click="isMobileMenuOpen = true"
       >
         <UIcon name="i-lucide-menu" class="text-2xl" />
@@ -148,16 +148,18 @@ const keepAliveRoutes = computed(() => {
 
     <UDrawer v-model:open="isMobileMenuOpen" direction="bottom" :handle="false">
       <template #header>
-        <div class="flex items-center justify-between border-b p-4">
-          <h2 class="text-lg font-semibold">
-            {{ $t('common.menu') || '菜单' }}
-          </h2>
-          <UButton
-            color="gray"
-            variant="ghost"
-            icon="i-lucide-x"
-            @click="isMobileMenuOpen = false"
-          />
+        <div>
+          <div class="flex items-center justify-between p-4">
+            <h2 class="text-lg font-semibold">
+              {{ $t('common.menu') }}
+            </h2>
+            <UButton
+              color="gray"
+              variant="ghost"
+              icon="i-lucide-x"
+              @click="isMobileMenuOpen = false"
+            />
+          </div>
         </div>
       </template>
       <template #body>

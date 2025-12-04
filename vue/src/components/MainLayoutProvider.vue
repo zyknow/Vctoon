@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  computed,
   nextTick,
   onActivated,
   onDeactivated,
@@ -7,16 +8,33 @@ import {
   onUnmounted,
   ref,
   useSlots,
+  watch,
 } from 'vue'
 
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { useLayoutStore } from '@/stores/layout'
+
+const props = withDefaults(
+  defineProps<{
+    mobileOnly?: boolean
+  }>(),
+  {
+    mobileOnly: false,
+  },
+)
 
 const layoutStore = useLayoutStore()
 const slots = useSlots()
 const { isMobile } = useIsMobile()
 
 const isReady = ref(false)
+
+const isActive = computed(() => {
+  if (props.mobileOnly) {
+    return isMobile.value
+  }
+  return true
+})
 
 // Track registration state
 const registered = {
@@ -72,27 +90,24 @@ const updateRegistration = (register: boolean) => {
   }
 }
 
-const register = () => updateRegistration(true)
+const register = () => {
+  if (!isActive.value) return
+  updateRegistration(true)
+}
 const unregister = () => updateRegistration(false)
 
-onMounted(async () => {
-  register()
-  await nextTick()
+const checkTargets = () => {
+  let ready = true
+  if (slots.header && !document.querySelector('#layout-header')) ready = false
+  if (slots['header-left'] && !document.querySelector('#layout-header-left'))
+    ready = false
+  if (slots['header-right'] && !document.querySelector('#layout-header-right'))
+    ready = false
+  if (slots.footer && !document.querySelector('#layout-footer')) ready = false
+  return ready
+}
 
-  const checkTargets = () => {
-    let ready = true
-    if (slots.header && !document.querySelector('#layout-header')) ready = false
-    if (slots['header-left'] && !document.querySelector('#layout-header-left'))
-      ready = false
-    if (
-      slots['header-right'] &&
-      !document.querySelector('#layout-header-right')
-    )
-      ready = false
-    if (slots.footer && !document.querySelector('#layout-footer')) ready = false
-    return ready
-  }
-
+const ensureReady = () => {
   if (checkTargets()) {
     isReady.value = true
   } else {
@@ -106,6 +121,25 @@ onMounted(async () => {
       }
     }, 50)
   }
+}
+
+watch(isActive, async (active) => {
+  if (active) {
+    register()
+    await nextTick()
+    ensureReady()
+  } else {
+    unregister()
+    isReady.value = false
+  }
+})
+
+onMounted(async () => {
+  if (isActive.value) {
+    register()
+    await nextTick()
+    ensureReady()
+  }
 })
 
 onActivated(register)
@@ -114,7 +148,7 @@ onDeactivated(unregister)
 </script>
 
 <template>
-  <div v-if="isReady">
+  <div v-if="isReady && isActive">
     <Teleport v-if="$slots.header" to="#layout-header">
       <slot name="header" :is-mobile="isMobile" />
     </Teleport>

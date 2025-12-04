@@ -409,10 +409,6 @@ const deleteSelectedImages = async () => {
   }
 }
 
-const goBack = () => {
-  router.back()
-}
-
 const navigateToComicReader = (
   mode: 'restart' | 'resume',
   options: { incognito?: boolean; page?: number } = {},
@@ -480,10 +476,10 @@ const resolveComicImageUrl = (imageId: string) => {
 </script>
 
 <template>
-  <MediumToolbarFirst :title="mediumTitle">
+  <MediumToolbarFirst v-if="!isMobile" :title="mediumTitle">
     <template #left>
       <div class="flex items-center gap-3">
-        <UButton size="sm" variant="outline" @click="goBack">
+        <UButton size="sm" variant="outline" @click="router.back()">
           <template #leading>
             <UIcon name="i-heroicons-arrow-left" />
           </template>

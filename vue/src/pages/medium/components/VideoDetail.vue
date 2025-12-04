@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router'
 
 import type { Video } from '@/api/http/video/typing'
 import MediumToolbarFirst from '@/components/mediums/MediumToolbarFirst.vue'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { $t } from '@/locales/i18n'
 import { formatMediumDateTime, formatMediumProgress } from '@/utils/medium'
 
@@ -10,6 +11,8 @@ const props = defineProps<{
   loading: boolean
   medium: Video
 }>()
+
+const { isMobile } = useIsMobile()
 
 const router = useRouter()
 type VideoBrowserExpose = { saveProgress: () => Promise<void> }
@@ -45,21 +48,13 @@ const progressText = computed(() =>
 // 技术信息改为全部展示，缺失值以占位符显示
 
 const isWide = ref(false)
-
-const goBack = () => {
-  const fn = videoBrowserRef.value?.saveProgress
-  const p = fn ? fn() : Promise.resolve()
-  void p.finally(() => {
-    router.back()
-  })
-}
 </script>
 
 <template>
-  <MediumToolbarFirst :title="mediumTitle">
+  <MediumToolbarFirst v-if="!isMobile" :title="mediumTitle">
     <template #left>
       <div class="flex items-center gap-3">
-        <UButton size="sm" variant="outline" @click="goBack">
+        <UButton size="sm" variant="outline" @click="router.back()">
           <template #leading>
             <UIcon name="i-heroicons-arrow-left" />
           </template>
@@ -213,7 +208,11 @@ const goBack = () => {
                     {{ $t('page.mediums.info.bitrate') }}
                   </div>
                   <div class="mt-1 font-medium">
-                    {{ typeof medium.bitrate === 'number' ? Math.round(medium.bitrate / 1000) + ' kbps' : '-' }}
+                    {{
+                      typeof medium.bitrate === 'number'
+                        ? Math.round(medium.bitrate / 1000) + ' kbps'
+                        : '-'
+                    }}
                   </div>
                 </div>
                 <div>

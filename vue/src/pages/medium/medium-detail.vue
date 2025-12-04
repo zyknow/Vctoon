@@ -78,6 +78,19 @@ const videoData = computed(() => {
 </script>
 
 <template>
+  <MainLayoutProvider mobile-only>
+    <template #header-left>
+      <UButton color="neutral" variant="ghost" @click="$router.back()">
+        <template #leading>
+          <UIcon name="i-heroicons-arrow-left" />
+        </template>
+        {{ $t('page.mediums.detail.back') }}
+      </UButton>
+    </template>
+
+    <template #footer></template>
+  </MainLayoutProvider>
+
   <Page content-class="flex flex-col gap-8 pb-12">
     <template v-if="mediumType === MediumType.Comic">
       <MediumComicDetail

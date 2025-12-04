@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, useTemplateRef } from 'vue'
+import { computed, onMounted, ref, useTemplateRef } from 'vue'
+import { useResizeObserver } from '@vueuse/core'
 import type { StyleValue } from 'vue'
 
 import { useIsMobile } from '@/hooks/useIsMobile'
@@ -55,35 +56,51 @@ const contentStyle = computed<StyleValue>(() => {
   return {}
 })
 
-async function calcContentHeight() {
+function updateHeight(target: typeof headerHeight) {
+  return (entries: readonly ResizeObserverEntry[]) => {
+    const entry = entries[0]
+    if (!entry) return
+    // Use borderBoxSize if available for accurate height including padding/border
+    if (entry.borderBoxSize && entry.borderBoxSize.length > 0) {
+      target.value = entry.borderBoxSize[0].blockSize
+    } else {
+      target.value = entry.contentRect.height
+    }
+  }
+}
+
+onMounted(() => {
   if (!autoContentHeight) {
     return
   }
-  await nextTick()
-  headerHeight.value = headerRef.value?.offsetHeight || 0
-  footerHeight.value = footerRef.value?.offsetHeight || 0
 
+  // Internal elements
+  if (headerRef.value) {
+    useResizeObserver(headerRef.value, updateHeight(headerHeight))
+  }
+  if (footerRef.value) {
+    useResizeObserver(footerRef.value, updateHeight(footerHeight))
+  }
+
+  // External elements
   const mobileFooter = document.querySelector('.layout-footer')
   if (mobileFooter) {
-    layoutFooterHeight.value = (mobileFooter as HTMLElement).offsetHeight
-  } else {
-    layoutFooterHeight.value = 0
+    useResizeObserver(
+      mobileFooter as HTMLElement,
+      updateHeight(layoutFooterHeight),
+    )
   }
 
   const globalHeader = document.querySelector('.layout-header')
   if (globalHeader) {
-    layoutHeaderHeight.value = (globalHeader as HTMLElement).offsetHeight
-  } else {
-    layoutHeaderHeight.value = 0
+    useResizeObserver(
+      globalHeader as HTMLElement,
+      updateHeight(layoutHeaderHeight),
+    )
   }
 
-  setTimeout(() => {
-    shouldAutoHeight.value = true
-  }, 30)
-}
-
-onMounted(() => {
-  calcContentHeight()
+  // Enable auto height behavior
+  shouldAutoHeight.value = true
 })
 </script>
 

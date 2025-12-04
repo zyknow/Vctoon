@@ -1,5 +1,9 @@
 import { computed, readonly } from 'vue'
-import { useBreakpoints, useWindowSize } from '@vueuse/core'
+import {
+  createSharedComposable,
+  useBreakpoints,
+  useWindowSize,
+} from '@vueuse/core'
 
 const tailwindBreakpoints = {
   sm: 640,
@@ -17,15 +21,33 @@ export interface UseIsMobileOptions {
   ssrWidth?: number
 }
 
+const useSharedBreakpoints = createSharedComposable(() =>
+  useBreakpoints(tailwindBreakpoints),
+)
+
+const useSharedWindowSize = createSharedComposable(() =>
+  useWindowSize({
+    initialWidth: tailwindBreakpoints.lg,
+    initialHeight: 0,
+  }),
+)
+
 export function useIsMobile(options: UseIsMobileOptions = {}) {
   const { breakpoint = 'lg', maxWidth, ssrWidth } = options
 
-  const breakpoints = useBreakpoints(tailwindBreakpoints)
-  const { width } = useWindowSize({
-    initialWidth:
-      typeof ssrWidth === 'number' ? ssrWidth : tailwindBreakpoints.lg,
-    initialHeight: 0,
-  })
+  const breakpoints = useSharedBreakpoints()
+
+  let width
+  if (typeof ssrWidth === 'number') {
+    const windowSize = useWindowSize({
+      initialWidth: ssrWidth,
+      initialHeight: 0,
+    })
+    width = windowSize.width
+  } else {
+    const windowSize = useSharedWindowSize()
+    width = windowSize.width
+  }
 
   const isBelowBreakpoint = breakpoints.smaller(breakpoint)
 

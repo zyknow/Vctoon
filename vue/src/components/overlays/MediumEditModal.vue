@@ -9,7 +9,6 @@ import { tagApi } from '@/api/http/tag'
 import type { Tag } from '@/api/http/tag/typing'
 import type { MediumDto } from '@/api/http/typing'
 import { videoApi } from '@/api/http/video'
-import { useEnvConfig } from '@/hooks/useEnvConfig'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { $t } from '@/locales/i18n'
 import { useUserStore } from '@/stores'
@@ -34,7 +33,7 @@ const emit = defineEmits<{
 }>()
 
 const toast = useToast()
-const { apiURL } = useEnvConfig()
+// const { apiURL } = useEnvConfig()
 const { isMobile } = useIsMobile()
 
 const mediumState = ref<Medium | null>(null)
@@ -45,16 +44,16 @@ const initialLoading = ref(true)
 const comicImages = ref<ComicImage[]>([])
 const comicImagesLoading = ref(false)
 const selectedCoverComicImageId = ref<null | string>(null)
-const selectingCoverImageId = ref<null | string>(null)
+// const selectingCoverImageId = ref<null | string>(null)
 
 const currentCoverUrl = computed(() => {
   if (!mediumState.value?.cover) return ''
   return mediumResourceApi.getCoverUrl(mediumState.value.cover)
 })
 
-function isSelectedComicImage(id: string) {
-  return selectedCoverComicImageId.value === id
-}
+// function isSelectedComicImage(id: string) {
+//   return selectedCoverComicImageId.value === id
+// }
 
 // 使用 userStore 获取 artists 和 tags 数据
 const userStore = useUserStore()
@@ -382,48 +381,48 @@ const handleCoverUploadChange = async (files: File[]) => {
 }
 
 // 从漫画图片选为封面：拉取原图 blob 再上传
-const setCoverFromComicImage = async (image: ComicImage) => {
-  if (!mediumState.value) return
-  if (selectingCoverImageId.value) return
-  selectingCoverImageId.value = image.id
-  try {
-    const rawUrl = comicApi.url.getComicImage.format({
-      comicImageId: image.id,
-      maxWidth: 1200,
-    })
-    const fullUrl = `${apiURL}${rawUrl}`
+// const setCoverFromComicImage = async (image: ComicImage) => {
+//   if (!mediumState.value) return
+//   if (selectingCoverImageId.value) return
+//   selectingCoverImageId.value = image.id
+//   try {
+//     const rawUrl = comicApi.url.getComicImage.format({
+//       comicImageId: image.id,
+//       maxWidth: 1200,
+//     })
+//     const fullUrl = `${apiURL}${rawUrl}`
 
-    // 使用原生 fetch，手动补授权头
-    const response = await fetch(fullUrl, {
-      credentials: 'include',
-    })
-    const blob = await response.blob()
+//     // 使用原生 fetch，手动补授权头
+//     const response = await fetch(fullUrl, {
+//       credentials: 'include',
+//     })
+//     const blob = await response.blob()
 
-    const ext = image.name?.split('.').pop() || 'jpg'
-    const file = new File([blob], image.name || `${image.id}.${ext}`, {
-      type: blob.type || 'image/jpeg',
-    })
-    const updateCoverApi =
-      mediumState.value.mediumType === MediumType.Comic ? comicApi : videoApi
-    const updatedMedium = await updateCoverApi.updateCover(
-      mediumState.value.id,
-      file,
-    )
-    emit('updated', updatedMedium as Medium)
-    // 更新本地 cover (重新获取最新数据保持一致) 并记录选中图片 id
-    const fresh = await updateCoverApi.getById(mediumState.value.id)
-    mediumState.value.cover = (fresh as any).cover
-    selectedCoverComicImageId.value = image.id
-  } catch (error) {
-    console.error('通过漫画图片设置封面失败:', error)
-    toast.add({
-      title: $t('page.mediums.edit.setCoverError'),
-      color: 'error',
-    })
-  } finally {
-    selectingCoverImageId.value = null
-  }
-}
+//     const ext = image.name?.split('.').pop() || 'jpg'
+//     const file = new File([blob], image.name || `${image.id}.${ext}`, {
+//       type: blob.type || 'image/jpeg',
+//     })
+//     const updateCoverApi =
+//       mediumState.value.mediumType === MediumType.Comic ? comicApi : videoApi
+//     const updatedMedium = await updateCoverApi.updateCover(
+//       mediumState.value.id,
+//       file,
+//     )
+//     emit('updated', updatedMedium as Medium)
+//     // 更新本地 cover (重新获取最新数据保持一致) 并记录选中图片 id
+//     const fresh = await updateCoverApi.getById(mediumState.value.id)
+//     mediumState.value.cover = (fresh as any).cover
+//     selectedCoverComicImageId.value = image.id
+//   } catch (error) {
+//     console.error('通过漫画图片设置封面失败:', error)
+//     toast.add({
+//       title: $t('page.mediums.edit.setCoverError'),
+//       color: 'error',
+//     })
+//   } finally {
+//     selectingCoverImageId.value = null
+//   }
+// }
 </script>
 
 <template>
