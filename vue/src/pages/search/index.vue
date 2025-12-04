@@ -263,7 +263,29 @@ const mapHitToMedium = (hit: SearchHit): MediumGetListOutput | null => {
 </script>
 
 <template>
-  <Page auto-content-height content-class="flex flex-col bg-background">
+  <MainLayoutProvider mobile-only>
+    <template #header>
+      <div class="flex h-full w-full flex-row items-center justify-center">
+        <UButton
+          class="absolute left-1"
+          color="neutral"
+          variant="ghost"
+          @click="$router.back()"
+        >
+          <template #leading>
+            <UIcon name="i-heroicons-arrow-left" />
+          </template>
+          {{ $t('page.mediums.detail.back') }}
+        </UButton>
+        <div>{{ $t('page.search.title') }}</div>
+      </div>
+    </template>
+    <template #footer></template>
+  </MainLayoutProvider>
+
+  <Page auto-content-height content-class="flex flex-col gap-4">
+    <MediumSearchInput></MediumSearchInput>
+
     <div class="flex items-center justify-between">
       <div>{{ $t('page.search.total') }}：{{ total }}</div>
       <!-- 移除分页，改为无限滚动加载 -->

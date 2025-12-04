@@ -4,9 +4,8 @@
     "lib": ["ES2022"],
     "module": "ESNext",
     "skipLibCheck": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
+      "@/*": ["./src/*"],
       "#build/ui": ["./node_modules/.nuxt-ui/ui"]
     },
 

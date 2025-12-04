@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, useTemplateRef } from 'vue'
-import { useResizeObserver } from '@vueuse/core'
+import { computed } from 'vue'
 import type { StyleValue } from 'vue'
 
 import { useIsMobile } from '@/hooks/useIsMobile'
@@ -31,81 +30,22 @@ const { autoContentHeight = false, heightOffset = 0 } = defineProps<PageProps>()
 
 const { isMobile } = useIsMobile()
 
-const headerHeight = ref(0)
-const footerHeight = ref(0)
-const layoutFooterHeight = ref(0)
-const layoutHeaderHeight = ref(0)
-const shouldAutoHeight = ref(false)
-
-const headerRef = useTemplateRef<HTMLDivElement>('headerRef')
-const footerRef = useTemplateRef<HTMLDivElement>('footerRef')
-
-const contentStyle = computed<StyleValue>(() => {
-  if (autoContentHeight) {
-    const totalOffset =
-      heightOffset +
-      headerHeight.value +
-      footerHeight.value +
-      layoutFooterHeight.value +
-      layoutHeaderHeight.value
+const rootStyle = computed<StyleValue>(() => {
+  if (autoContentHeight && heightOffset > 0) {
     return {
-      height: `calc(100vh - ${totalOffset}px)`,
-      overflowY: shouldAutoHeight.value ? 'auto' : 'unset',
+      height: `calc(100% - ${heightOffset}px)`,
     }
   }
   return {}
 })
-
-function updateHeight(target: typeof headerHeight) {
-  return (entries: readonly ResizeObserverEntry[]) => {
-    const entry = entries[0]
-    if (!entry) return
-    // Use borderBoxSize if available for accurate height including padding/border
-    if (entry.borderBoxSize && entry.borderBoxSize.length > 0) {
-      target.value = entry.borderBoxSize[0].blockSize
-    } else {
-      target.value = entry.contentRect.height
-    }
-  }
-}
-
-onMounted(() => {
-  if (!autoContentHeight) {
-    return
-  }
-
-  // Internal elements
-  if (headerRef.value) {
-    useResizeObserver(headerRef.value, updateHeight(headerHeight))
-  }
-  if (footerRef.value) {
-    useResizeObserver(footerRef.value, updateHeight(footerHeight))
-  }
-
-  // External elements
-  const mobileFooter = document.querySelector('.layout-footer')
-  if (mobileFooter) {
-    useResizeObserver(
-      mobileFooter as HTMLElement,
-      updateHeight(layoutFooterHeight),
-    )
-  }
-
-  const globalHeader = document.querySelector('.layout-header')
-  if (globalHeader) {
-    useResizeObserver(
-      globalHeader as HTMLElement,
-      updateHeight(layoutHeaderHeight),
-    )
-  }
-
-  // Enable auto height behavior
-  shouldAutoHeight.value = true
-})
 </script>
 
 <template>
-  <div class="relative">
+  <div
+    class="relative"
+    :class="{ 'flex h-full flex-col overflow-hidden': autoContentHeight }"
+    :style="rootStyle"
+  >
     <div
       v-if="
         description ||
@@ -114,8 +54,7 @@ onMounted(() => {
         $slots.title ||
         $slots.extra
       "
-      ref="headerRef"
-      class="bg-card border-border relative flex items-end border-b px-6 py-2"
+      class="bg-card border-border relative flex shrink-0 items-end border-b px-6 py-2"
       :class="headerClass"
     >
       <div class="flex-auto">
@@ -139,17 +78,22 @@ onMounted(() => {
 
     <div
       class="h-full"
-      :class="`${isMobile ? 'p-4 py-1' : 'p-4'} ${contentClass}`"
-      :style="contentStyle"
+      :class="[
+        isMobile ? 'p-4 py-1' : 'p-4',
+        contentClass,
+        autoContentHeight ? 'min-h-0 flex-1 overflow-y-auto' : '',
+      ]"
     >
       <slot></slot>
     </div>
 
     <div
       v-if="$slots.footer"
-      ref="footerRef"
-      class="bg-card align-center absolute right-0 bottom-0 left-0 flex px-6 py-4"
-      :class="footerClass"
+      class="bg-card align-center flex px-6 py-4"
+      :class="[
+        footerClass,
+        autoContentHeight ? 'shrink-0' : 'absolute right-0 bottom-0 left-0',
+      ]"
     >
       <slot name="footer"></slot>
     </div>

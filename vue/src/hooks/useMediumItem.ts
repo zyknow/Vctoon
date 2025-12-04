@@ -195,7 +195,9 @@ export function useMediumItem(mediumRef: ComputedRef<MediumGetListOutput>) {
     event.stopPropagation()
 
     try {
-      const updated = await editModal.open({ medium: mediumRef.value })
+      const updated = (await editModal.open({
+        medium: mediumRef.value,
+      })) as MediumGetListOutput | undefined
       if (updated) {
         // 优先通过全量 Provider 更新（同步推荐区与列表区）
         if (allProvider) {

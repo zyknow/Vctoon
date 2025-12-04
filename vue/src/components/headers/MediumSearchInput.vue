@@ -315,7 +315,7 @@ const handleClearHistory = () => {
 </script>
 
 <template>
-  <div ref="dropdownRef" class="medium-search-input relative w-80">
+  <div ref="dropdownRef" class="medium-search-input relative w-full">
     <!-- 搜索输入框 -->
     <UInput
       ref="inputRef"

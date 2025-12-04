@@ -66,10 +66,10 @@ const keepAliveRoutes = computed(() => {
     v-if="isMobile"
     class="bg-background flex h-screen w-full flex-col overflow-hidden"
   >
-    <div
+    <header
       v-if="layoutStore.customHeaderCount > 0"
       id="layout-header"
-      class="layout-header shrink-0"
+      class="layout-header h-14 shrink-0 px-4"
     />
     <header
       v-else
