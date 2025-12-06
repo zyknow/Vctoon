@@ -110,6 +110,11 @@ public class CoverSaver(IBlobContainer<CoverContainer> coverContainer) : VctoonS
             if (targetHeight < height)
             {
                 var top = (height - targetHeight) / 2;
+                // If the image is very tall (Height/Width >= 32/9), crop from the top.
+                if ((double)height / width >= 32.0 / 9.0)
+                {
+                    top = 0;
+                }
                 image.Mutate(x => x.Crop(new Rectangle(0, top, width, targetHeight)));
             }
         }
