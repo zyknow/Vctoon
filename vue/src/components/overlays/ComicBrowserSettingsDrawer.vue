@@ -224,7 +224,7 @@ const preloadCountOptions = computed(() =>
       {{ $t('page.comic.settings.dialogDescription') }}
     </template>
 
-    <template #content>
+    <template #body>
       <div class="flex flex-col gap-6 p-4">
         <section
           class="border-border/60 bg-background/70 rounded-xl border p-5 shadow-sm backdrop-blur"

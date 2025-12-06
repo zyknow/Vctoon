@@ -11,6 +11,7 @@ import { MediumType } from '@/api/http/library'
 import { mediumResourceApi } from '@/api/http/medium-resource'
 import ComicSettingsDrawer from '@/components/overlays/ComicBrowserSettingsDrawer.vue'
 import { useEnvConfig } from '@/hooks/useEnvConfig'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { $t } from '@/locales/i18n'
 import { useComicStore } from '@/stores/comic'
 
@@ -27,6 +28,7 @@ const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 const { apiURL } = useEnvConfig()
+const { isMobile } = useIsMobile()
 
 const viewerContainerRef = ref<HTMLElement | null>(null)
 const stageContainerRef = ref<HTMLElement | null>(null)
@@ -1524,9 +1526,9 @@ onBeforeUnmount(() => {
             icon="i-lucide-arrow-left"
             @click="handleBack"
           >
-            {{ $t('page.comic.actions.back') }}
+            {{ isMobile ? '' : $t('page.comic.actions.back') }}
           </UButton>
-          <div class="text-lg font-semibold">
+          <div class="font-semibold" :class="isMobile ? 'text-sm' : 'text-lg'">
             {{ comicTitle }}
           </div>
         </div>

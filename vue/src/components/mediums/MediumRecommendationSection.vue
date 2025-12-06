@@ -10,7 +10,7 @@ const props = defineProps<Props>()
 
 const { isMobile } = useIsMobile()
 
-const scrollContainer = ref<HTMLElement>()
+const scrollContainer = ref<any>()
 // 编辑逻辑由子项统一处理（medium.ts）
 
 // 滚动控制
@@ -19,15 +19,16 @@ const canScrollRight = ref(true)
 
 // 保存并恢复滚动位置的工具函数
 const preserveScrollPosition = async (callback: () => Promise<void>) => {
-  if (!scrollContainer.value) return
+  const el = scrollContainer.value?.wrapRef()
+  if (!el) return
 
-  const currentScrollLeft = scrollContainer.value.scrollLeft
+  const currentScrollLeft = el.scrollLeft
   await callback()
 
   // 在下一个渲染周期恢复滚动位置
   await nextTick()
   if (scrollContainer.value) {
-    scrollContainer.value.scrollLeft = currentScrollLeft
+    scrollContainer.value.setScrollLeft(currentScrollLeft)
   }
 }
 
@@ -48,9 +49,10 @@ const debouncedLoadNext = async () => {
 
 // 检查滚动状态
 const checkScrollState = () => {
-  if (!scrollContainer.value) return
+  const el = scrollContainer.value?.wrapRef()
+  if (!el) return
 
-  const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.value
+  const { scrollLeft, scrollWidth, clientWidth } = el
   canScrollLeft.value = scrollLeft > 0
   // 如果还有更多数据，始终可以向右滚动
   canScrollRight.value =
@@ -59,9 +61,10 @@ const checkScrollState = () => {
 
 // 向左滚动
 const scrollLeft = () => {
-  if (!scrollContainer.value) return
-  const scrollAmount = scrollContainer.value.clientWidth * 0.8
-  scrollContainer.value.scrollBy({
+  const el = scrollContainer.value?.wrapRef()
+  if (!el) return
+  const scrollAmount = el.clientWidth * 0.8
+  el.scrollBy({
     left: -scrollAmount,
     behavior: 'smooth',
   })
@@ -69,10 +72,11 @@ const scrollLeft = () => {
 
 // 向右滚动
 const scrollRight = async () => {
-  if (!scrollContainer.value) return
+  const el = scrollContainer.value?.wrapRef()
+  if (!el) return
 
-  const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.value
-  const scrollAmount = scrollContainer.value.clientWidth * 0.8
+  const { scrollLeft, scrollWidth, clientWidth } = el
+  const scrollAmount = el.clientWidth * 0.8
 
   // 如果已经滚动到底部但还有更多数据，触发加载更多
   if (
@@ -82,7 +86,7 @@ const scrollRight = async () => {
   ) {
     await debouncedLoadNext()
   } else {
-    scrollContainer.value.scrollBy({
+    el.scrollBy({
       left: scrollAmount,
       behavior: 'smooth',
     })
@@ -92,24 +96,11 @@ const scrollRight = async () => {
 // 处理滚动事件
 const handleScroll = () => {
   checkScrollState()
-  checkNeedLoadMore()
 }
 
-// 检查是否需要加载更多
-const checkNeedLoadMore = async () => {
-  if (
-    !scrollContainer.value ||
-    !props.data.hasMore.value ||
-    props.data.loading.value
-  ) {
-    return
-  }
-
-  const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.value
-  // 当滚动到距离右边界100px以内时开始加载更多
-  const threshold = 100
-  if (scrollLeft + clientWidth >= scrollWidth - threshold) {
-    await debouncedLoadNext()
+const handleEndReached = (direction: 'top' | 'bottom' | 'left' | 'right') => {
+  if (direction === 'right') {
+    debouncedLoadNext()
   }
 }
 
@@ -180,12 +171,16 @@ const hasItems = computed(
       </div>
 
       <!-- 横向滚动容器 -->
-      <div
+      <UScrollbar
         v-else
         ref="scrollContainer"
-        class="scrollbar-hide overflow-x-auto pb-4"
+        :native="false"
+        :distance="100"
+        class="pb-4"
+        view-class="w-max"
+        remember
         @scroll="handleScroll"
-        @scrollend="checkScrollState"
+        @end-reached="handleEndReached"
       >
         <TransitionGroup
           name="fade-slide"
@@ -207,7 +202,7 @@ const hasItems = computed(
             />
           </div>
         </TransitionGroup>
-      </div>
+      </UScrollbar>
 
       <!-- 左侧渐变遮罩 -->
       <div
@@ -235,16 +230,6 @@ const hasItems = computed(
   50% {
     opacity: 0.5;
   }
-}
-
-/* 隐藏滚动条 */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
 }
 
 /* 确保滚动容器平滑滚动 */

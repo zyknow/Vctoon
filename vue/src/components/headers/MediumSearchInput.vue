@@ -414,8 +414,6 @@ const handleClearHistory = () => {
                   <MediumCoverCard
                     v-if="item.cover"
                     :src="item.cover"
-                    base-width="5rem"
-                    base-height="7.5rem"
                     class="rounded-lg shadow-lg"
                   />
                   <div

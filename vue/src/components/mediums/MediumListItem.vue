@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { MediumType } from '@/api/http/library/typing'
 import type { MediumGetListOutput } from '@/api/http/typing'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { useMediumItem } from '@/hooks/useMediumItem'
 import { $t } from '@/locales/i18n'
+import { useMediumStore } from '@/stores'
 
 const props = defineProps<{
   modelValue: MediumGetListOutput
 }>()
 
 // 移除对外 emit，改为内部统一处理
+
+const { isMobile } = useIsMobile()
 
 const mediumRef = computed(() => props.modelValue)
 
@@ -33,17 +37,33 @@ const {
 } = useMediumItem(mediumRef)
 
 const dropdownItems = computed(() => buildMediumDropdown())
+const mediumStore = useMediumStore()
+
+const cardStyleVars = computed<Record<string, string>>(() => ({
+  '--cover-base-width': '5rem',
+  '--cover-base-height': '7rem',
+  '--cover-zoom': String(mediumStore.mediumZoom ?? 1),
+}))
+
+const mobileCoverStyle = computed(() => {
+  return {
+    height: 'auto',
+    aspectRatio: '10 / 14',
+  }
+})
 </script>
 
 <template>
   <div
     :id="mediumAnchorId"
-    class="text-foreground medium-list-item hover:bg-muted/40 group relative cursor-pointer rounded p-3 transition-colors select-none"
+    class="text-foreground medium-list-item hover:bg-muted/40 group relative cursor-pointer rounded transition-colors select-none"
+    :class="isMobile ? 'p-1' : 'p-3'"
     @click="handleCardClick"
   >
-    <div class="flex items-start gap-4">
+    <div class="flex items-start" :class="isMobile ? 'gap-2' : 'gap-4'">
       <!-- 左侧选择图标（始终显示，未选中时可 hover 显示） -->
       <div
+        v-if="!isMobile"
         class="flex items-center self-center pr-2"
         @click.stop="toggleSelectionFromIcon"
       >
@@ -55,11 +75,10 @@ const dropdownItems = computed(() => buildMediumDropdown())
       </div>
 
       <!-- Cover (仅保留播放按钮，hover 显示) -->
-      <div class="relative shrink-0">
+      <div class="relative shrink-0" :style="[cardStyleVars]">
         <MediumCoverCard
+          :style="mobileCoverStyle"
           :src="cover"
-          base-width="7rem"
-          base-height="10.5rem"
           class="relative border"
           :class="{
             'group-hover:border-primary border-transparent': !isSelected,
@@ -91,23 +110,31 @@ const dropdownItems = computed(() => buildMediumDropdown())
       <div class="flex-1">
         <div
           :title="title"
-          class="hover:text-primary cursor-pointer text-base leading-tight font-medium"
+          class="hover:text-primary line-clamp-2 cursor-pointer text-base leading-tight font-medium"
           @click.stop="navigateToDetail()"
         >
           {{ title }}
         </div>
-        <div class="text-muted-foreground mt-0.5 text-xs">
+        <div class="text-muted-foreground mt-0.5 text-xs opacity-80">
           <span v-if="mediumType === MediumType.Comic">
             <UIcon name="i-lucide-book-open" class="inline-block text-xs" />
-            {{ $t('page.mediums.info.comic') }}
+            <span>
+              {{ $t('page.mediums.info.comic') }}
+            </span>
           </span>
           <span v-else-if="mediumType === MediumType.Video">
             <UIcon name="i-lucide-video" class="inline-block text-xs" />
-            {{ $t('page.mediums.info.video') }}
+            <span>
+              {{ $t('page.mediums.info.video') }}
+            </span>
           </span>
         </div>
-        <div class="text-muted-foreground mt-0.5 text-xs">{{ year }}</div>
-        <div class="text-muted-foreground mt-0.5 text-xs">{{ timeAgo }}</div>
+        <div class="text-muted-foreground mt-0.5 text-xs opacity-80">
+          {{ year }}
+        </div>
+        <div class="text-muted-foreground mt-0.5 text-xs opacity-80">
+          {{ timeAgo }}
+        </div>
 
         <!-- reading progress bar -->
         <div

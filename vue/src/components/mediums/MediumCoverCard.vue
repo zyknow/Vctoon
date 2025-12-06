@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { computed, useAttrs } from 'vue'
 
-import { useMediumStore } from '@/stores/medium'
-
 type CoverLoadingType = 'eager' | 'lazy'
 
 defineOptions({
@@ -13,8 +11,6 @@ defineOptions({
 const props = withDefaults(
   defineProps<{
     alt?: string
-    baseHeight?: string
-    baseWidth?: string
     fit?: 'contain' | 'cover'
     loading?: CoverLoadingType
     preserveRatio?: boolean
@@ -23,8 +19,6 @@ const props = withDefaults(
   }>(),
   {
     alt: 'cover',
-    baseHeight: '14rem',
-    baseWidth: '10rem',
     fit: 'cover',
     loading: 'lazy' as CoverLoadingType,
     preserveRatio: false,
@@ -34,18 +28,6 @@ const props = withDefaults(
 )
 
 const attrs = useAttrs()
-const mediumStore = useMediumStore()
-
-const resolvedZoom = computed(() => {
-  const value = props.zoom ?? mediumStore.mediumZoom ?? 1
-  return Number.isFinite(value) ? value : 1
-})
-
-const styleVars = computed(() => ({
-  '--cover-base-height': props.baseHeight,
-  '--cover-base-width': props.baseWidth,
-  '--cover-zoom': `${resolvedZoom.value}`,
-}))
 
 const hasImage = computed(() => Boolean(props.src))
 </script>
@@ -53,10 +35,9 @@ const hasImage = computed(() => Boolean(props.src))
 <template>
   <div
     :class="{
-      'medium-cover-card--auto-height': props.preserveRatio,
+      'medium-cover-card--preserve-ratio': props.preserveRatio,
     }"
     class="medium-cover-card"
-    :style="styleVars"
     v-bind="attrs"
   >
     <img
@@ -81,12 +62,17 @@ const hasImage = computed(() => Boolean(props.src))
 
 <style scoped>
 .medium-cover-card {
-  position: relative;
-  display: block;
-  width: calc(var(--cover-base-width) * clamp(0.8, var(--cover-zoom, 1), 1.6));
-  height: calc(
+  --card-width: calc(
+    var(--cover-base-width) * clamp(0.8, var(--cover-zoom, 1), 1.6)
+  );
+  --card-height: calc(
     var(--cover-base-height) * clamp(0.8, var(--cover-zoom, 1), 1.6)
   );
+
+  position: relative;
+  display: block;
+  width: var(--card-width);
+  height: var(--card-height);
   overflow: hidden;
   background-color: hsl(var(--muted));
   border-radius: var(--ui-radius);
@@ -99,13 +85,22 @@ const hasImage = computed(() => Boolean(props.src))
   object-fit: cover;
 }
 
-.medium-cover-card--auto-height {
+.medium-cover-card--preserve-ratio {
+  width: auto;
   height: auto;
+  max-width: var(--card-width);
+  max-height: var(--card-height);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.medium-cover-card--auto-height .medium-cover-card__image,
-.medium-cover-card--auto-height .medium-cover-card__placeholder {
+.medium-cover-card--preserve-ratio .medium-cover-card__image,
+.medium-cover-card--preserve-ratio .medium-cover-card__placeholder {
+  width: auto;
   height: auto;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .medium-cover-card__image--contain {

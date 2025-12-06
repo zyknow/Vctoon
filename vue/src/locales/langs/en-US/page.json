@@ -368,6 +368,7 @@
     },
     "settings": {
       "dialogTitle": "Reader Settings",
+      "dialogDescription": "Customize your comic reading experience",
       "sections": {
         "readingMode": "Reading Mode",
         "image": "Image",

@@ -359,6 +359,7 @@
     },
     "settings": {
       "dialogTitle": "阅读设置",
+      "dialogDescription": "自定义您的漫画阅读体验",
       "sections": {
         "readingMode": "阅读方式",
         "image": "图片显示",

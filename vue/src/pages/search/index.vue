@@ -8,6 +8,7 @@ import type { MultiSearchInput, SearchHit } from '@/api/http/lucene'
 import { luceneApi } from '@/api/http/lucene'
 import type { MediumGetListOutput } from '@/api/http/typing'
 import type UScrollbar from '@/components/nuxt-ui-extensions/UScrollbar.vue'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import {
   provideMediumAllItemProvider,
   provideMediumItemProvider,
@@ -18,6 +19,7 @@ defineOptions({ name: 'SearchPage' })
 
 const route = useRoute()
 const router = useRouter()
+const { isMobile } = useIsMobile()
 
 const toast = useToast()
 const loading = ref(false)
@@ -177,7 +179,7 @@ const handleLoadMore = () => {
   queryState.page += 1
 }
 
-const onEdge = (direction: 'top' | 'bottom' | 'left' | 'right') => {
+const onEndReached = (direction: 'top' | 'bottom' | 'left' | 'right') => {
   if (direction === 'bottom') {
     handleLoadMore()
   }
@@ -284,7 +286,7 @@ const mapHitToMedium = (hit: SearchHit): MediumGetListOutput | null => {
   </MainLayoutProvider>
 
   <Page auto-content-height content-class="flex flex-col gap-4">
-    <MediumSearchInput></MediumSearchInput>
+    <MediumSearchInput v-if="isMobile"></MediumSearchInput>
 
     <div class="flex items-center justify-between">
       <div>{{ $t('page.search.total') }}：{{ total }}</div>
@@ -297,8 +299,9 @@ const mapHitToMedium = (hit: SearchHit): MediumGetListOutput | null => {
     <div class="min-h-0 flex-1">
       <UScrollbar
         ref="scrollbarRef"
+        remember
         aria-orientation="vertical"
-        @end-reached="onEdge"
+        @end-reached="onEndReached"
       >
         <!-- 首屏错误态 -->
         <div

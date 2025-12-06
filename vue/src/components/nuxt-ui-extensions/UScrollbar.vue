@@ -193,6 +193,9 @@ const wrapMergedStyle = computed<Record<string, string | number>>(() => {
 
 // resize observer to emit update when size changes
 let resizeObserver: ResizeObserver | null = null
+// 挂起的恢复位置处理函数
+let restoreHandler: (() => void) | null = null
+
 function setupResizeObserver() {
   if (props.noresize) return
   const el = wrapRef.value
@@ -215,6 +218,7 @@ onUnmounted(() => {
     cancelAnimationFrame(saveTimer)
     saveTimer = null
   }
+  restoreHandler = null
 })
 
 // expose methods (对齐 Element Plus Scrollbar)
@@ -248,6 +252,10 @@ function update() {
   requestAnimationFrame(() => {
     const el = wrapRef.value
     if (!el) return
+
+    // 尝试恢复滚动位置（如果有挂起的恢复任务）
+    if (restoreHandler) restoreHandler()
+
     emit('scroll', { scrollLeft: el.scrollLeft, scrollTop: el.scrollTop })
     checkEndReached(el)
   })
@@ -405,21 +413,56 @@ function restorePosition() {
   if (!p) return
   const el = wrapRef.value
   if (!el) return
-  // 等待下一帧，确保内容尺寸稳定后再恢复
-  const delay = Math.max(0, props.restoreDelay || 0)
-  const doRestore = () => {
+
+  // 尝试应用位置，返回是否成功（即容器尺寸是否足够）
+  const tryApply = () => {
+    const el = wrapRef.value
+    if (!el) return false
+    const maxTop = el.scrollHeight - el.clientHeight
+    const maxLeft = el.scrollWidth - el.clientWidth
+    // 允许 1px 误差
+    const canScrollTop = maxTop >= p.top - 1
+    const canScrollLeft = maxLeft >= p.left - 1
+
+    if (canScrollTop) el.scrollTop = p.top
+    if (canScrollLeft) el.scrollLeft = p.left
+
+    return canScrollTop && canScrollLeft
+  }
+
+  // 启动恢复流程
+  const startRestore = () => {
     requestAnimationFrame(() => {
-      el.scrollLeft = p.left
-      el.scrollTop = p.top
-      // 触发更新与 end-reached 检查
+      // 第一次尝试
+      if (tryApply()) {
+        update()
+        return
+      }
+
+      // 若未成功（可能内容未加载），挂载到 update 中重试（由 ResizeObserver 触发）
+      restoreHandler = () => {
+        if (tryApply()) {
+          restoreHandler = null // 成功后清除
+        }
+      }
+
+      // 设置超时清除，避免永久重试
+      setTimeout(() => {
+        restoreHandler = null
+      }, 2000)
+
+      // 触发一次 update 以便检查
       update()
     })
   }
+
+  // 等待下一帧，确保内容尺寸稳定后再恢复
+  const delay = Math.max(0, props.restoreDelay || 50)
   if (delay > 0) {
-    setTimeout(doRestore, delay)
+    setTimeout(startRestore, delay)
   } else {
     // nextTick + rAF，兼顾同步布局与异步渲染
-    nextTick().then(doRestore)
+    nextTick().then(startRestore)
   }
 }
 

@@ -78,8 +78,6 @@ const dropdownOpen = ref(false)
     <MediumCoverCard
       :id="mediumAnchorId"
       :src="cover"
-      :base-width="coverBaseWidth"
-      :base-height="coverBaseHeight"
       :style="mobileCoverStyle"
       class="relative border transition-colors"
       :class="{

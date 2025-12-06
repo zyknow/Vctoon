@@ -31,8 +31,16 @@ const handleLibraryClick = (menu: any) => {
   router.push(menu.to)
 }
 
-if (!props?.library && libraryMenuItems.value.length) {
+if (
+  !props?.library &&
+  libraryMenuItems.value.length &&
+  !LibraryMobileHeaderLeftState.currentLibraryPath
+) {
   handleLibraryClick(libraryMenuItems.value[0])
+}
+
+if (LibraryMobileHeaderLeftState.currentLibraryPath) {
+  router.push(LibraryMobileHeaderLeftState.currentLibraryPath)
 }
 </script>
 
