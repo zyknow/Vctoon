@@ -22,7 +22,5 @@ public class MediumCollection : AuditedAggregateRoot<Guid>
 
     public Guid LibraryId { get; set; }
 
-    public List<Comic> Comics { get; set; } = [];
-
-    public List<Video> Videos { get; set; } = [];
+    public List<Medium> Mediums { get; set; } = [];
 }

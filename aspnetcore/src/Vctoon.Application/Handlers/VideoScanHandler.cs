@@ -5,7 +5,7 @@ using Vctoon.Mediums;
 
 namespace Vctoon.Handlers;
 
-public class VideoScanHandler(IVideoRepository videoRepository, CoverSaver coverSaver)
+public class VideoScanHandler(IMediumRepository mediumRepository, CoverSaver coverSaver)
     : VctoonService, IMediumScanHandler
 {
     public readonly List<string> VideoExtensions =
@@ -29,21 +29,22 @@ public class VideoScanHandler(IVideoRepository videoRepository, CoverSaver cover
             return null;
         }
 
-        var videos = await videoRepository.GetListAsync(x => x.LibraryId == libraryPath.LibraryId);
+        var videos = await mediumRepository.GetListAsync(x => x.LibraryId == libraryPath.LibraryId && x.MediumType == MediumType.Video);
 
-        var deleteVideos = videos.Where(x => x.LibraryPathId == libraryPath.Id && !videoFilePaths.Contains(x!.Path)).ToList();
+        var deleteVideos = videos.Where(x => x.LibraryPathId == libraryPath.Id && x.VideoDetail != null && !videoFilePaths.Contains(x.VideoDetail.Path))
+            .ToList();
 
         var deletedCount = 0;
         if (!deleteVideos.IsNullOrEmpty())
         {
-            await videoRepository.DeleteManyAsync(deleteVideos.Select(x => x.Id), true);
+            await mediumRepository.DeleteManyAsync(deleteVideos.Select(x => x.Id), true);
             deletedCount = deleteVideos.Count;
         }
 
 
-        var addVideos = new List<Video>();
+        var addVideos = new List<Medium>();
 
-        foreach (var videoFilePath in videoFilePaths.Where(path => videos.All(x => x!.Path != path)))
+        foreach (var videoFilePath in videoFilePaths.Where(path => videos.All(x => x.VideoDetail?.Path != path)))
         {
             try
             {
@@ -55,7 +56,7 @@ public class VideoScanHandler(IVideoRepository videoRepository, CoverSaver cover
 
                 // Calculate aspect ratio. Prefer DisplayAspectRatio; fallback to Width/Height simplified via GCD.
                 string ratio;
-                var displayAspect = videoStream?.DisplayAspectRatio ?? (0,0);
+                var displayAspect = videoStream?.DisplayAspectRatio ?? (0, 0);
                 if (displayAspect.Width > 0 && displayAspect.Height > 0)
                 {
                     ratio = $"{displayAspect.Width}:{displayAspect.Height}";
@@ -72,8 +73,10 @@ public class VideoScanHandler(IVideoRepository videoRepository, CoverSaver cover
                             {
                                 (a, b) = (b, a % b);
                             }
+
                             return a;
                         }
+
                         var g = Gcd(w, h);
                         ratio = $"{w / g}:{h / g}";
                     }
@@ -83,21 +86,28 @@ public class VideoScanHandler(IVideoRepository videoRepository, CoverSaver cover
                     }
                 }
 
-                var mediumInfo = new Video(
+                var videoDetail = new VideoDetail
+                {
+                    Framerate = videoStream!.FrameRate,
+                    Codec = videoStream.CodecName ?? string.Empty,
+                    Width = videoStream.Width,
+                    Height = videoStream.Height,
+                    Bitrate = videoStream.BitRate,
+                    Duration = mediaInfo.Duration,
+                    Ratio = ratio,
+                    Path = videoFilePath
+                };
+
+                var medium = new Medium(
                     GuidGenerator.Create(),
-                    videoFilePath,
                     name,
                     coverPath,
                     libraryPath.LibraryId,
-                    libraryPath.Id,
-                    videoStream!.FrameRate,
-                    videoStream.CodecName ?? string.Empty,
-                    videoStream.Width,
-                    videoStream.Height,
-                    videoStream.BitRate,
-                    mediaInfo.Duration,
-                    ratio);
-                addVideos.Add(mediumInfo);
+                    libraryPath.Id
+                );
+                medium.MediumType = MediumType.Video;
+                medium.VideoDetail = videoDetail;
+                addVideos.Add(medium);
             }
             catch (Exception e)
             {
@@ -107,7 +117,7 @@ public class VideoScanHandler(IVideoRepository videoRepository, CoverSaver cover
 
         if (addVideos.Any())
         {
-            await videoRepository.InsertManyAsync(addVideos, true);
+            await mediumRepository.InsertManyAsync(addVideos, true);
         }
 
         if (deletedCount == 0 && addVideos.Count == 0)

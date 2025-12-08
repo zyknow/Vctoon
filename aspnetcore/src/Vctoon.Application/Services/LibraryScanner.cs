@@ -113,7 +113,7 @@ public class LibraryScanner(
             }
         });
 
-        await libraryStore.DeleteLibraryEmptyComicAsync(library);
+        await libraryStore.DeleteLibraryEmptyMediumAsync(library);
 
         await libraryRepository.UpdateAsync(library, true);
     }

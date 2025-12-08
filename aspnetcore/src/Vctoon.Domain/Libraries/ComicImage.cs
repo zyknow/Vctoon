@@ -12,7 +12,7 @@ public class ComicImage : Entity<Guid>
         string path,
         string extension,
         long size,
-        Guid comicId,
+        Guid mediumId,
         Guid libraryId,
         Guid? libraryPathId = null,
         Guid? archiveInfoPathId = null
@@ -24,7 +24,7 @@ public class ComicImage : Entity<Guid>
         Size = size;
         LibraryPathId = libraryPathId;
         ArchiveInfoPathId = archiveInfoPathId;
-        ComicId = comicId;
+        MediumId = mediumId;
         LibraryId = libraryId;
     }
 
@@ -36,5 +36,5 @@ public class ComicImage : Entity<Guid>
     public Guid? ArchiveInfoPathId { get; set; }
 
     public Guid LibraryId { get; set; }
-    public Guid ComicId { get; set; }
+    public Guid MediumId { get; set; }
 }

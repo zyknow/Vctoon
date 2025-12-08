@@ -5,18 +5,23 @@ namespace Vctoon.Libraries;
 
 public class LibraryStore(
     ILibraryRepository libraryRepository,
-    IComicRepository comicRepository) : DomainService
+    IMediumRepository mediumRepository,
+    IRepository<ComicImage, Guid> comicImageRepository) : DomainService
 {
-    public async Task DeleteLibraryEmptyComicAsync(Library library, bool autoSave = false)
+    public async Task DeleteLibraryEmptyMediumAsync(Library library, bool autoSave = false)
     {
-        var deleteComicIds = await AsyncExecuter.ToListAsync(
-            (await comicRepository.GetQueryableAsync())
-            .Where(x => x.LibraryId == library.Id)
-            .Where(x => !x.ComicImages.Any())
-            .Select(x => x.Id)
-        );
+        if (library.MediumType == MediumType.Comic)
+        {
+            var query = from medium in (await mediumRepository.GetQueryableAsync())
+                        where medium.LibraryId == library.Id
+                        join image in (await comicImageRepository.GetQueryableAsync())
+                            on medium.Id equals image.MediumId into images
+                        where !images.Any()
+                        select medium.Id;
 
-        await comicRepository.DeleteManyAsync(deleteComicIds, autoSave);
+            var deleteIds = await AsyncExecuter.ToListAsync(query);
+            await mediumRepository.DeleteManyAsync(deleteIds, autoSave);
+        }
     }
 
     public async Task<Library> CreateLibraryAsync(

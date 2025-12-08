@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\common.props"/>
+  <Import Project="..\..\common.props" />
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -9,22 +9,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Vctoon.Domain.Shared\Vctoon.Domain.Shared.csproj"/>
+    <ProjectReference Include="..\Vctoon.Domain.Shared\Vctoon.Domain.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Zyknow.Abp.Lucene.Application.Contracts" Version="$(LuceneVersion)" />
     <PackageReference Include="EasyAbp.Abp.SettingUi.Application.Contracts" Version="2.6.0" />
-    <PackageReference Include="Volo.Abp.PermissionManagement.Application.Contracts" Version="$(AbpVersion)"/>
-    <PackageReference Include="Volo.Abp.FeatureManagement.Application.Contracts" Version="$(AbpVersion)"/>
+    <PackageReference Include="Volo.Abp.PermissionManagement.Application.Contracts" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.FeatureManagement.Application.Contracts" Version="$(AbpVersion)" />
     <!--    <PackageReference Include="Volo.Abp.SettingManagement.Application.Contracts" Version="$(AbpVersion)"/>-->
-    <PackageReference Include="Volo.Abp.Identity.Application.Contracts" Version="$(AbpVersion)"/>
-    <PackageReference Include="Volo.Abp.Account.Application.Contracts" Version="$(AbpVersion)"/>
+    <PackageReference Include="Volo.Abp.Identity.Application.Contracts" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Account.Application.Contracts" Version="$(AbpVersion)" />
     <!--    <PackageReference Include="Volo.Abp.TenantManagement.Application.Contracts" Version="$(AbpVersion)" />-->
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Mediums\Dtos\Base\MediumGetListRecommendInput.cs"/>
   </ItemGroup>
 
 </Project>

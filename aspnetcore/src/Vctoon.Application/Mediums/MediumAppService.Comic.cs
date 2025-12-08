@@ -1,10 +1,5 @@
-using System.Linq.Expressions;
-using Vctoon.Helper;
-using Vctoon.Identities;
-using Vctoon.ImageProviders;
+﻿using Vctoon.Helper;
 using Vctoon.Libraries.Dtos;
-using Vctoon.Mediums.Base;
-using Vctoon.Mediums.Dtos;
 using Vctoon.Permissions;
 using Volo.Abp;
 using Volo.Abp.Content;
@@ -12,32 +7,8 @@ using Volo.Abp.Domain.Repositories;
 
 namespace Vctoon.Mediums;
 
-public class ComicAppService(
-    IComicRepository repository,
-    IComicImageRepository comicImageRepository,
-    IImageProvider imageProvider,
-    IArchiveInfoRepository archiveInfoRepository)
-    : MediumBaseAppService<Comic, ComicDto, ComicGetListOutputDto, ComicGetListInput, ComicCreateUpdateDto,
-            ComicCreateUpdateDto>(repository),
-        IComicAppService
+public partial class MediumAppService
 {
-    protected override string? GetPolicyName { get; set; } = VctoonPermissions.Comic.Default;
-    protected override string? GetListPolicyName { get; set; } = VctoonPermissions.Comic.Default;
-    protected override string? CreatePolicyName { get; set; } = VctoonPermissions.Comic.Create;
-    protected override string? UpdatePolicyName { get; set; } = VctoonPermissions.Comic.Update;
-    protected override string? DeletePolicyName { get; set; } = VctoonPermissions.Comic.Delete;
-
-
-    // 原为布尔谓词，现改为属性选择器，交由基类统一转换
-    protected override LambdaExpression ProcessKeySelector =>
-        (Expression<Func<IdentityUserReadingProcess, Guid?>>)(p => p.ComicId);
-
-    [RemoteService(false)]
-    public override Task<ComicDto> CreateAsync(ComicCreateUpdateDto input)
-    {
-        throw new UserFriendlyException("Not supported");
-    }
-
 #if !DEBUG
     [Authorize]
 #endif
@@ -93,18 +64,18 @@ public class ComicAppService(
     }
 
     [Authorize(VctoonPermissions.Comic.Default)]
-    public async Task<List<ComicImageDto>> GetListByComicIdAsync(Guid comicId)
+    public async Task<List<ComicImageDto>> GetComicImageListAsync(Guid mediumId)
     {
         var query = await comicImageRepository.GetQueryableAsync();
 
         var libraryIds =
-            await AsyncExecuter.ToListAsync(query.Where(x => x.ComicId == comicId).Select(x => x.LibraryId).Distinct());
+            await AsyncExecuter.ToListAsync(query.Where(x => x.MediumId == mediumId).Select(x => x.LibraryId).Distinct());
         foreach (var libraryId in libraryIds)
         {
             await CheckCurrentUserLibraryPermissionAsync(libraryId, x => x.CanView);
         }
 
-        var images = await AsyncExecuter.ToListAsync(query.Where(x => x.ComicId == comicId).OrderBy(x => x.Name));
+        var images = await AsyncExecuter.ToListAsync(query.Where(x => x.MediumId == mediumId).OrderBy(x => x.Name));
 
         var imageFileDtos = ObjectMapper.Map<List<ComicImage>, List<ComicImageDto>>(
             images);
@@ -127,4 +98,5 @@ public class ComicAppService(
             }
         }
     }
+
 }

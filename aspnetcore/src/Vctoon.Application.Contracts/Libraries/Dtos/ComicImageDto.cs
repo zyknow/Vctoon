@@ -13,7 +13,7 @@ public class ComicImageDto : EntityDto<Guid>
 
     public Guid? ArchiveInfoPathId { get; set; }
 
-    public Guid ComicId { get; set; }
+    public Guid MediumId { get; set; }
 
     public Guid LibraryId { get; set; }
 }

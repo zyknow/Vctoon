@@ -4,39 +4,26 @@ using Volo.Abp.Linq;
 namespace Vctoon.Mediums;
 
 public class MediumManager(
-    IComicRepository comicRepository,
-    IVideoRepository videoRepository,
+    IMediumRepository mediumRepository,
     IAsyncQueryableExecuter asyncQueryableExecuter) : DomainService
 {
     public async Task DeleteMediumByLibraryIdAsync(Guid libraryId, bool autoSave = false)
     {
-        var comicIds = await asyncQueryableExecuter.ToListAsync((await comicRepository.GetQueryableAsync())
+        var mediumIds = await asyncQueryableExecuter.ToListAsync((await mediumRepository.GetQueryableAsync())
             .Where(x => x.LibraryId == libraryId)
             .Select(x => x.Id));
 
-        var videoIds = await asyncQueryableExecuter.ToListAsync((await videoRepository.GetQueryableAsync())
-            .Where(x => x.LibraryId == libraryId)
-            .Select(x => x.Id));
-
-        if (!comicIds.IsNullOrEmpty())
-            await comicRepository.DeleteManyAsync(comicIds, autoSave);
-        if (!videoIds.IsNullOrEmpty())
-            await videoRepository.DeleteManyAsync(videoIds, autoSave);
+        if (!mediumIds.IsNullOrEmpty())
+            await mediumRepository.DeleteManyAsync(mediumIds, autoSave);
     }
 
     public async Task DeleteMediumByLibraryPathIdsAsync(IEnumerable<Guid> libraryPathIds, bool autoSave = false)
     {
-        var comicIds = await asyncQueryableExecuter.ToListAsync((await comicRepository.GetQueryableAsync())
-            .Where(x => libraryPathIds.Contains(x.LibraryPathId))
+        var mediumIds = await asyncQueryableExecuter.ToListAsync((await mediumRepository.GetQueryableAsync())
+            .Where(x => x.LibraryPathId.HasValue && libraryPathIds.Contains(x.LibraryPathId.Value))
             .Select(x => x.Id));
 
-        var videoIds = await asyncQueryableExecuter.ToListAsync((await videoRepository.GetQueryableAsync())
-            .Where(x => libraryPathIds.Contains(x.LibraryPathId))
-            .Select(x => x.Id));
-
-        if (!comicIds.IsNullOrEmpty())
-            await comicRepository.DeleteManyAsync(comicIds, autoSave);
-        if (!videoIds.IsNullOrEmpty())
-            await videoRepository.DeleteManyAsync(videoIds, autoSave);
+        if (!mediumIds.IsNullOrEmpty())
+            await mediumRepository.DeleteManyAsync(mediumIds, autoSave);
     }
 }

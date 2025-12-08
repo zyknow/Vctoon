@@ -1,39 +1,15 @@
-using System.Linq.Expressions;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Mvc;
 using Vctoon.Helper;
-using Vctoon.Identities;
-using Vctoon.Mediums.Base;
 using Vctoon.Mediums.Dtos;
-using Vctoon.Permissions;
 using Volo.Abp;
 using Volo.Abp.Content;
 
 namespace Vctoon.Mediums;
 
-public class VideoAppService(IVideoRepository repository)
-    : MediumBaseAppService<Video, VideoDto, VideoGetListOutputDto, VideoGetListInput,
-            VideoCreateUpdateDto,
-            VideoCreateUpdateDto>(repository),
-        IVideoAppService
+public partial class MediumAppService
 {
-    protected override string? GetPolicyName { get; set; } = VctoonPermissions.Video.Default;
-    protected override string? GetListPolicyName { get; set; } = VctoonPermissions.Video.Default;
-    protected override string? CreatePolicyName { get; set; } = VctoonPermissions.Video.Create;
-    protected override string? UpdatePolicyName { get; set; } = VctoonPermissions.Video.Update;
-    protected override string? DeletePolicyName { get; set; } = VctoonPermissions.Video.Delete;
-
-    // 原为布尔谓词，现改为属性选择器
-    protected override LambdaExpression ProcessKeySelector =>
-        (Expression<Func<IdentityUserReadingProcess, Guid?>>)(p => p.VideoId);
-
-    [RemoteService(false)]
-    public override Task<VideoDto> CreateAsync(VideoCreateUpdateDto input)
-    {
-        throw new UserFriendlyException("Not supported");
-    }
-
 #if !DEBUG
     [Authorize]
 #endif
@@ -48,7 +24,7 @@ public class VideoAppService(IVideoRepository repository)
 
         var query = (await Repository.GetQueryableAsync())
             .Where(x => x.Id == id)
-            .Select(x => new { x.Id, x.Path, x.LibraryId });
+            .Select(x => new { x.Id, x.VideoDetail!.Path, x.LibraryId });
 
         var video = await AsyncExecuter.FirstOrDefaultAsync(query);
         if (video == null)
@@ -88,7 +64,7 @@ public class VideoAppService(IVideoRepository repository)
 
         var query = (await Repository.GetQueryableAsync())
             .Where(x => x.Id == id)
-            .Select(x => new { x.Path, x.LibraryId });
+            .Select(x => new { x.VideoDetail!.Path, x.LibraryId });
 
         var video = await AsyncExecuter.FirstOrDefaultAsync(query);
         if (video == null)
@@ -154,7 +130,7 @@ public class VideoAppService(IVideoRepository repository)
 
         var query = (await Repository.GetQueryableAsync())
             .Where(x => x.Id == id)
-            .Select(x => new { x.Path, x.LibraryId });
+            .Select(x => new { x.VideoDetail!.Path, x.LibraryId });
 
         var video = await AsyncExecuter.FirstOrDefaultAsync(query);
         if (video == null)

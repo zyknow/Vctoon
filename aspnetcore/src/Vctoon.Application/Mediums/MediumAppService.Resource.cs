@@ -1,25 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Vctoon.BlobContainers;
 using Vctoon.Helper;
 using Vctoon.Identities;
 using Vctoon.Mediums.Dtos;
 using Volo.Abp;
 using Volo.Abp.Authorization;
-using Volo.Abp.BlobStoring;
 using Volo.Abp.Content;
-using Volo.Abp.Domain.Repositories;
-using Vctoon.Mediums.Base; // 添加 MediumBase 引用
 
 namespace Vctoon.Mediums;
 
-public class MediumResourceAppService(
-    IBlobContainer<CoverContainer> coverContainer,
-    IIdentityUserReadingProcessRepository readingProcessRepository,
-    IComicRepository comicRepository,
-    IVideoRepository videoRepository,
-    IRepository<Artist, Guid> artistRepository,
-    ITagRepository tagRepository
-) : VctoonAppService, IMediumResourceAppService
+public partial class MediumAppService
 {
 #if !DEBUG
     [Authorize]
@@ -61,19 +50,15 @@ public class MediumResourceAppService(
 
         var dbProcessList = query.Where(x =>
                 x.UserId == CurrentUser.Id &&
-                (mediumIds.Contains(x.ComicId!.Value) || mediumIds.Contains(x.VideoId!.Value)))
+                mediumIds.Contains(x.MediumId))
             .ToList();
 
-        var addProcessDtoList = items.Where(x => dbProcessList.All(y =>
-            (x.MediumType == MediumType.Comic && y.ComicId != x.MediumId) ||
-            (x.MediumType == MediumType.Video && y.VideoId != x.MediumId)
-        )).ToList();
+        var addProcessDtoList = items.Where(x => dbProcessList.All(y => y.MediumId != x.MediumId)).ToList();
 
         var addProcess = addProcessDtoList.Select(x => new IdentityUserReadingProcess(
             GuidGenerator.Create(),
             CurrentUser.Id.Value,
             x.MediumId,
-            x.MediumType,
             x.Progress
         )).ToList();
 
@@ -83,17 +68,11 @@ public class MediumResourceAppService(
         }
 
         var updateProcessDtoList = items.Except(addProcessDtoList).ToList();
-        var updateProcess = dbProcessList.Where(x => updateProcessDtoList.Any(y =>
-            (y.MediumType == MediumType.Comic && x.ComicId == y.MediumId) ||
-            (y.MediumType == MediumType.Video && x.VideoId == y.MediumId)
-        )).ToList();
+        var updateProcess = dbProcessList.Where(x => updateProcessDtoList.Any(y => y.MediumId == x.MediumId)).ToList();
 
         foreach (var process in updateProcess)
         {
-            var dto = updateProcessDtoList.First(x =>
-                (x.MediumType == MediumType.Comic && process.ComicId == x.MediumId) ||
-                (x.MediumType == MediumType.Video && process.VideoId == x.MediumId)
-            );
+            var dto = updateProcessDtoList.First(x => x.MediumId == process.MediumId);
             process.Progress = dto.Progress;
             process.LastReadTime = dto.ReadingLastTime;
         }
@@ -104,18 +83,15 @@ public class MediumResourceAppService(
         }
 
         // 更新媒介的阅读次数
-        foreach (var readingProcessUpdateDtose in items.Where(x => x.Progress != 0).GroupBy(x => x.MediumType))
+        var mediumIdsToUpdate = items.Where(x => x.Progress != 0).Select(x => x.MediumId).Distinct().ToList();
+        if (mediumIdsToUpdate.Any())
         {
-            if (readingProcessUpdateDtose.Key == MediumType.Comic)
+            var mediums = await mediumRepository.GetListAsync(x => mediumIdsToUpdate.Contains(x.Id));
+            foreach (var medium in mediums)
             {
-                var comicIds = readingProcessUpdateDtose.Select(x => x.MediumId).ToList();
-                await comicRepository.AdditionReadCountAsync(comicIds);
+                medium.ReadCount++;
             }
-            else if (readingProcessUpdateDtose.Key == MediumType.Video)
-            {
-                var videoIds = readingProcessUpdateDtose.Select(x => x.MediumId).ToList();
-                await videoRepository.AdditionReadCountAsync(videoIds);
-            }
+            await mediumRepository.UpdateManyAsync(mediums);
         }
     }
 
@@ -163,13 +139,13 @@ public class MediumResourceAppService(
     }
 
 
-    protected virtual async Task CheckUpdatePolicyAsync()
-    {
-        if (!CurrentUser.Roles.Contains(VctoonSharedConsts.AdminUserRoleName.ToUpper()))
-        {
-            throw new AbpAuthorizationException("You don't have permission to update this resource");
-        }
-    }
+    //protected virtual async Task CheckUpdatePolicyAsync()
+    //{
+    //    if (!CurrentUser.Roles.Contains(VctoonSharedConsts.AdminUserRoleName.ToUpper()))
+    //    {
+    //        throw new AbpAuthorizationException("You don't have permission to update this resource");
+    //    }
+    //}
 
     private enum RelationKind { Artist, Tag }
     private enum RelationOp { Add, Update, Delete }
@@ -214,50 +190,27 @@ public class MediumResourceAppService(
             allTags = await tagRepository.GetListAsync(t => targetIds.Contains(t.Id));
         }
 
-        // 分类型处理
-        var comicIds = distinctMediumItems.Where(x => x.MediumType == MediumType.Comic).Select(x => x.Id).ToList();
-        var videoIds = distinctMediumItems.Where(x => x.MediumType == MediumType.Video).Select(x => x.Id).ToList();
-
-        if (comicIds.Any())
-        {
-            await HandleMediumSetAsync(comicIds, kind, op, true, allArtists, allTags);
-        }
-        if (videoIds.Any())
-        {
-            await HandleMediumSetAsync(videoIds, kind, op, false, allArtists, allTags);
-        }
+        var mediumIds = distinctMediumItems.Select(x => x.Id).ToList();
+        await HandleMediumSetAsync(mediumIds, kind, op, allArtists, allTags);
     }
 
     private async Task HandleMediumSetAsync(
         List<Guid> mediumIds,
         RelationKind kind,
         RelationOp op,
-        bool isComic,
         List<Artist> allArtists,
         List<Tag> allTags)
     {
         // 查询并包含需要的导航属性
-        if (isComic)
+        var list = await mediumRepository.GetListAsync(c => mediumIds.Contains(c.Id), includeDetails: true);
+        foreach (var medium in list)
         {
-            var list = await comicRepository.GetListAsync(c => mediumIds.Contains(c.Id), includeDetails: true);
-            foreach (var medium in list)
-            {
-                ApplyRelationChange(medium, kind, op, allArtists, allTags);
-                await comicRepository.UpdateAsync(medium, true);
-            }
-        }
-        else
-        {
-            var list = await videoRepository.GetListAsync(c => mediumIds.Contains(c.Id), includeDetails: true);
-            foreach (var medium in list)
-            {
-                ApplyRelationChange(medium, kind, op, allArtists, allTags);
-                await videoRepository.UpdateAsync(medium, true);
-            }
+            ApplyRelationChange(medium, kind, op, allArtists, allTags);
+            await mediumRepository.UpdateAsync(medium, true);
         }
     }
 
-    private void ApplyRelationChange(MediumBase medium, RelationKind kind, RelationOp op, List<Artist> allArtists, List<Tag> allTags)
+    private void ApplyRelationChange(Medium medium, RelationKind kind, RelationOp op, List<Artist> allArtists, List<Tag> allTags)
     {
         // 根据操作对导航集合进行增删改
         if (kind == RelationKind.Artist)

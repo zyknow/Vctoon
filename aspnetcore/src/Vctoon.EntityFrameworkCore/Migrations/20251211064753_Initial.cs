@@ -316,7 +316,7 @@ namespace Vctoon.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     SessionId = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     Device = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
-                    DeviceInfo = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
+                    DeviceInfo = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: true),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     ClientId = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
@@ -458,6 +458,7 @@ namespace Vctoon.Migrations
                     RedirectUris = table.Column<string>(type: "text", nullable: true),
                     Requirements = table.Column<string>(type: "text", nullable: true),
                     Settings = table.Column<string>(type: "text", nullable: true),
+                    FrontChannelLogoutUri = table.Column<string>(type: "text", nullable: true),
                     ClientUri = table.Column<string>(type: "text", nullable: true),
                     LogoUri = table.Column<string>(type: "text", nullable: true),
                     ExtraProperties = table.Column<string>(type: "text", nullable: false),
@@ -739,34 +740,6 @@ namespace Vctoon.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AppComics",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ExtraProperties = table.Column<string>(type: "text", nullable: false),
-                    ConcurrencyStamp = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false),
-                    CreationTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    CreatorId = table.Column<Guid>(type: "uuid", nullable: true),
-                    LastModificationTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    LastModifierId = table.Column<Guid>(type: "uuid", nullable: true),
-                    Title = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
-                    Cover = table.Column<string>(type: "text", nullable: false),
-                    ReadCount = table.Column<int>(type: "integer", nullable: false),
-                    LibraryId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AppComics", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AppComics_AppLibraries_LibraryId",
-                        column: x => x.LibraryId,
-                        principalTable: "AppLibraries",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AppLibraryPaths",
                 columns: table => new
                 {
@@ -811,42 +784,6 @@ namespace Vctoon.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_AppLibraryPermissions_AppLibraries_LibraryId",
-                        column: x => x.LibraryId,
-                        principalTable: "AppLibraries",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AppVideos",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Framerate = table.Column<double>(type: "double precision", nullable: false),
-                    Codec = table.Column<string>(type: "text", nullable: false),
-                    Width = table.Column<int>(type: "integer", nullable: false),
-                    Height = table.Column<int>(type: "integer", nullable: false),
-                    Bitrate = table.Column<long>(type: "bigint", nullable: false),
-                    Ratio = table.Column<string>(type: "text", nullable: false),
-                    Duration = table.Column<TimeSpan>(type: "interval", nullable: false),
-                    Path = table.Column<string>(type: "text", nullable: false),
-                    ExtraProperties = table.Column<string>(type: "text", nullable: false),
-                    ConcurrencyStamp = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false),
-                    CreationTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    CreatorId = table.Column<Guid>(type: "uuid", nullable: true),
-                    LastModificationTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    LastModifierId = table.Column<Guid>(type: "uuid", nullable: true),
-                    Title = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
-                    Cover = table.Column<string>(type: "text", nullable: false),
-                    ReadCount = table.Column<int>(type: "integer", nullable: false),
-                    LibraryId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AppVideos", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AppVideos_AppLibraries_LibraryId",
                         column: x => x.LibraryId,
                         principalTable: "AppLibraries",
                         principalColumn: "Id",
@@ -925,60 +862,38 @@ namespace Vctoon.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AppArtists",
+                name: "AppMediums",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Slug = table.Column<long>(type: "bigint", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    MediumType = table.Column<int>(type: "integer", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
-                    ComicId = table.Column<Guid>(type: "uuid", nullable: true),
-                    VideoId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Cover = table.Column<string>(type: "text", nullable: false),
+                    ReadCount = table.Column<int>(type: "integer", nullable: false),
+                    LibraryId = table.Column<Guid>(type: "uuid", nullable: false),
+                    LibraryPathId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ExtraProperties = table.Column<string>(type: "text", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false),
                     CreationTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     CreatorId = table.Column<Guid>(type: "uuid", nullable: true),
                     LastModificationTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    LastModifierId = table.Column<Guid>(type: "uuid", nullable: true)
+                    LastModifierId = table.Column<Guid>(type: "uuid", nullable: true),
+                    VideoDetail = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AppArtists", x => x.Id);
+                    table.PrimaryKey("PK_AppMediums", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AppArtists_AppComics_ComicId",
-                        column: x => x.ComicId,
-                        principalTable: "AppComics",
-                        principalColumn: "Id");
+                        name: "FK_AppMediums_AppLibraries_LibraryId",
+                        column: x => x.LibraryId,
+                        principalTable: "AppLibraries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_AppArtists_AppVideos_VideoId",
-                        column: x => x.VideoId,
-                        principalTable: "AppVideos",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AppTags",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    ComicId = table.Column<Guid>(type: "uuid", nullable: true),
-                    VideoId = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreationTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    CreatorId = table.Column<Guid>(type: "uuid", nullable: true),
-                    LastModificationTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    LastModifierId = table.Column<Guid>(type: "uuid", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AppTags", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AppTags_AppComics_ComicId",
-                        column: x => x.ComicId,
-                        principalTable: "AppComics",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_AppTags_AppVideos_VideoId",
-                        column: x => x.VideoId,
-                        principalTable: "AppVideos",
+                        name: "FK_AppMediums_AppLibraryPaths_LibraryPathId",
+                        column: x => x.LibraryPathId,
+                        principalTable: "AppLibraryPaths",
                         principalColumn: "Id");
                 });
 
@@ -997,7 +912,7 @@ namespace Vctoon.Migrations
                     ReferenceId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     Status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     Subject = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
-                    Type = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Type = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: true),
                     ExtraProperties = table.Column<string>(type: "text", nullable: false),
                     ConcurrencyStamp = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false)
                 },
@@ -1038,6 +953,67 @@ namespace Vctoon.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AppArtists",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    MediumId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppArtists", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AppArtists_AppMediums_MediumId",
+                        column: x => x.MediumId,
+                        principalTable: "AppMediums",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppIdentityUserReadingProcesses",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    MediumId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Progress = table.Column<double>(type: "double precision", nullable: false),
+                    LastReadTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppIdentityUserReadingProcesses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AppIdentityUserReadingProcesses_AppMediums_MediumId",
+                        column: x => x.MediumId,
+                        principalTable: "AppMediums",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppTags",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    MediumId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreationTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uuid", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppTags", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AppTags_AppMediums_MediumId",
+                        column: x => x.MediumId,
+                        principalTable: "AppMediums",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AppImageFiles",
                 columns: table => new
                 {
@@ -1049,7 +1025,7 @@ namespace Vctoon.Migrations
                     LibraryPathId = table.Column<Guid>(type: "uuid", nullable: true),
                     ArchiveInfoPathId = table.Column<Guid>(type: "uuid", nullable: true),
                     LibraryId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ComicId = table.Column<Guid>(type: "uuid", nullable: false)
+                    MediumId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -1058,12 +1034,6 @@ namespace Vctoon.Migrations
                         name: "FK_AppImageFiles_AppArchiveInfoPaths_ArchiveInfoPathId",
                         column: x => x.ArchiveInfoPathId,
                         principalTable: "AppArchiveInfoPaths",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_AppImageFiles_AppComics_ComicId",
-                        column: x => x.ComicId,
-                        principalTable: "AppComics",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -1304,29 +1274,25 @@ namespace Vctoon.Migrations
                 column: "LibraryPathId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AppArtists_ComicId",
+                name: "IX_AppArtists_MediumId",
                 table: "AppArtists",
-                column: "ComicId");
+                column: "MediumId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AppArtists_VideoId",
+                name: "IX_AppArtists_Name",
                 table: "AppArtists",
-                column: "VideoId");
+                column: "Name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_AppComics_LibraryId",
-                table: "AppComics",
-                column: "LibraryId");
+                name: "IX_AppIdentityUserReadingProcesses_MediumId",
+                table: "AppIdentityUserReadingProcesses",
+                column: "MediumId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AppImageFiles_ArchiveInfoPathId",
                 table: "AppImageFiles",
                 column: "ArchiveInfoPathId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AppImageFiles_ComicId",
-                table: "AppImageFiles",
-                column: "ComicId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AppImageFiles_LibraryPathId",
@@ -1344,19 +1310,25 @@ namespace Vctoon.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AppTags_ComicId",
-                table: "AppTags",
-                column: "ComicId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AppTags_VideoId",
-                table: "AppTags",
-                column: "VideoId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AppVideos_LibraryId",
-                table: "AppVideos",
+                name: "IX_AppMediums_LibraryId",
+                table: "AppMediums",
                 column: "LibraryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppMediums_LibraryPathId",
+                table: "AppMediums",
+                column: "LibraryPathId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppTags_MediumId",
+                table: "AppTags",
+                column: "MediumId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppTags_Name",
+                table: "AppTags",
+                column: "Name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictApplications_ClientId",
@@ -1471,6 +1443,9 @@ namespace Vctoon.Migrations
                 name: "AppArtists");
 
             migrationBuilder.DropTable(
+                name: "AppIdentityUserReadingProcesses");
+
+            migrationBuilder.DropTable(
                 name: "AppImageFiles");
 
             migrationBuilder.DropTable(
@@ -1504,10 +1479,7 @@ namespace Vctoon.Migrations
                 name: "AbpUsers");
 
             migrationBuilder.DropTable(
-                name: "AppComics");
-
-            migrationBuilder.DropTable(
-                name: "AppVideos");
+                name: "AppMediums");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictAuthorizations");

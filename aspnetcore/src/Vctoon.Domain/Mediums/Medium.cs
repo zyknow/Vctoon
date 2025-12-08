@@ -1,30 +1,32 @@
-using Vctoon.Identities;
+﻿using Vctoon.Identities;
 
-namespace Vctoon.Mediums.Base;
+namespace Vctoon.Mediums;
 
-[Serializable]
-public abstract class MediumBase : AuditedAggregateRoot<Guid>, IMediumHasReadingProcess
+public class Medium : AuditedAggregateRoot<Guid>
 {
-    protected MediumBase()
+    protected Medium()
     {
     }
 
-    public MediumBase(Guid id,
+    public Medium(
+        Guid id,
         string title,
         string cover,
         Guid libraryId,
-        Guid libraryPathId,
-        string description = "") : base(id)
+        Guid? libraryPathId = null,
+        string description = ""
+    ) : base(id)
     {
         Title = title;
         Cover = cover;
         LibraryId = libraryId;
-        Description = description;
         LibraryPathId = libraryPathId;
+        Description = description;
     }
 
     public string Title { get; set; }
 
+    public MediumType MediumType { get; set; }
 
     public string Description { get; set; }
 
@@ -34,8 +36,10 @@ public abstract class MediumBase : AuditedAggregateRoot<Guid>, IMediumHasReading
 
     public Guid LibraryId { get; set; }
 
-    public Guid LibraryPathId { get; set; }
-    
+    public Guid? LibraryPathId { get; set; }
+
+    public VideoDetail? VideoDetail { get; set; }
+
     public virtual List<Tag> Tags { get; } = new();
 
     public virtual List<Artist> Artists { get; set; } = new();

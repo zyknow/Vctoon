@@ -8,7 +8,7 @@ public class ComicScanHandler(
     IComicImageRepository comicImageRepository,
     IArchiveInfoRepository archiveInfoRepository,
     CoverSaver coverSaver,
-    IComicRepository comicRepository,
+    IMediumRepository mediumRepository,
     IDocumentContentService documentContentService)
     : VctoonService, IMediumScanHandler
 {
@@ -104,9 +104,9 @@ public class ComicScanHandler(
         {
             await comicImageRepository.DeleteManyAsync(totalChanges.ImageIdsToDelete);
         }
-        if (totalChanges.ComicIdsToDelete.Count > 0)
+        if (totalChanges.MediumIdsToDelete.Count > 0)
         {
-            await comicRepository.DeleteManyAsync(totalChanges.ComicIdsToDelete);
+            await mediumRepository.DeleteManyAsync(totalChanges.MediumIdsToDelete);
         }
         if (totalChanges.ArchiveInfoIdsToDelete.Count > 0)
         {
@@ -124,9 +124,9 @@ public class ComicScanHandler(
             await archiveInfoRepository.UpdateAsync(ai);
         }
 
-        if (totalChanges.ComicsToInsert.Count > 0)
+        if (totalChanges.MediumsToInsert.Count > 0)
         {
-            await comicRepository.InsertManyAsync(totalChanges.ComicsToInsert);
+            await mediumRepository.InsertManyAsync(totalChanges.MediumsToInsert);
         }
 
         if (totalChanges.ImagesToInsert.Count > 0)
@@ -135,11 +135,11 @@ public class ComicScanHandler(
         }
 
         var deletedCount = totalChanges.ImageIdsToDelete.Count
-                           + totalChanges.ComicIdsToDelete.Count
+                           + totalChanges.MediumIdsToDelete.Count
                            + totalChanges.ArchiveInfoIdsToDelete.Count;
         var updatedCount = totalChanges.ArchiveInfosToUpdate.Count;
         var addedCount = totalChanges.ArchiveInfosToInsert.Count
-                         + totalChanges.ComicsToInsert.Count
+                         + totalChanges.MediumsToInsert.Count
                          + totalChanges.ImagesToInsert.Count;
 
         if (deletedCount == 0 && updatedCount == 0 && addedCount == 0)
@@ -287,7 +287,7 @@ public class ComicScanHandler(
                 archiveInfoPathId: rootPath.Id));
         }
 
-        var newComics = new List<Comic>();
+        var newMediums = new List<Medium>();
 
         if (!addImageEntities.IsNullOrEmpty())
         {
@@ -295,7 +295,7 @@ public class ComicScanHandler(
             {
                 var mediumId = existingImages
                     .FirstOrDefault(x => Path.GetDirectoryName(x.Path) == group.Key)
-                    ?.ComicId;
+                    ?.MediumId;
 
                 if (mediumId == null || mediumId == Guid.Empty)
                 {
@@ -303,20 +303,21 @@ public class ComicScanHandler(
                     await using var coverStream = await documentContentService.RenderPdfPageAsync(archiveInfo.Path, 0)
                         .ConfigureAwait(false);
                     var cover = await coverSaver.SaveAsync(coverStream).ConfigureAwait(false);
-                    var comic = new Comic(GuidGenerator.Create(), title, cover, libraryId, archiveInfo.LibraryPathId);
-                    newComics.Add(comic);
-                    mediumId = comic.Id;
+                    var medium = new Medium(GuidGenerator.Create(), title, cover, libraryId, archiveInfo.LibraryPathId);
+                    medium.MediumType = MediumType.Comic;
+                    newMediums.Add(medium);
+                    mediumId = medium.Id;
                 }
 
                 foreach (var imageFile in group)
                 {
-                    imageFile.ComicId = mediumId.Value;
+                    imageFile.MediumId = mediumId.Value;
                 }
             }
 
-            if (!newComics.IsNullOrEmpty())
+            if (!newMediums.IsNullOrEmpty())
             {
-                changes.ComicsToInsert.AddRange(newComics);
+                changes.MediumsToInsert.AddRange(newMediums);
             }
 
             changes.ImagesToInsert.AddRange(addImageEntities);
@@ -385,7 +386,7 @@ public class ComicScanHandler(
                 archiveInfoPathId: archivePath.Id));
         }
 
-        var newComics = new List<Comic>();
+        var newMediums = new List<Medium>();
 
         if (!addImageEntities.IsNullOrEmpty())
         {
@@ -393,7 +394,7 @@ public class ComicScanHandler(
             {
                 var mediumId = existingImages
                     .FirstOrDefault(x => Path.GetDirectoryName(x.Path) == group.Key)
-                    ?.ComicId;
+                    ?.MediumId;
 
                 if (mediumId == null || mediumId == Guid.Empty)
                 {
@@ -403,20 +404,21 @@ public class ComicScanHandler(
                         .GetEpubImageStreamAsync(archiveInfo.Path, coverDescriptor.Path)
                         .ConfigureAwait(false);
                     var cover = await coverSaver.SaveAsync(coverStream).ConfigureAwait(false);
-                    var comic = new Comic(GuidGenerator.Create(), title, cover, libraryId, archiveInfo.LibraryPathId);
-                    newComics.Add(comic);
-                    mediumId = comic.Id;
+                    var medium = new Medium(GuidGenerator.Create(), title, cover, libraryId, archiveInfo.LibraryPathId);
+                    medium.MediumType = MediumType.Comic;
+                    newMediums.Add(medium);
+                    mediumId = medium.Id;
                 }
 
                 foreach (var image in group)
                 {
-                    image.ComicId = mediumId.Value;
+                    image.MediumId = mediumId.Value;
                 }
             }
 
-            if (!newComics.IsNullOrEmpty())
+            if (!newMediums.IsNullOrEmpty())
             {
-                changes.ComicsToInsert.AddRange(newComics);
+                changes.MediumsToInsert.AddRange(newMediums);
             }
 
             changes.ImagesToInsert.AddRange(addImageEntities);
@@ -508,11 +510,11 @@ public class ComicScanHandler(
             {
                 Id = x.Id,
                 Path = x.Path,
-                MediumId = x.ComicId
+                MediumId = x.MediumId
             });
 
         var repImages = await AsyncExecuter.ToListAsync(query);
-        var comicId = repImages.FirstOrDefault()?.MediumId ?? Guid.Empty;
+        var mediumId = repImages.FirstOrDefault()?.MediumId ?? Guid.Empty;
 
         if (repImages.IsNullOrEmpty())
         {
@@ -521,9 +523,10 @@ public class ComicScanHandler(
             var cover = await coverSaver.SaveAsync(fileStream);
 
             var title = Path.GetFileName(libraryPath.Path);
-            var comic = new Comic(GuidGenerator.Create(), title, cover, libraryPath.LibraryId, libraryPath.Id);
-            changes.ComicsToInsert.Add(comic);
-            comicId = comic.Id;
+            var medium = new Medium(GuidGenerator.Create(), title, cover, libraryPath.LibraryId, libraryPath.Id);
+            medium.MediumType = MediumType.Comic;
+            changes.MediumsToInsert.Add(medium);
+            mediumId = medium.Id;
         }
 
 
@@ -535,9 +538,9 @@ public class ComicScanHandler(
             if (deleteImages.Count == repImages.Count)
             {
                 // 删除该文件夹下的所有图片时，同时删除漫画实体
-                if (comicId != Guid.Empty)
+                if (mediumId != Guid.Empty)
                 {
-                    changes.ComicIdsToDelete.Add(comicId);
+                    changes.MediumIdsToDelete.Add(mediumId);
                 }
             }
         }
@@ -547,7 +550,7 @@ public class ComicScanHandler(
 
         var addImageFileEntities = addImageFileInfos.Select(addImage =>
             new ComicImage(GuidGenerator.Create(), addImage.Name, addImage.FullName, addImage.Extension,
-                addImage.Length, comicId, libraryPath.LibraryId, libraryPath.Id)).ToList();
+                addImage.Length, mediumId, libraryPath.LibraryId, libraryPath.Id)).ToList();
 
         if (!addImageFileEntities.IsNullOrEmpty())
         {
@@ -617,12 +620,12 @@ public class ComicScanHandler(
                 archiveInfoPathId: archiveInfoPath.Id));
         }
 
-        List<Comic> comics = [];
+        List<Medium> mediums = [];
 
         foreach (var imageFilese in addImageEntities.GroupBy(x => Path.GetDirectoryName(x.Path)))
         {
             var mediumId = repImages.FirstOrDefault(x => Path.GetDirectoryName(x.Path) == imageFilese.Key)
-                ?.ComicId;
+                ?.MediumId;
 
             if (mediumId == null)
             {
@@ -643,21 +646,22 @@ public class ComicScanHandler(
 
                 await using var entitySteam = entry.OpenEntryStream();
                 var cover = await coverSaver.SaveAsync(entitySteam);
-                var comic = new Comic(GuidGenerator.Create(), title, cover, libraryId, archiveInfo.LibraryPathId);
-                comics.Add(comic);
+                var medium = new Medium(GuidGenerator.Create(), title, cover, libraryId, archiveInfo.LibraryPathId);
+                medium.MediumType = MediumType.Comic;
+                mediums.Add(medium);
 
-                mediumId = comic.Id;
+                mediumId = medium.Id;
             }
 
             foreach (var imageFile in imageFilese)
             {
-                imageFile.ComicId = mediumId.Value;
+                imageFile.MediumId = mediumId.Value;
             }
         }
 
-        if (!comics.IsNullOrEmpty())
+        if (!mediums.IsNullOrEmpty())
         {
-            changes.ComicsToInsert.AddRange(comics);
+            changes.MediumsToInsert.AddRange(mediums);
         }
 
         if (!addImageEntities.IsNullOrEmpty())
@@ -675,8 +679,8 @@ public class ComicScanHandler(
     {
         public List<ComicImage> ImagesToInsert { get; } = [];
         public List<Guid> ImageIdsToDelete { get; } = [];
-        public List<Comic> ComicsToInsert { get; } = [];
-        public List<Guid> ComicIdsToDelete { get; } = [];
+        public List<Medium> MediumsToInsert { get; } = [];
+        public List<Guid> MediumIdsToDelete { get; } = [];
         public List<ArchiveInfo> ArchiveInfosToInsert { get; } = [];
         public List<ArchiveInfo> ArchiveInfosToUpdate { get; } = [];
         public List<Guid> ArchiveInfoIdsToDelete { get; } = [];
@@ -686,8 +690,8 @@ public class ComicScanHandler(
             if (other is null) return;
             ImagesToInsert.AddRange(other.ImagesToInsert);
             ImageIdsToDelete.AddRange(other.ImageIdsToDelete);
-            ComicsToInsert.AddRange(other.ComicsToInsert);
-            ComicIdsToDelete.AddRange(other.ComicIdsToDelete);
+            MediumsToInsert.AddRange(other.MediumsToInsert);
+            MediumIdsToDelete.AddRange(other.MediumIdsToDelete);
             ArchiveInfosToInsert.AddRange(other.ArchiveInfosToInsert);
             ArchiveInfosToUpdate.AddRange(other.ArchiveInfosToUpdate);
             ArchiveInfoIdsToDelete.AddRange(other.ArchiveInfoIdsToDelete);

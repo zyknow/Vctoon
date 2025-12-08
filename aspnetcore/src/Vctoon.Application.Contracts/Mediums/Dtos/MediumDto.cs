@@ -1,6 +1,6 @@
-﻿namespace Vctoon.Mediums.Dtos.Base;
+namespace Vctoon.Mediums.Dtos;
 
-public abstract class MediumDtoBase : AuditedEntityDto<Guid>, IMediumHasReadingProcessDto
+public class MediumDto : AuditedEntityDto<Guid>
 {
     public string Title { get; set; }
 
@@ -18,4 +18,5 @@ public abstract class MediumDtoBase : AuditedEntityDto<Guid>, IMediumHasReadingP
 
     public double? ReadingProgress { get; set; }
     public DateTime? ReadingLastTime { get; set; }
+    public VideoDetail? VideoDetail { get; set; }
 }

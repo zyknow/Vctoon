@@ -46,8 +46,7 @@ public class VctoonEntityFrameworkCoreModule : AbpModule
             /* Remove "includeAllEntities: true" to create
              * default repositories only for aggregate roots */
             options.AddDefaultRepositories(true);
-            options.AddRepository<Video, VideoRepository>();
-            options.AddRepository<Comic, ComicRepository>();
+            options.AddRepository<Medium, MediumRepository>();
             options.AddRepository<Artist, ArtistRepository>();
         });
 

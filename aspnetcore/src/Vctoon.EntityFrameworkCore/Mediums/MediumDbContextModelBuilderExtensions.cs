@@ -15,24 +15,17 @@ public static class MediumDbContextModelBuilderExtensions
             return;
         }
 
-
-        builder.Entity<Video>(b =>
+        builder.Entity<Medium>(b =>
         {
-            b.ToTable(VctoonConsts.DbTablePrefix + "Videos", VctoonConsts.DbSchema);
+            b.ToTable(VctoonConsts.DbTablePrefix + "Mediums", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
 
-            b.HasMany(x => x.Processes).WithOne().HasForeignKey(x => x.VideoId).OnDelete(DeleteBehavior.Cascade);
-            /* Configure more properties here */
-        });
+            b.HasMany(x => x.Processes).WithOne().HasForeignKey(x => x.MediumId).OnDelete(DeleteBehavior.Cascade);
 
-
-        builder.Entity<Comic>(b =>
-        {
-            b.ToTable(VctoonConsts.DbTablePrefix + "Comics", VctoonConsts.DbSchema);
-            b.ConfigureByConvention();
-
-            b.HasMany(x => x.Processes).WithOne().HasForeignKey(x => x.ComicId).OnDelete(DeleteBehavior.Cascade);
-            /* Configure more properties here */
+            b.OwnsOne(x => x.VideoDetail, navigationBuilder =>
+            {
+                navigationBuilder.ToJson();
+            });
         });
     }
 }

@@ -1,6 +1,6 @@
-﻿namespace Vctoon.Mediums.Dtos.Base;
+﻿namespace Vctoon.Mediums.Dtos;
 
-public abstract class MediumGetListOutputDtoBase : AuditedEntityDto<Guid>, IMediumHasReadingProcessDto
+public class MediumGetListOutputDto : AuditedEntityDto<Guid>
 {
     public string Title { get; set; }
 

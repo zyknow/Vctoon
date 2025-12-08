@@ -1,23 +1,15 @@
-namespace Vctoon.Mediums.Dtos;
+﻿using System;
 
-[Serializable]
-public class VideoDto : MediumDtoBase, IMediumHasReadingProcessDto
+namespace Vctoon.Mediums;
+
+public class VideoDetail
 {
     public double Framerate { get; set; }
-
     public string Codec { get; set; }
-
     public int Width { get; set; }
-
     public int Height { get; set; }
-
     public long Bitrate { get; set; }
-
     public string Ratio { get; set; }
-
     public TimeSpan Duration { get; set; }
-
     public string Path { get; set; }
-    public double? ReadingProgress { get; set; }
-    public DateTime? ReadingLastTime { get; set; }
 }

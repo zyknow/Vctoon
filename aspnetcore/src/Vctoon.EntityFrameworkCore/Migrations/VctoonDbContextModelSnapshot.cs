@@ -29,11 +29,11 @@ namespace Vctoon.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("ComicId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime?>("LastReadTime")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("MediumId")
+                        .HasColumnType("uuid");
 
                     b.Property<double>("Progress")
                         .HasColumnType("double precision");
@@ -41,14 +41,9 @@ namespace Vctoon.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("VideoId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("ComicId");
-
-                    b.HasIndex("VideoId");
+                    b.HasIndex("MediumId");
 
                     b.ToTable("AppIdentityUserReadingProcesses", (string)null);
                 });
@@ -114,24 +109,19 @@ namespace Vctoon.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("ComicId")
+                    b.Property<Guid?>("MediumId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("VideoId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("ComicId");
+                    b.HasIndex("MediumId");
 
                     b.HasIndex("Name")
                         .IsUnique();
-
-                    b.HasIndex("VideoId");
 
                     b.ToTable("AppArtists", (string)null);
                 });
@@ -144,9 +134,6 @@ namespace Vctoon.Migrations
                     b.Property<Guid?>("ArchiveInfoPathId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("ComicId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Extension")
                         .IsRequired()
                         .HasColumnType("text");
@@ -155,6 +142,9 @@ namespace Vctoon.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("LibraryPathId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MediumId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Name")
@@ -171,8 +161,6 @@ namespace Vctoon.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ArchiveInfoPathId");
-
-                    b.HasIndex("ComicId");
 
                     b.HasIndex("LibraryPathId");
 
@@ -275,9 +263,6 @@ namespace Vctoon.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("ComicId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("CreationTime");
@@ -293,27 +278,25 @@ namespace Vctoon.Migrations
                     b.Property<Guid?>("LastModifierId")
                         .HasColumnType("uuid")
                         .HasColumnName("LastModifierId");
+
+                    b.Property<Guid?>("MediumId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("VideoId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("ComicId");
+                    b.HasIndex("MediumId");
 
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.HasIndex("VideoId");
-
                     b.ToTable("AppTags", (string)null);
                 });
 
-            modelBuilder.Entity("Vctoon.Mediums.Comic", b =>
+            modelBuilder.Entity("Vctoon.Mediums.Medium", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -357,8 +340,11 @@ namespace Vctoon.Migrations
                     b.Property<Guid>("LibraryId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("LibraryPathId")
+                    b.Property<Guid?>("LibraryPathId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("MediumType")
+                        .HasColumnType("integer");
 
                     b.Property<int>("ReadCount")
                         .HasColumnType("integer");
@@ -373,97 +359,7 @@ namespace Vctoon.Migrations
 
                     b.HasIndex("LibraryPathId");
 
-                    b.ToTable("AppComics", (string)null);
-                });
-
-            modelBuilder.Entity("Vctoon.Mediums.Video", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<long>("Bitrate")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Codec")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)")
-                        .HasColumnName("ConcurrencyStamp");
-
-                    b.Property<string>("Cover")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("timestamp without time zone")
-                        .HasColumnName("CreationTime");
-
-                    b.Property<Guid?>("CreatorId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("CreatorId");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<TimeSpan>("Duration")
-                        .HasColumnType("interval");
-
-                    b.Property<string>("ExtraProperties")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("ExtraProperties");
-
-                    b.Property<double>("Framerate")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("Height")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("LastModificationTime")
-                        .HasColumnType("timestamp without time zone")
-                        .HasColumnName("LastModificationTime");
-
-                    b.Property<Guid?>("LastModifierId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("LastModifierId");
-
-                    b.Property<Guid>("LibraryId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("LibraryPathId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Path")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Ratio")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("ReadCount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Width")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LibraryId");
-
-                    b.HasIndex("LibraryPathId");
-
-                    b.ToTable("AppVideos", (string)null);
+                    b.ToTable("AppMediums", (string)null);
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLog", b =>
@@ -2236,15 +2132,11 @@ namespace Vctoon.Migrations
 
             modelBuilder.Entity("Vctoon.Identities.IdentityUserReadingProcess", b =>
                 {
-                    b.HasOne("Vctoon.Mediums.Comic", null)
+                    b.HasOne("Vctoon.Mediums.Medium", null)
                         .WithMany("Processes")
-                        .HasForeignKey("ComicId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Vctoon.Mediums.Video", null)
-                        .WithMany("Processes")
-                        .HasForeignKey("VideoId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("MediumId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Vctoon.Libraries.ArchiveInfo", b =>
@@ -2267,13 +2159,9 @@ namespace Vctoon.Migrations
 
             modelBuilder.Entity("Vctoon.Libraries.Artist", b =>
                 {
-                    b.HasOne("Vctoon.Mediums.Comic", null)
+                    b.HasOne("Vctoon.Mediums.Medium", null)
                         .WithMany("Artists")
-                        .HasForeignKey("ComicId");
-
-                    b.HasOne("Vctoon.Mediums.Video", null)
-                        .WithMany("Artists")
-                        .HasForeignKey("VideoId");
+                        .HasForeignKey("MediumId");
                 });
 
             modelBuilder.Entity("Vctoon.Libraries.ComicImage", b =>
@@ -2282,12 +2170,6 @@ namespace Vctoon.Migrations
                         .WithMany()
                         .HasForeignKey("ArchiveInfoPathId")
                         .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Vctoon.Mediums.Comic", null)
-                        .WithMany("ComicImages")
-                        .HasForeignKey("ComicId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.HasOne("Vctoon.Libraries.LibraryPath", null)
                         .WithMany()
@@ -2321,16 +2203,12 @@ namespace Vctoon.Migrations
 
             modelBuilder.Entity("Vctoon.Libraries.Tag", b =>
                 {
-                    b.HasOne("Vctoon.Mediums.Comic", null)
+                    b.HasOne("Vctoon.Mediums.Medium", null)
                         .WithMany("Tags")
-                        .HasForeignKey("ComicId");
-
-                    b.HasOne("Vctoon.Mediums.Video", null)
-                        .WithMany("Tags")
-                        .HasForeignKey("VideoId");
+                        .HasForeignKey("MediumId");
                 });
 
-            modelBuilder.Entity("Vctoon.Mediums.Comic", b =>
+            modelBuilder.Entity("Vctoon.Mediums.Medium", b =>
                 {
                     b.HasOne("Vctoon.Libraries.Library", null)
                         .WithMany()
@@ -2340,24 +2218,42 @@ namespace Vctoon.Migrations
 
                     b.HasOne("Vctoon.Libraries.LibraryPath", null)
                         .WithMany()
-                        .HasForeignKey("LibraryPathId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
+                        .HasForeignKey("LibraryPathId");
 
-            modelBuilder.Entity("Vctoon.Mediums.Video", b =>
-                {
-                    b.HasOne("Vctoon.Libraries.Library", null)
-                        .WithMany()
-                        .HasForeignKey("LibraryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.OwnsOne("Vctoon.Mediums.VideoDetail", "VideoDetail", b1 =>
+                        {
+                            b1.Property<Guid>("MediumId");
 
-                    b.HasOne("Vctoon.Libraries.LibraryPath", null)
-                        .WithMany()
-                        .HasForeignKey("LibraryPathId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                            b1.Property<long>("Bitrate");
+
+                            b1.Property<string>("Codec")
+                                .IsRequired();
+
+                            b1.Property<TimeSpan>("Duration");
+
+                            b1.Property<double>("Framerate");
+
+                            b1.Property<int>("Height");
+
+                            b1.Property<string>("Path")
+                                .IsRequired();
+
+                            b1.Property<string>("Ratio")
+                                .IsRequired();
+
+                            b1.Property<int>("Width");
+
+                            b1.HasKey("MediumId");
+
+                            b1.ToTable("AppMediums");
+
+                            b1.ToJson("VideoDetail");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MediumId");
+                        });
+
+                    b.Navigation("VideoDetail");
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLogAction", b =>
@@ -2512,18 +2408,7 @@ namespace Vctoon.Migrations
                     b.Navigation("Paths");
                 });
 
-            modelBuilder.Entity("Vctoon.Mediums.Comic", b =>
-                {
-                    b.Navigation("Artists");
-
-                    b.Navigation("ComicImages");
-
-                    b.Navigation("Processes");
-
-                    b.Navigation("Tags");
-                });
-
-            modelBuilder.Entity("Vctoon.Mediums.Video", b =>
+            modelBuilder.Entity("Vctoon.Mediums.Medium", b =>
                 {
                     b.Navigation("Artists");
 

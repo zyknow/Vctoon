@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using Volo.Abp.Domain.Entities;
 
-namespace Vctoon.Mediums.Base;
+namespace Vctoon.Mediums;
 
-public abstract class MediumBaseRepository<TEntity>(IDbContextProvider<VctoonDbContext> dbContextProvider)
-    : EfCoreRepository<VctoonDbContext, TEntity, Guid>(dbContextProvider),
-        IMediumBaseRepository<TEntity>
-    where TEntity : MediumBase
+public class MediumRepository : EfCoreRepository<VctoonDbContext, Medium, Guid>, IMediumRepository
 {
+    public MediumRepository(IDbContextProvider<VctoonDbContext> dbContextProvider) : base(dbContextProvider)
+    {
+    }
+
     public async Task AdditionReadCountAsync(Guid id)
     {
         var db = await GetDbSetAsync(); // DbSet<YourEntity>
@@ -18,7 +19,7 @@ public abstract class MediumBaseRepository<TEntity>(IDbContextProvider<VctoonDbC
 
         if (rows == 0)
         {
-            throw new EntityNotFoundException(typeof(TEntity), id);
+            throw new EntityNotFoundException(typeof(Medium), id);
         }
     }
 
@@ -36,7 +37,7 @@ public abstract class MediumBaseRepository<TEntity>(IDbContextProvider<VctoonDbC
                 .SetProperty(x => x.ReadCount, x => x.ReadCount + 1));
     }
 
-    public async Task<IQueryable<TEntity>> WithUserPageDetailsAsync(Guid? userId, bool include = true)
+    public async Task<IQueryable<Medium>> WithUserPageDetailsAsync(Guid? userId, bool include = true)
     {
         var query = await GetQueryableAsync();
 
@@ -54,7 +55,7 @@ public abstract class MediumBaseRepository<TEntity>(IDbContextProvider<VctoonDbC
         return query;
     }
 
-    public async Task<IQueryable<TEntity>> WithUserDetailsAsync(Guid? userId, bool include = true)
+    public async Task<IQueryable<Medium>> WithUserDetailsAsync(Guid? userId, bool include = true)
     {
         var query = await WithUserPageDetailsAsync(userId, include);
         if (!include)

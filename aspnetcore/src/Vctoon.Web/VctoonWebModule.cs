@@ -156,15 +156,7 @@ public class VctoonWebModule : AbpModule
             opt.AnalyzerFactory = AnalyzerFactories.IcuGeneral;
             opt.ConfigureLucene(model =>
             {
-                model.Entity<Comic>(e =>
-                {
-                    e.Field(x => x.Title, f => f.Store());
-                    e.Field(x => x.Cover, f => f.StoreOnly());
-                    e.Field(x => x.LibraryId, f => f.Keyword());
-                    e.Field(x => x.LibraryPathId, f => f.Keyword());
-                });
-
-                model.Entity<Video>(e =>
+                model.Entity<Medium>(e =>
                 {
                     e.Field(x => x.Title, f => f.Store());
                     e.Field(x => x.Cover, f => f.StoreOnly());
