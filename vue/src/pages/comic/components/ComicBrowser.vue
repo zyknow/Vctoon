@@ -5,12 +5,9 @@ import type { CSSProperties } from 'vue'
 import type { LocationQueryRaw } from 'vue-router'
 import { useRoute, useRouter } from 'vue-router'
 
-import { comicApi } from '@/api/http/comic'
-import type { Comic, ComicImage } from '@/api/http/comic/typing'
-import { MediumType } from '@/api/http/library'
-import { mediumResourceApi } from '@/api/http/medium-resource'
+import { mediumApi } from '@/api/http/medium'
+import type { ComicImage, Medium } from '@/api/http/medium/typing'
 import ComicSettingsDrawer from '@/components/overlays/ComicBrowserSettingsDrawer.vue'
-import { useEnvConfig } from '@/hooks/useEnvConfig'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { $t } from '@/locales/i18n'
 import { useComicStore } from '@/stores/comic'
@@ -27,7 +24,6 @@ type ViewerImage = ComicImage & { order: number }
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
-const { apiURL } = useEnvConfig()
 const { isMobile } = useIsMobile()
 
 const viewerContainerRef = ref<HTMLElement | null>(null)
@@ -53,7 +49,7 @@ const shouldTrackProgress = computed(() => !isIncognito.value)
 const comicStore = useComicStore()
 const settings = comicStore.settings
 
-const comicDetail = ref<Comic | null>(null)
+const comicDetail = ref<Medium | null>(null)
 const images = ref<ViewerImage[]>([])
 const isLoading = ref(false)
 const loadError = ref<null | string>(null)
@@ -544,10 +540,9 @@ const saveProgress = async () => {
     return
   }
   try {
-    await mediumResourceApi.updateReadingProcess([
+    await mediumApi.updateReadingProcess([
       {
         mediumId: id,
-        mediumType: MediumType.Comic,
         progress,
         readingLastTime: new Date().toISOString(),
       },
@@ -585,20 +580,7 @@ const sliderValue = computed<number>({
 const resolveImageUrl = (imageId: string) => {
   const width = resolvedQualityWidth.value
 
-  if (!width) {
-    const template = comicApi.url.getComicImage.replace(
-      '?maxWidth={maxWidth}',
-      '',
-    )
-    const requestUrl = template.format({ comicImageId: imageId })
-    return `${apiURL}${requestUrl}`
-  }
-
-  const requestUrl = comicApi.url.getComicImage.format({
-    comicImageId: imageId,
-    maxWidth: width,
-  })
-  return `${apiURL}${requestUrl}`
+  return mediumApi.getComicImageUrl(imageId, width ?? undefined)
 }
 
 const placeholderImageSrc =
@@ -1385,8 +1367,8 @@ const fetchComic = async () => {
   loadError.value = null
   try {
     const [detail, imageList] = await Promise.all([
-      comicApi.getById(id),
-      comicApi.getImagesByComicId(id),
+      mediumApi.getById(id),
+      mediumApi.getComicImageList(id),
     ])
     comicDetail.value = detail
     lastSavedProgress = detail.readingProgress ?? 0

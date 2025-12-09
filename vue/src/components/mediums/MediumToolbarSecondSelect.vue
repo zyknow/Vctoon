@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { mediumResourceApi } from '@/api/http/medium-resource'
-import type { MediumMultiUpdateDto } from '@/api/http/medium-resource/typing'
-import type { MediumGetListOutput } from '@/api/http/typing'
+import { mediumApi } from '@/api/http/medium'
+import type { MediumGetListOutput, MediumMultiUpdate } from '@/api/http/medium/typing'
 import MediumBatchRelationModal from '@/components/overlays/MediumBatchRelationModal.vue'
 import { useInjectedMediumItemProvider } from '@/hooks/useMediumProvider'
 
@@ -44,28 +43,25 @@ const relationApiMap: Record<
   MediumRelationEntity,
   Record<
     MediumRelationAction,
-    (input: MediumMultiUpdateDto) => Promise<unknown>
+    (input: MediumMultiUpdate) => Promise<unknown>
   >
 > = {
   artist: {
-    add: (input) => mediumResourceApi.addArtistList(input),
-    remove: (input) => mediumResourceApi.deleteArtistList(input),
-    update: (input) => mediumResourceApi.updateArtistList(input),
+    add: (input) => mediumApi.addArtistList(input),
+    remove: (input) => mediumApi.deleteArtistList(input),
+    update: (input) => mediumApi.updateArtistList(input),
   },
   tag: {
-    add: (input) => mediumResourceApi.addTagList(input),
-    remove: (input) => mediumResourceApi.deleteTagList(input),
-    update: (input) => mediumResourceApi.updateTagList(input),
+    add: (input) => mediumApi.addTagList(input),
+    remove: (input) => mediumApi.deleteTagList(input),
+    update: (input) => mediumApi.updateTagList(input),
   },
 }
 
-const createPayload = (ids: string[]): MediumMultiUpdateDto => {
+const createPayload = (ids: string[]): MediumMultiUpdate => {
   return {
-    ids,
-    items: selectedMediums.value.map((medium) => ({
-      id: medium.id,
-      mediumType: medium.mediumType,
-    })),
+    resourceIds: ids,
+    mediumIds: selectedMediums.value.map((medium) => medium.id),
   }
 }
 
@@ -88,7 +84,7 @@ const executeRelationAction = async (
   }
 
   const payload = createPayload(selectedIds)
-  if (payload.items.length === 0) return
+  if (payload.mediumIds.length === 0) return
 
   const actionKey = `${entity}:${action}` as RelationActionKey
   pendingAction.value = actionKey

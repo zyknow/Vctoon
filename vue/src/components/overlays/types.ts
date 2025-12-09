@@ -1,4 +1,4 @@
-import type { ComicImage } from '@/api/http/comic/typing'
+import type { ComicImage } from '@/api/http/medium/typing'
 
 export type ReadingDirection = 'btt' | 'ltr' | 'rtl' | 'ttb'
 export type DisplayMode = 'double' | 'scroll' | 'single'

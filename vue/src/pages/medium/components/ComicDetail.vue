@@ -1,17 +1,14 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 
-import { comicApi } from '@/api/http/comic'
-import type { Comic, ComicImage } from '@/api/http/comic/typing'
-import { MediumType } from '@/api/http/library/typing'
-import { mediumResourceApi } from '@/api/http/medium-resource'
+import { mediumApi } from '@/api/http/medium'
+import type { ComicImage, Medium } from '@/api/http/medium/typing'
 import MediumCoverCard from '@/components/mediums/MediumCoverCard.vue'
 import MediumSelectionIndicator from '@/components/mediums/MediumSelectionIndicator.vue'
 import MediumToolbarFirst from '@/components/mediums/MediumToolbarFirst.vue'
 import MediumToolbarSecond from '@/components/mediums/MediumToolbarSecond.vue'
 import ConfirmModal from '@/components/overlays/ConfirmModal.vue'
 import { useAbpSettings } from '@/hooks/abp/useAbpSettings'
-import { useEnvConfig } from '@/hooks/useEnvConfig'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import type {
   MediumProvider,
@@ -25,11 +22,10 @@ import { formatMediumDateTime, formatMediumProgress } from '@/utils/medium'
 
 const props = defineProps<{
   loading: boolean
-  medium: Comic
+  medium: Medium
   mediumId: string
 }>()
 
-const { apiURL } = useEnvConfig()
 const overlay = useOverlay()
 const { isMobile } = useIsMobile()
 const mediumStore = useMediumStore()
@@ -50,7 +46,7 @@ const needLoadImages = abpSettings.isTrue('Medium.ComicDetailVisibleImages')
 const mediumTitle = computed(() => medium.value.title ?? '')
 const coverUrl = computed(() => {
   if (!medium.value.cover) return undefined
-  return mediumResourceApi.getCoverUrl(medium.value.cover)
+  return mediumApi.getCoverUrl(medium.value.cover)
 })
 
 const creationTimeText = computed(() => {
@@ -68,7 +64,6 @@ const comicImagesLoading = ref(false)
 const deletingImages = ref(false)
 const selectedImageIds = ref<string[]>([])
 const lastClickedIndex = ref<null | number>(null)
-const comicScrollContainer = ref<HTMLElement | null>(null)
 
 const sortState = reactive<{
   field: 'index' | 'name' | 'size'
@@ -185,6 +180,7 @@ const providerPageRequest = reactive<PageRequest>({
   maxResultCount: 1000,
   skipCount: 0,
 })
+
 const mediumProvider: MediumProvider = {
   currentTab: ref<MediumViewTab>('library'),
   hasMore: ref(false),
@@ -192,7 +188,7 @@ const mediumProvider: MediumProvider = {
   loading: ref(false),
   async loadItems() {},
   async loadNext() {},
-  loadType: ref(MediumType.Comic),
+  loadType: ref(0),
   pageRequest: providerPageRequest,
   selectedMediumIds: ref([]),
   title: providerTitle,
@@ -225,67 +221,6 @@ watch(
   { immediate: true },
 )
 
-const loadMoreVisibleComicImages = () => {
-  if (visibleComicCount.value >= sortedComicImages.value.length) return
-  visibleComicCount.value = Math.min(
-    visibleComicCount.value + COMIC_IMAGE_BATCH_SIZE,
-    sortedComicImages.value.length,
-  )
-}
-
-const handleComicScroll = () => {
-  const el = comicScrollContainer.value
-  if (!el || comicImagesLoading.value) return
-  if (visibleComicCount.value >= sortedComicImages.value.length) return
-  const threshold = el.scrollHeight - el.clientHeight - 120
-  if (el.scrollTop >= threshold) {
-    loadMoreVisibleComicImages()
-  }
-}
-
-let detachComicScroll: (() => void) | undefined
-
-const attachComicScrollListener = () => {
-  if (detachComicScroll) {
-    detachComicScroll()
-    detachComicScroll = undefined
-  }
-  const el = comicScrollContainer.value
-  if (!el) return
-  const listener = () => handleComicScroll()
-  el.addEventListener('scroll', listener, { passive: true })
-  detachComicScroll = () => el.removeEventListener('scroll', listener)
-}
-
-const ensureComicImagesFillContainer = () => {
-  const el = comicScrollContainer.value
-  if (!el) return
-  if (
-    el.scrollHeight <= el.clientHeight &&
-    visibleComicCount.value < sortedComicImages.value.length
-  ) {
-    loadMoreVisibleComicImages()
-    nextTick(() => ensureComicImagesFillContainer())
-  }
-}
-
-watch(
-  () => comicScrollContainer.value,
-  () => {
-    attachComicScrollListener()
-    nextTick(() => ensureComicImagesFillContainer())
-  },
-)
-
-watch(
-  () => comicImagesLoading.value,
-  (value) => {
-    if (!value) {
-      nextTick(() => ensureComicImagesFillContainer())
-    }
-  },
-)
-
 watch(
   mediumId,
   () => {
@@ -300,12 +235,6 @@ watch(
   },
   { immediate: true },
 )
-
-onBeforeUnmount(() => {
-  if (detachComicScroll) {
-    detachComicScroll()
-  }
-})
 
 const isSupportedSortField = (
   value: string,
@@ -329,8 +258,6 @@ const updateSort = (field: 'index' | 'name' | 'size') => {
   visibleComicCount.value = COMIC_IMAGE_BATCH_SIZE
 }
 
-// 已迁移到 UDropdownMenu，移除 Element Plus 的命令回调
-
 async function loadComicImages() {
   if (!mediumId.value) return
 
@@ -338,7 +265,7 @@ async function loadComicImages() {
 
   comicImagesLoading.value = true
   try {
-    const images = await comicApi.getImagesByComicId(mediumId.value)
+    const images = await mediumApi.getComicImageList(mediumId.value)
     comicImages.value = images.map((item, index) => ({ ...item, index }))
     providerPageRequest.sorting = `${sortState.field} ${sortState.order}`
     const initialVisibleCount =
@@ -399,7 +326,7 @@ const deleteSelectedImages = async () => {
   try {
     await Promise.all(
       selectedImageIds.value.map((imageId) =>
-        comicApi.deleteComicImage(imageId),
+        mediumApi.deleteComicImage(imageId, true),
       ),
     )
     await loadComicImages()
@@ -467,11 +394,7 @@ const formatImageSize = (size: number) => {
 }
 
 const resolveComicImageUrl = (imageId: string) => {
-  const url = comicApi.url.getComicImage.format({
-    comicImageId: imageId,
-    maxWidth: COMIC_PREVIEW_WIDTH,
-  })
-  return `${apiURL}${url}`
+  return mediumApi.getComicImageUrl(imageId, COMIC_PREVIEW_WIDTH)
 }
 </script>
 

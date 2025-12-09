@@ -10,6 +10,7 @@ public class Medium : AuditedAggregateRoot<Guid>
 
     public Medium(
         Guid id,
+        MediumType mediumType,
         string title,
         string cover,
         Guid libraryId,
@@ -17,6 +18,7 @@ public class Medium : AuditedAggregateRoot<Guid>
         string description = ""
     ) : base(id)
     {
+        MediumType = mediumType;
         Title = title;
         Cover = cover;
         LibraryId = libraryId;

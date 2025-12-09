@@ -162,6 +162,7 @@ public class VctoonWebModule : AbpModule
                     e.Field(x => x.Cover, f => f.StoreOnly());
                     e.Field(x => x.LibraryId, f => f.Keyword());
                     e.Field(x => x.LibraryPathId, f => f.Keyword());
+                    e.Field(x => x.MediumType, f => f.Keyword());
                 });
             });
         });

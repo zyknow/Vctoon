@@ -18,12 +18,11 @@ import { useEventListener } from '@vueuse/core'
 import DPlayer, { DPlayerEvents } from 'dplayer'
 import { useI18n } from 'vue-i18n'
 
-import { MediumType } from '@/api/http/library'
-import { mediumResourceApi } from '@/api/http/medium-resource'
-import { Video, videoApi, VideoGetListOutput } from '@/api/http/video'
+import { mediumApi } from '@/api/http/medium'
+import { Medium } from '@/api/http/medium/typing'
 
 const props = defineProps<{
-  video: VideoGetListOutput | Video
+  video: Medium
   autoplay?: boolean
   theme?: string
   loop?: boolean
@@ -40,7 +39,7 @@ const dpLang = computed(
     (String(locale.value).toLowerCase().startsWith('zh') ? 'zh-cn' : 'en'),
 )
 
-const url = computed(() => videoApi.getVideoUrl(props.video.id))
+const url = computed(() => mediumApi.getVideoStreamUrl(props.video.id))
 
 const dpType = computed<'auto' | 'hls' | 'flv' | 'dash'>(() => {
   return 'hls'
@@ -86,10 +85,9 @@ const saveProgress = async () => {
     return
   }
   try {
-    await mediumResourceApi.updateReadingProcess([
+    await mediumApi.updateReadingProcess([
       {
         mediumId: id,
-        mediumType: MediumType.Video,
         progress,
         readingLastTime: new Date().toISOString(),
       },
@@ -132,7 +130,7 @@ function init() {
     lang: dpLang.value as any,
     video: {
       url: url.value,
-      pic: mediumResourceApi.getCoverUrl(props.video.cover!),
+      pic: mediumApi.getCoverUrl(props.video.cover!),
       type: dpType.value,
     },
     customType: {

@@ -91,6 +91,7 @@ public partial class MediumAppService
             {
                 medium.ReadCount++;
             }
+
             await mediumRepository.UpdateManyAsync(mediums);
         }
     }
@@ -147,8 +148,18 @@ public partial class MediumAppService
     //    }
     //}
 
-    private enum RelationKind { Artist, Tag }
-    private enum RelationOp { Add, Update, Delete }
+    private enum RelationKind
+    {
+        Artist,
+        Tag
+    }
+
+    private enum RelationOp
+    {
+        Add,
+        Update,
+        Delete
+    }
 
     private async Task ModifyRelationsAsync(MediumMultiUpdateDto input, RelationKind kind, RelationOp op)
     {
@@ -157,18 +168,19 @@ public partial class MediumAppService
         {
             throw new UserFriendlyException("Input is null");
         }
-        if (input.Items.IsNullOrEmpty())
+
+        if (input.MediumIds.IsNullOrEmpty())
         {
             throw new UserFriendlyException("Items is empty");
         }
-        if (op != RelationOp.Delete && input.Ids.IsNullOrEmpty())
+
+        if (op != RelationOp.Delete && input.ResourceIds.IsNullOrEmpty())
         {
             throw new UserFriendlyException("Ids is empty");
         }
 
-        var distinctMediumItems = input.Items
-            .Where(i => i.Id != Guid.Empty)
-            .DistinctBy(i => (i.MediumType, i.Id))
+        var distinctMediumItems = input.MediumIds
+            .Where(i => i != Guid.Empty)
             .ToList();
 
         if (!distinctMediumItems.Any())
@@ -176,7 +188,7 @@ public partial class MediumAppService
             return; // 无可处理
         }
 
-        var targetIds = input.Ids.Distinct().ToList();
+        var targetIds = input.ResourceIds.Distinct().ToList();
 
         // 预取关系实体（Artist / Tag）
         List<Artist> allArtists = [];
@@ -190,7 +202,7 @@ public partial class MediumAppService
             allTags = await tagRepository.GetListAsync(t => targetIds.Contains(t.Id));
         }
 
-        var mediumIds = distinctMediumItems.Select(x => x.Id).ToList();
+        var mediumIds = distinctMediumItems.Select(x => x).ToList();
         await HandleMediumSetAsync(mediumIds, kind, op, allArtists, allTags);
     }
 
@@ -210,7 +222,8 @@ public partial class MediumAppService
         }
     }
 
-    private void ApplyRelationChange(Medium medium, RelationKind kind, RelationOp op, List<Artist> allArtists, List<Tag> allTags)
+    private void ApplyRelationChange(Medium medium, RelationKind kind, RelationOp op, List<Artist> allArtists,
+        List<Tag> allTags)
     {
         // 根据操作对导航集合进行增删改
         if (kind == RelationKind.Artist)
@@ -223,6 +236,7 @@ public partial class MediumAppService
                     {
                         medium.Artists.Add(a);
                     }
+
                     break;
                 case RelationOp.Update:
                     // 删除不存在的
@@ -230,17 +244,20 @@ public partial class MediumAppService
                     {
                         medium.Artists.Remove(remove);
                     }
+
                     // 添加缺少的
                     foreach (var add in allArtists.Where(a => medium.Artists.All(x => x.Id != a.Id)))
                     {
                         medium.Artists.Add(add);
                     }
+
                     break;
                 case RelationOp.Delete:
                     foreach (var remove in medium.Artists.Where(a => allArtists.Any(x => x.Id == a.Id)).ToList())
                     {
                         medium.Artists.Remove(remove);
                     }
+
                     break;
             }
         }
@@ -254,22 +271,26 @@ public partial class MediumAppService
                     {
                         medium.Tags.Add(t);
                     }
+
                     break;
                 case RelationOp.Update:
                     foreach (var remove in medium.Tags.Where(t => allTags.All(x => x.Id != t.Id)).ToList())
                     {
                         medium.Tags.Remove(remove);
                     }
+
                     foreach (var add in allTags.Where(t => medium.Tags.All(x => x.Id != t.Id)))
                     {
                         medium.Tags.Add(add);
                     }
+
                     break;
                 case RelationOp.Delete:
                     foreach (var remove in medium.Tags.Where(t => allTags.Any(x => x.Id == t.Id)).ToList())
                     {
                         medium.Tags.Remove(remove);
                     }
+
                     break;
             }
         }

@@ -2,12 +2,9 @@
 import { computed, inject, provide, reactive, ref } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
 
-import type { ComicGetListInput } from '@/api/http/comic'
-import { comicApi } from '@/api/http/comic'
 import { MediumType } from '@/api/http/library'
-import type { MediumGetListOutput } from '@/api/http/typing'
-import type { VideoGetListInput } from '@/api/http/video'
-import { videoApi } from '@/api/http/video'
+import { mediumApi } from '@/api/http/medium'
+import type { MediumGetListInput, MediumGetListOutput } from '@/api/http/medium/typing'
 
 // 使用全局符号注册以避免在 HMR 期间因模块热替换导致的 Symbol 实例不一致
 // 这将确保 provide 与 inject 使用到的是同一个 key，即使文件被热更新重新评估
@@ -26,7 +23,7 @@ export type MediumAllItemProvider = {
 }
 
 /** 公共的分页查询类型，避免 union 导致的类型缩小问题 */
-export type PageRequest = Partial<ComicGetListInput & VideoGetListInput>
+export type PageRequest = MediumGetListInput
 export type MediumViewTab = 'collection' | 'library' | 'recommend'
 /** 对外暴露的 Provider 接口（显式使用 Ref 类型） */
 export type MediumProvider = {
@@ -69,13 +66,6 @@ export function createMediumProvider(
   const loading = ref(false)
   const hasMore = ref(true)
   const currentTab = ref<MediumViewTab>('recommend')
-  const pageApi = computed<typeof comicApi.getPage | typeof videoApi.getPage>(
-    () => {
-      return loadType.value === MediumType.Comic
-        ? comicApi.getPage
-        : videoApi.getPage
-    },
-  )
 
   type LoadItemsOptions = {
     append?: boolean
@@ -91,8 +81,9 @@ export function createMediumProvider(
       const append = options.append ?? false
       const skip = options.skipCount ?? (append ? items.value.length : 0)
       pageRequest.skipCount = skip
-      const result = await pageApi.value(
-        pageRequest as ComicGetListInput & VideoGetListInput,
+      pageRequest.mediumType = loadType.value
+      const result = await mediumApi.getPage(
+        pageRequest,
       )
       items.value = append ? [...items.value, ...result.items] : result.items
       totalCount.value = result.totalCount

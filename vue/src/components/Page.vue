@@ -26,7 +26,18 @@ defineOptions({
   name: 'Page',
 })
 
-const { autoContentHeight = false, heightOffset = 0 } = defineProps<PageProps>()
+const { autoContentHeight, heightOffset } = withDefaults(
+  defineProps<PageProps>(),
+  {
+    title: undefined,
+    description: undefined,
+    contentClass: '',
+    headerClass: '',
+    footerClass: '',
+    autoContentHeight: false,
+    heightOffset: 0,
+  },
+)
 
 const { isMobile } = useIsMobile()
 

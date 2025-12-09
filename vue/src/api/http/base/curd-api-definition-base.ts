@@ -9,11 +9,11 @@ export function createBaseCurdApi<
   TUpdateInputEntity,
   TCreateInputEntity,
   TPageRequest = BasePageRequest,
-  TPageResult = PageResult<TEntity>,
+  TPageResult = PageResult<TGetListOutputEntity>,
 >(baseUrl: string) {
   return {
     getById(id: TId) {
-      return requestClient.get<TGetListOutputEntity>(`${baseUrl}/${id}`)
+      return requestClient.get<TEntity>(`${baseUrl}/${id}`)
     },
     getPage(pageRequest: TPageRequest) {
       return requestClient.get<TPageResult>(baseUrl, {

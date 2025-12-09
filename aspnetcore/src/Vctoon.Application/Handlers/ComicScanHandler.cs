@@ -104,10 +104,12 @@ public class ComicScanHandler(
         {
             await comicImageRepository.DeleteManyAsync(totalChanges.ImageIdsToDelete);
         }
+
         if (totalChanges.MediumIdsToDelete.Count > 0)
         {
             await mediumRepository.DeleteManyAsync(totalChanges.MediumIdsToDelete);
         }
+
         if (totalChanges.ArchiveInfoIdsToDelete.Count > 0)
         {
             await archiveInfoRepository.DeleteManyAsync(totalChanges.ArchiveInfoIdsToDelete);
@@ -150,7 +152,8 @@ public class ComicScanHandler(
         return new ScanResult(deletedCount, updatedCount, addedCount);
     }
 
-    protected virtual async Task<(ArchiveInfo archiveInfo, ScanChanges changes)> ScanArchiveInfoDirectoryStructureAsync(string archivePath,
+    protected virtual async Task<(ArchiveInfo archiveInfo, ScanChanges changes)> ScanArchiveInfoDirectoryStructureAsync(
+        string archivePath,
         Guid libraryPathId)
     {
         var changes = new ScanChanges();
@@ -207,7 +210,8 @@ public class ComicScanHandler(
                File.GetLastWriteTimeUtc(archiveInfo.Path) > archiveInfo.LastResolveTime;
     }
 
-    protected virtual async Task<(ArchiveInfo archiveInfo, ScanChanges changes)> EnsureArchiveInfoAsync(string documentPath, Guid libraryPathId)
+    protected virtual async Task<(ArchiveInfo archiveInfo, ScanChanges changes)> EnsureArchiveInfoAsync(
+        string documentPath, Guid libraryPathId)
     {
         var changes = new ScanChanges();
         var query = await archiveInfoRepository.WithDetailsAsync(x => x.Paths);
@@ -303,7 +307,8 @@ public class ComicScanHandler(
                     await using var coverStream = await documentContentService.RenderPdfPageAsync(archiveInfo.Path, 0)
                         .ConfigureAwait(false);
                     var cover = await coverSaver.SaveAsync(coverStream).ConfigureAwait(false);
-                    var medium = new Medium(GuidGenerator.Create(), title, cover, libraryId, archiveInfo.LibraryPathId);
+                    var medium = new Medium(GuidGenerator.Create(), MediumType.Comic, title, cover, libraryId,
+                        archiveInfo.LibraryPathId);
                     medium.MediumType = MediumType.Comic;
                     newMediums.Add(medium);
                     mediumId = medium.Id;
@@ -404,7 +409,7 @@ public class ComicScanHandler(
                         .GetEpubImageStreamAsync(archiveInfo.Path, coverDescriptor.Path)
                         .ConfigureAwait(false);
                     var cover = await coverSaver.SaveAsync(coverStream).ConfigureAwait(false);
-                    var medium = new Medium(GuidGenerator.Create(), title, cover, libraryId, archiveInfo.LibraryPathId);
+                    var medium = new Medium(GuidGenerator.Create(),MediumType.Comic, title, cover, libraryId, archiveInfo.LibraryPathId);
                     medium.MediumType = MediumType.Comic;
                     newMediums.Add(medium);
                     mediumId = medium.Id;
@@ -523,7 +528,7 @@ public class ComicScanHandler(
             var cover = await coverSaver.SaveAsync(fileStream);
 
             var title = Path.GetFileName(libraryPath.Path);
-            var medium = new Medium(GuidGenerator.Create(), title, cover, libraryPath.LibraryId, libraryPath.Id);
+            var medium = new Medium(GuidGenerator.Create(),MediumType.Comic, title, cover, libraryPath.LibraryId, libraryPath.Id);
             medium.MediumType = MediumType.Comic;
             changes.MediumsToInsert.Add(medium);
             mediumId = medium.Id;
@@ -646,7 +651,7 @@ public class ComicScanHandler(
 
                 await using var entitySteam = entry.OpenEntryStream();
                 var cover = await coverSaver.SaveAsync(entitySteam);
-                var medium = new Medium(GuidGenerator.Create(), title, cover, libraryId, archiveInfo.LibraryPathId);
+                var medium = new Medium(GuidGenerator.Create(),MediumType.Comic, title, cover, libraryId, archiveInfo.LibraryPathId);
                 medium.MediumType = MediumType.Comic;
                 mediums.Add(medium);
 

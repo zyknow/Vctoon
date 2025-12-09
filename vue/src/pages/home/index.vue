@@ -2,9 +2,7 @@
 import { ref } from 'vue'
 import type { Ref } from 'vue'
 
-import { ReadingProgressType } from '@/api/http/base/medium-base'
-import { MediumType } from '@/api/http/library'
-import { MediumGetListOutput } from '@/api/http/typing'
+import { MediumGetListOutput, ReadingProgressType } from '@/api/http/medium'
 import {
   provideMediumAllItemProvider,
   provideMediumItemProvider,
@@ -16,7 +14,6 @@ import {
 import { $t } from '@/locales/i18n'
 
 const commonOptions: UseRecommendMediumProviderOptions = {
-  mediumTypes: [MediumType.Comic, MediumType.Video],
   pageRequest: {},
   autoLoad: true,
 }

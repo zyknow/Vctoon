@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ReadingProgressType } from '@/api/http/base/medium-base'
 import { MediumType } from '@/api/http/library/typing'
+import { ReadingProgressType } from '@/api/http/medium'
 import type { LibraryMediumProvider } from '@/hooks/useLibraryMediumProvider'
 import {
   useInjectedMediumAllItemProvider,

@@ -2,8 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import type { TabsItem } from '@nuxt/ui'
 
-import type { MediumGetListInputBase } from '@/api/http/base/medium-base'
-import { ReadingProgressType } from '@/api/http/base/medium-base'
+import { MediumGetListInput, ReadingProgressType } from '@/api/http/medium'
 import { $t } from '@/locales/i18n'
 import { useUserStore } from '@/stores/user'
 
@@ -22,7 +21,7 @@ const emit = defineEmits<MediumFilterDropdownEmits>()
 
 type MediumFilterValue = Partial<
   Pick<
-    MediumGetListInputBase,
+    MediumGetListInput,
     | 'artists'
     | 'createdInDays'
     | 'hasReadCount'

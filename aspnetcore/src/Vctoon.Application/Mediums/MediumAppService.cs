@@ -157,16 +157,15 @@ public partial class MediumAppService(
 
         if (cover == null)
         {
-            throw new UserFriendlyException("����������Ϊ��");
+            throw new UserFriendlyException("cover is null");
         }
 
         var entity = await GetEntityByIdAsync(id);
 
-        // �����·���
         await using var stream = cover.GetStream();
         if (stream == null || stream.Length == 0)
         {
-            throw new UserFriendlyException("������Ϊ��");
+            throw new UserFriendlyException("cover stream is empty");
         }
 
         var newCover = await CoverSaver.SaveAsync(stream);

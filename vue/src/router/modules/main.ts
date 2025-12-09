@@ -144,7 +144,7 @@ export const mainRoutes: RouteRecordRaw[] = [
       title: $t('page.mediums.detail.title'),
     },
     name: 'MediumDetail',
-    path: 'medium/:type/:mediumId',
+    path: 'medium/:mediumId',
   },
 ]
 

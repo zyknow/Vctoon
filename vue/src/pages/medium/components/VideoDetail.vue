@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 
-import type { Video } from '@/api/http/video/typing'
+import type { Medium } from '@/api/http/medium/typing'
 import MediumToolbarFirst from '@/components/mediums/MediumToolbarFirst.vue'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { $t } from '@/locales/i18n'
@@ -9,7 +9,7 @@ import { formatMediumDateTime, formatMediumProgress } from '@/utils/medium'
 
 const props = defineProps<{
   loading: boolean
-  medium: Video
+  medium: Medium
 }>()
 
 const { isMobile } = useIsMobile()
@@ -96,7 +96,7 @@ const isWide = ref(false)
                 {{ creationTimeText.split(' ')[0] }}
               </span>
               <span class="text-muted-foreground">
-                {{ medium.duration }}
+                {{ medium.videoDetail?.duration }}
               </span>
               <div class="flex items-center gap-2">
                 <div class="text-muted-foreground">|</div>
@@ -176,7 +176,7 @@ const isWide = ref(false)
                     {{ $t('page.mediums.info.duration') }}
                   </div>
                   <div class="mt-1 font-medium">
-                    {{ medium.duration || '-' }}
+                    {{ medium.videoDetail?.duration || '-' }}
                   </div>
                 </div>
                 <div>
@@ -184,7 +184,7 @@ const isWide = ref(false)
                     {{ $t('page.mediums.info.width') }}
                   </div>
                   <div class="mt-1 font-medium">
-                    {{ medium.width ?? '-' }}
+                    {{ medium.videoDetail?.width ?? '-' }}
                   </div>
                 </div>
                 <div>
@@ -192,7 +192,7 @@ const isWide = ref(false)
                     {{ $t('page.mediums.info.height') }}
                   </div>
                   <div class="mt-1 font-medium">
-                    {{ medium.height ?? '-' }}
+                    {{ medium.videoDetail?.height ?? '-' }}
                   </div>
                 </div>
                 <div>
@@ -200,7 +200,7 @@ const isWide = ref(false)
                     {{ $t('page.mediums.info.framerate') }}
                   </div>
                   <div class="mt-1 font-medium">
-                    {{ medium.framerate ? `${medium.framerate} fps` : '-' }}
+                    {{ medium.videoDetail?.framerate ? `${medium.videoDetail?.framerate} fps` : '-' }}
                   </div>
                 </div>
                 <div>
@@ -209,8 +209,8 @@ const isWide = ref(false)
                   </div>
                   <div class="mt-1 font-medium">
                     {{
-                      typeof medium.bitrate === 'number'
-                        ? Math.round(medium.bitrate / 1000) + ' kbps'
+                      typeof medium.videoDetail?.bitrate === 'number'
+                        ? Math.round(medium.videoDetail?.bitrate / 1000) + ' kbps'
                         : '-'
                     }}
                   </div>
@@ -220,7 +220,7 @@ const isWide = ref(false)
                     {{ $t('page.mediums.info.codec') }}
                   </div>
                   <div class="mt-1 font-medium">
-                    {{ medium.codec || '-' }}
+                    {{ medium.videoDetail?.codec || '-' }}
                   </div>
                 </div>
                 <div>
@@ -228,7 +228,7 @@ const isWide = ref(false)
                     {{ $t('page.mediums.info.ratio') }}
                   </div>
                   <div class="mt-1 font-medium">
-                    {{ medium.ratio || '-' }}
+                    {{ medium.videoDetail?.ratio || '-' }}
                   </div>
                 </div>
                 <div class="sm:col-span-2">
@@ -236,7 +236,7 @@ const isWide = ref(false)
                     {{ $t('page.mediums.info.path') }}
                   </div>
                   <div class="mt-1 font-medium break-all">
-                    {{ medium.path || '-' }}
+                    {{ medium.videoDetail?.path || '-' }}
                   </div>
                 </div>
               </div>

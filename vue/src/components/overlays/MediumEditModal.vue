@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { artistApi } from '@/api/http/artist'
 import type { Artist } from '@/api/http/artist/typing'
-import { comicApi } from '@/api/http/comic'
-import type { ComicImage } from '@/api/http/comic/typing'
 import { MediumType } from '@/api/http/library/typing'
-import { mediumResourceApi } from '@/api/http/medium-resource'
+import { mediumApi } from '@/api/http/medium'
+import type { ComicImage, Medium } from '@/api/http/medium/typing'
 import { tagApi } from '@/api/http/tag'
 import type { Tag } from '@/api/http/tag/typing'
-import type { MediumDto } from '@/api/http/typing'
-import { videoApi } from '@/api/http/video'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { $t } from '@/locales/i18n'
 import { useUserStore } from '@/stores'
@@ -17,10 +14,9 @@ defineOptions({
   name: 'MediumEditModal',
 })
 
-type Medium = MediumDto
 
 interface Props {
-  medium: Medium
+  mediumId: string
   registerDirtyChecker?: (fn: () => boolean) => void
   markClean?: () => void
 }
@@ -48,7 +44,7 @@ const selectedCoverComicImageId = ref<null | string>(null)
 
 const currentCoverUrl = computed(() => {
   if (!mediumState.value?.cover) return ''
-  return mediumResourceApi.getCoverUrl(mediumState.value.cover)
+  return mediumApi.getCoverUrl(mediumState.value.cover)
 })
 
 // function isSelectedComicImage(id: string) {
@@ -235,8 +231,8 @@ const handleTagsChange = async (selected: string[]) => {
 
 // 8. 方法
 const loadMedium = async () => {
-  // 直接使用传入实体（保持异步结构以便后续扩展）
-  mediumState.value = props.medium
+  if (!props.mediumId) return
+  mediumState.value = await mediumApi.getById(props.mediumId)
   initialSnapshot = JSON.stringify(mediumState.value)
   isDirty.value = false
 }
@@ -252,24 +248,26 @@ const loadOptions = async () => {
 }
 
 const loadComicImages = async () => {
-  if (!mediumState.value) return
-  if (mediumState.value.mediumType !== MediumType.Comic) return
-  comicImagesLoading.value = true
-  try {
-    comicImages.value = await comicApi.getImagesByComicId(mediumState.value.id)
-    // 初次加载后尝试匹配封面：若 cover 恰好等于某 image.id 则标记
-    if (mediumState.value.cover) {
-      const match = comicImages.value.find(
-        (i) => i.id === mediumState.value?.cover,
+    if (!mediumState.value) return
+    if (mediumState.value.mediumType !== MediumType.Comic) return
+    comicImagesLoading.value = true
+    try {
+      comicImages.value = await mediumApi.getComicImageList(
+        mediumState.value.id,
       )
-      if (match) selectedCoverComicImageId.value = match.id
+      // 初次加载后尝试匹配封面：若 cover 恰好等于某 image.id 则标记
+      if (mediumState.value.cover) {
+        const match = comicImages.value.find(
+          (i) => i.id === mediumState.value?.cover,
+        )
+        if (match) selectedCoverComicImageId.value = match.id
+      }
+    } catch (error) {
+      console.error('加载漫画图片失败:', error)
+    } finally {
+      comicImagesLoading.value = false
     }
-  } catch (error) {
-    console.error('加载漫画图片失败:', error)
-  } finally {
-    comicImagesLoading.value = false
   }
-}
 
 // 9. 初始化
 onMounted(async () => {
@@ -284,18 +282,7 @@ onMounted(async () => {
   }
 })
 
-// 监听外部传入的 medium 变化（支持后续动态注入或刷新）
-watch(
-  () => props.medium,
-  (val) => {
-    if (val) {
-      mediumState.value = val as Medium
-      initialSnapshot = JSON.stringify(mediumState.value)
-      isDirty.value = false
-      loadComicImages()
-    }
-  },
-)
+
 watch(
   () => mediumState.value,
   () => {
@@ -311,37 +298,35 @@ if (props.registerDirtyChecker) {
 }
 
 const handleSave = async () => {
-  if (loading.value) return
-  if (!mediumState.value) return
-  loading.value = true
-  try {
-    const api =
-      mediumState.value.mediumType === MediumType.Comic ? comicApi : videoApi
-    await api.update(mediumState.value as any, mediumState.value.id)
+    if (loading.value) return
+    if (!mediumState.value) return
+    loading.value = true
+    try {
+      await mediumApi.update(mediumState.value as any, mediumState.value.id)
 
-    // 更新作者
-    const artistIds = mediumState.value.artists?.map((a: Artist) => a.id) || []
-    await api.updateArtists(mediumState.value.id, artistIds)
+      // 更新作者
+      const artistIds = mediumState.value.artists?.map((a: Artist) => a.id) || []
+      await mediumApi.updateArtists(mediumState.value.id, artistIds)
 
-    // 更新标签
-    const tagIds = mediumState.value.tags?.map((t: Tag) => t.id) || []
-    await api.updateTags(mediumState.value.id, tagIds)
+      // 更新标签
+      const tagIds = mediumState.value.tags?.map((t: Tag) => t.id) || []
+      await mediumApi.updateTags(mediumState.value.id, tagIds)
 
-    // 成功提示交给全局拦截器，这里仅刷新数据
-    // 重新获取更新后的数据
-    const updatedMedium = await api.getById(mediumState.value.id)
-    props.markClean?.()
-    initialSnapshot = JSON.stringify(updatedMedium)
-    isDirty.value = false
-    emit('updated', updatedMedium as Medium)
-    emit('close', updatedMedium as Medium)
-  } catch (error) {
-    console.error('更新失败:', error)
-    // 全局拦截器处理错误提示
-  } finally {
-    loading.value = false
+      // 成功提示交给全局拦截器，这里仅刷新数据
+      // 重新获取更新后的数据
+      const updatedMedium = await mediumApi.getById(mediumState.value.id)
+      props.markClean?.()
+      initialSnapshot = JSON.stringify(updatedMedium)
+      isDirty.value = false
+      emit('updated', updatedMedium as Medium)
+      emit('close', updatedMedium as Medium)
+    } catch (error) {
+      console.error('更新失败:', error)
+      // 全局拦截器处理错误提示
+    } finally {
+      loading.value = false
+    }
   }
-}
 
 const handleCoverUploadChange = async (files: File[]) => {
   if (!mediumState.value || !files.length) return
@@ -349,80 +334,33 @@ const handleCoverUploadChange = async (files: File[]) => {
 
   // 验证文件
   const isImage = file.type.startsWith('image/')
-  const isLt10M = file.size / 1024 / 1024 < 10
-
   if (!isImage) {
     toast.add({
-      title: $t('page.mediums.edit.uploadError.imageType'),
-      color: 'error',
-    })
-    return
-  }
-  if (!isLt10M) {
-    toast.add({
-      title: $t('page.mediums.edit.uploadError.fileSize'),
+      title: $t('page.mediums.edit.uploadErrorTitle'),
+      description: $t('page.mediums.edit.uploadErrorType'),
       color: 'error',
     })
     return
   }
 
+  loading.value = true
   try {
-    const updateCoverApi =
-      mediumState.value.mediumType === MediumType.Comic ? comicApi : videoApi
-    const updatedMedium = await updateCoverApi.updateCover(
+    const updatedMedium = await mediumApi.updateCover(
       mediumState.value.id,
       file,
     )
-    mediumState.value.cover = (updatedMedium as any).cover
+    // 更新封面
+    mediumState.value.cover = updatedMedium.cover
+    // 清空选中图片状态，因为现在是用户上传的封面
+    selectedCoverComicImageId.value = null
     emit('updated', updatedMedium as Medium)
   } catch (error) {
-    console.error('封面更新失败:', error)
+    console.error('上传封面失败:', error)
+    // 全局拦截器处理错误提示
+  } finally {
+    loading.value = false
   }
 }
-
-// 从漫画图片选为封面：拉取原图 blob 再上传
-// const setCoverFromComicImage = async (image: ComicImage) => {
-//   if (!mediumState.value) return
-//   if (selectingCoverImageId.value) return
-//   selectingCoverImageId.value = image.id
-//   try {
-//     const rawUrl = comicApi.url.getComicImage.format({
-//       comicImageId: image.id,
-//       maxWidth: 1200,
-//     })
-//     const fullUrl = `${apiURL}${rawUrl}`
-
-//     // 使用原生 fetch，手动补授权头
-//     const response = await fetch(fullUrl, {
-//       credentials: 'include',
-//     })
-//     const blob = await response.blob()
-
-//     const ext = image.name?.split('.').pop() || 'jpg'
-//     const file = new File([blob], image.name || `${image.id}.${ext}`, {
-//       type: blob.type || 'image/jpeg',
-//     })
-//     const updateCoverApi =
-//       mediumState.value.mediumType === MediumType.Comic ? comicApi : videoApi
-//     const updatedMedium = await updateCoverApi.updateCover(
-//       mediumState.value.id,
-//       file,
-//     )
-//     emit('updated', updatedMedium as Medium)
-//     // 更新本地 cover (重新获取最新数据保持一致) 并记录选中图片 id
-//     const fresh = await updateCoverApi.getById(mediumState.value.id)
-//     mediumState.value.cover = (fresh as any).cover
-//     selectedCoverComicImageId.value = image.id
-//   } catch (error) {
-//     console.error('通过漫画图片设置封面失败:', error)
-//     toast.add({
-//       title: $t('page.mediums.edit.setCoverError'),
-//       color: 'error',
-//     })
-//   } finally {
-//     selectingCoverImageId.value = null
-//   }
-// }
 </script>
 
 <template>
@@ -540,46 +478,6 @@ const handleCoverUploadChange = async (files: File[]) => {
           </UForm>
 
           <!-- 选择封面图片（Comic） -->
-          <!-- <div
-            v-if="mediumState.mediumType === MediumType.Comic"
-            class="space-y-2"
-          >
-            <p class="text-muted-foreground text-sm">
-              {{ $t('page.mediums.edit.coverSelectTip') }}
-            </p>
-            <div v-if="comicImagesLoading" class="grid grid-cols-6 gap-2">
-              <USkeleton v-for="n in 6" :key="n" class="h-20 w-full" />
-            </div>
-            <div
-              v-else
-              class="grid max-h-64 grid-cols-6 gap-2 overflow-auto pr-1"
-            >
-              <div
-                v-for="img in comicImages"
-                :key="img.id"
-                class="group hover:border-primary relative cursor-pointer overflow-hidden rounded border transition-all"
-                :class="{
-                  'border-primary ring-primary ring-2': isSelectedComicImage(
-                    img.id,
-                  ),
-                }"
-                @click="setCoverFromComicImage(img)"
-              >
-                <img
-                  loading="lazy"
-                  class="h-20 w-full object-cover transition-transform group-hover:scale-105"
-                  :src="`${apiURL}${comicApi.url.getComicImage.format({ comicImageId: img.id, maxWidth: 300 })}`"
-                  :alt="img.name || img.id"
-                />
-                <div
-                  v-if="selectingCoverImageId === img.id"
-                  class="absolute inset-0 flex items-center justify-center bg-black/40 text-xs text-white"
-                >
-                  {{ $t('common.loading') }}
-                </div>
-              </div>
-            </div>
-          </div> -->
         </div>
       </div>
     </template>

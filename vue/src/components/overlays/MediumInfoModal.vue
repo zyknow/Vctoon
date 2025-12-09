@@ -1,11 +1,6 @@
 <script setup lang="ts">
-import { comicApi } from '@/api/http/comic'
-import type { Comic } from '@/api/http/comic/typing'
 import { MediumType } from '@/api/http/library/typing'
-import { mediumResourceApi } from '@/api/http/medium-resource'
-import type { MediumDto } from '@/api/http/typing'
-import { videoApi } from '@/api/http/video'
-import type { Video } from '@/api/http/video/typing'
+import { Medium, mediumApi } from '@/api/http/medium'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { $t } from '@/locales/i18n'
 import { useUserStore } from '@/stores'
@@ -30,12 +25,13 @@ const { isMobile } = useIsMobile()
 const userStore = useUserStore()
 
 const loading = ref(true)
-const medium = ref<MediumDto | undefined>()
+const medium = ref<Medium | undefined>()
+const comicImagesCount = ref<number | undefined>()
 const numberFormatter = new Intl.NumberFormat()
 
 const coverUrl = computed(() => {
   if (!medium.value?.cover) return undefined
-  return mediumResourceApi.getCoverUrl(medium.value.cover)
+  return mediumApi.getCoverUrl(medium.value.cover)
 })
 const descriptionText = computed(() => medium.value?.description?.trim())
 
@@ -43,10 +39,10 @@ const descriptionText = computed(() => medium.value?.description?.trim())
 const isComic = computed(() => props.mediumType === MediumType.Comic)
 const isVideo = computed(() => props.mediumType === MediumType.Video)
 const comicData = computed(() =>
-  isComic.value ? (medium.value as Comic) : undefined,
+  isComic.value ? medium.value : undefined,
 )
 const videoData = computed(() =>
-  isVideo.value ? (medium.value as Video) : undefined,
+  isVideo.value ? medium.value : undefined,
 )
 
 const readingProgressPercent = computed<null | number>(() => {
@@ -102,18 +98,18 @@ const hasBasicInfo = computed(() =>
 const hasVideoInfo = computed(() =>
   Boolean(
     isVideo.value &&
-      (videoData.value?.duration ||
-        (videoData.value?.width && videoData.value?.height) ||
-        videoData.value?.framerate ||
-        videoData.value?.bitrate ||
-        videoData.value?.codec ||
-        videoData.value?.ratio ||
-        videoData.value?.path),
+      (videoData.value?.videoDetail?.duration ||
+        (videoData.value?.videoDetail?.width && videoData.value?.videoDetail?.height) ||
+        videoData.value?.videoDetail?.framerate ||
+        videoData.value?.videoDetail?.bitrate ||
+        videoData.value?.videoDetail?.codec ||
+        videoData.value?.videoDetail?.ratio ||
+        videoData.value?.videoDetail?.path),
   ),
 )
 
 const hasComicInfo = computed(() =>
-  Boolean(isComic.value && comicData.value?.comicImages?.length),
+  Boolean(isComic.value),
 )
 
 const hasReadingInfo = computed(() =>
@@ -137,10 +133,11 @@ onMounted(async () => {
   loading.value = true
   try {
     await userStore.reloadLibraries()
-    medium.value =
-      props.mediumType === MediumType.Comic
-        ? await comicApi.getById(props.mediumId)
-        : await videoApi.getById(props.mediumId)
+    medium.value = await mediumApi.getById(props.mediumId)
+    if (medium.value && props.mediumType === MediumType.Comic) {
+      const images = await mediumApi.getComicImageList(props.mediumId)
+      comicImagesCount.value = images.length
+    }
   } finally {
     loading.value = false
   }
@@ -283,65 +280,65 @@ onMounted(async () => {
               </template>
               <div class="space-y-2 text-sm">
                 <div
-                  v-if="videoData.duration"
+                  v-if="videoData.videoDetail?.duration"
                   class="flex justify-between border-b pb-2"
                 >
                   <span class="text-muted-foreground">{{
                     $t('page.mediums.info.duration')
                   }}</span>
-                  <span>{{ videoData.duration }}</span>
+                  <span>{{ videoData.videoDetail?.duration }}</span>
                 </div>
                 <div
-                  v-if="videoData.width && videoData.height"
+                  v-if="videoData.videoDetail?.width && videoData.videoDetail?.height"
                   class="flex justify-between border-b pb-2"
                 >
                   <span class="text-muted-foreground">{{
                     $t('page.mediums.info.resolution')
                   }}</span>
-                  <span>{{ videoData.width }} × {{ videoData.height }}</span>
+                  <span>{{ videoData.videoDetail?.width }} × {{ videoData.videoDetail?.height }}</span>
                 </div>
                 <div
-                  v-if="videoData.framerate"
+                  v-if="videoData.videoDetail?.framerate"
                   class="flex justify-between border-b pb-2"
                 >
                   <span class="text-muted-foreground">{{
                     $t('page.mediums.info.framerate')
                   }}</span>
-                  <span>{{ videoData.framerate }} fps</span>
+                  <span>{{ videoData.videoDetail?.framerate }} fps</span>
                 </div>
                 <div
-                  v-if="videoData.bitrate"
+                  v-if="videoData.videoDetail?.bitrate"
                   class="flex justify-between border-b pb-2"
                 >
                   <span class="text-muted-foreground">{{
                     $t('page.mediums.info.bitrate')
                   }}</span>
-                  <span>{{ Math.round(videoData.bitrate / 1000) }} kbps</span>
+                  <span>{{ Math.round(videoData.videoDetail?.bitrate / 1000) }} kbps</span>
                 </div>
                 <div
-                  v-if="videoData.codec"
+                  v-if="videoData.videoDetail?.codec"
                   class="flex justify-between border-b pb-2"
                 >
                   <span class="text-muted-foreground">{{
                     $t('page.mediums.info.codec')
                   }}</span>
-                  <span>{{ videoData.codec }}</span>
+                  <span>{{ videoData.videoDetail?.codec }}</span>
                 </div>
                 <div
-                  v-if="videoData.ratio"
+                  v-if="videoData.videoDetail?.ratio"
                   class="flex justify-between border-b pb-2"
                 >
                   <span class="text-muted-foreground">{{
                     $t('page.mediums.info.ratio')
                   }}</span>
-                  <span>{{ videoData.ratio }}</span>
+                  <span>{{ videoData.videoDetail?.ratio }}</span>
                 </div>
-                <div v-if="videoData.path" class="flex flex-col gap-1 pb-2">
+                <div v-if="videoData.videoDetail?.path" class="flex flex-col gap-1 pb-2">
                   <span class="text-muted-foreground">{{
                     $t('page.mediums.info.path')
                   }}</span>
-                  <span class="path-text" :title="videoData.path">
-                    {{ videoData.path }}
+                  <span class="path-text" :title="videoData.videoDetail?.path">
+                    {{ videoData.videoDetail?.path }}
                   </span>
                 </div>
               </div>
@@ -355,13 +352,13 @@ onMounted(async () => {
               </template>
               <div class="space-y-2 text-sm">
                 <div
-                  v-if="comicData.comicImages?.length"
+                  v-if="typeof comicImagesCount === 'number'"
                   class="flex justify-between pb-2"
                 >
                   <span class="text-muted-foreground">{{
                     $t('page.mediums.info.comicImages')
                   }}</span>
-                  <span>{{ comicData.comicImages.length }}</span>
+                  <span>{{ comicImagesCount }}</span>
                 </div>
               </div>
             </UCard>

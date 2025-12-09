@@ -48,7 +48,7 @@ async function onPermission() {
 async function handleScanFiles() {
   try {
     await libraryApi.scan(libraryId)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars
   } catch (error) {
     toast.add({
       title: $t('page.library.actions.scanFailed'),

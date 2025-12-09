@@ -100,6 +100,7 @@ public class VideoScanHandler(IMediumRepository mediumRepository, CoverSaver cov
 
                 var medium = new Medium(
                     GuidGenerator.Create(),
+                    MediumType.Video,
                     name,
                     coverPath,
                     libraryPath.LibraryId,

@@ -3,11 +3,8 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 import { format } from 'date-fns'
 import { useRouter } from 'vue-router'
 
-import { comicApi } from '@/api/http/comic'
 import { MediumType } from '@/api/http/library/typing'
-import { mediumResourceApi } from '@/api/http/medium-resource'
-import type { MediumGetListOutput } from '@/api/http/typing'
-import { videoApi } from '@/api/http/video'
+import { mediumApi, MediumGetListOutput } from '@/api/http/medium'
 import { getMediumAnchorId } from '@/components/mediums/anchor'
 import ConfirmModal from '@/components/overlays/ConfirmModal.vue'
 import MediumEditModal from '@/components/overlays/MediumEditModal.vue'
@@ -155,8 +152,8 @@ export function useMediumItem(mediumRef: ComputedRef<MediumGetListOutput>) {
       try {
         const progress = mediumRef.value?.readingProgress ?? 0
         if (progress > 0 && progress < 1) {
-          // TODO: comicApi.getImagesByComicId 属于不必要的请求，考虑将Page参数放到ComicDetail处理
-          const images = await comicApi.getImagesByComicId(id)
+          // TODO: mediumApi.getComicImageList 属于不必要的请求，考虑将Page参数放到ComicDetail处理
+          const images = await mediumApi.getComicImageList(id)
           const total = Array.isArray(images) ? images.length : 0
           if (total > 0) {
             const calc = Math.ceil(progress * total)
@@ -196,7 +193,7 @@ export function useMediumItem(mediumRef: ComputedRef<MediumGetListOutput>) {
 
     try {
       const updated = (await editModal.open({
-        medium: mediumRef.value,
+        mediumId: mediumRef.value?.id,
       })) as MediumGetListOutput | undefined
       if (updated) {
         // 优先通过全量 Provider 更新（同步推荐区与列表区）
@@ -238,7 +235,7 @@ export function useMediumItem(mediumRef: ComputedRef<MediumGetListOutput>) {
         readingLastTime: new Date().toISOString(),
         mediumType: mediumRef.value.mediumType,
       }
-      await mediumResourceApi.updateReadingProcess([updateObj])
+      await mediumApi.updateReadingProcess([updateObj])
       allProvider?.updateItemField({
         id,
         readingProgress: 1,
@@ -257,10 +254,10 @@ export function useMediumItem(mediumRef: ComputedRef<MediumGetListOutput>) {
       const updateObj = {
         mediumId: id,
         progress: 0,
-        readingLastTime: null,
+        readingLastTime: undefined,
         mediumType: mediumRef.value.mediumType,
       }
-      await mediumResourceApi.updateReadingProcess([updateObj])
+      await mediumApi.updateReadingProcess([updateObj])
       allProvider?.updateItemField({
         id,
         readingProgress: 0,
@@ -283,11 +280,7 @@ export function useMediumItem(mediumRef: ComputedRef<MediumGetListOutput>) {
     })
     if (!ok) return
     try {
-      if (mediumRef.value.mediumType === MediumType.Comic) {
-        await comicApi.delete(id)
-      } else {
-        await videoApi.delete(id)
-      }
+      await mediumApi.delete(id)
       const idx = items.value.findIndex((m) => m.id === id)
       if (idx !== -1) items.value.splice(idx, 1)
     } catch {
@@ -335,7 +328,7 @@ export function useMediumItem(mediumRef: ComputedRef<MediumGetListOutput>) {
   })
 
   const cover = computed(() => {
-    return mediumResourceApi.getCoverUrl(mediumRef.value.cover!)
+    return mediumApi.getCoverUrl(mediumRef.value.cover!)
   })
 
   return {

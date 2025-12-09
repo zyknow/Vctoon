@@ -174,10 +174,10 @@ const hasItems = computed(
       <UScrollbar
         v-else
         ref="scrollContainer"
-        :native="false"
         :distance="100"
         class="pb-4"
         view-class="w-max"
+        hide-scrollbar
         remember
         @scroll="handleScroll"
         @end-reached="handleEndReached"

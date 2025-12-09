@@ -6,6 +6,8 @@ public class MediumGetListOutputDto : AuditedEntityDto<Guid>
 
     public string Description { get; set; }
 
+    public MediumType MediumType { get; set; }
+
     public string Cover { get; set; }
 
     public int ReadCount { get; set; }

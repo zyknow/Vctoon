@@ -5,7 +5,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 import type { SearchHit } from '@/api/http/lucene'
 import { luceneApi } from '@/api/http/lucene'
-import { mediumResourceApi } from '@/api/http/medium-resource'
+import { mediumApi } from '@/api/http/medium'
 import { $t } from '@/locales/i18n'
 
 defineOptions({ name: 'MediumSearchInput' })
@@ -96,7 +96,7 @@ const resolveTypeFromPayload = (
 const resolveCoverFromPayload = (payload: Record<string, any>) => {
   const raw = (payload as any).Cover || (payload as any).cover
   if (!raw) return undefined
-  return mediumResourceApi.getCoverUrl(raw)
+  return mediumApi.getCoverUrl(raw)
 }
 
 const toSuggestion = (hit: SearchHit): null | SuggestionItem => {

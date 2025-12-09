@@ -101,6 +101,10 @@ interface Props {
    * 恢复位置的延迟（毫秒），用于等待复杂布局/图片渲染完成再恢复
    */
   restoreDelay?: number
+  /**
+   * 是否强制隐藏滚动条（保留滚动功能，但不显示滚动条 UI）
+   */
+  hideScrollbar?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -113,6 +117,7 @@ const props = withDefaults(defineProps<Props>(), {
   remember: false,
   rememberStorage: 'memory',
   restoreDelay: 0,
+  hideScrollbar: false,
   // 为可选 props 提供显式默认值以满足 ESLint 规则
   height: undefined,
   maxHeight: undefined,
@@ -496,6 +501,7 @@ onActivated?.(() => {
         props.wrapClass,
         props.native ? 'uscrollbar--native' : 'uscrollbar--custom',
         isMobile && 'uscrollbar--mobile',
+        props.hideScrollbar && 'uscrollbar--hidden',
       ]"
       :style="
         typeof props.wrapStyle === 'string' ? props.wrapStyle : wrapMergedStyle
@@ -548,5 +554,15 @@ onActivated?.(() => {
 }
 .uscrollbar--mobile {
   scrollbar-width: none;
+}
+
+.uscrollbar--hidden::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+.uscrollbar--hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 </style>

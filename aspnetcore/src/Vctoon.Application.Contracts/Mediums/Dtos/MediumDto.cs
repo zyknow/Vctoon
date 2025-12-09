@@ -9,6 +9,8 @@ public class MediumDto : AuditedEntityDto<Guid>
     public string Cover { get; set; }
 
     public int ReadCount { get; set; }
+    
+    public MediumType MediumType { get; set; }
 
     public Guid LibraryId { get; set; }
 

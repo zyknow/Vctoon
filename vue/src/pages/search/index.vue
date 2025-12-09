@@ -6,7 +6,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { MediumType } from '@/api/http/library'
 import type { MultiSearchInput, SearchHit } from '@/api/http/lucene'
 import { luceneApi } from '@/api/http/lucene'
-import type { MediumGetListOutput } from '@/api/http/typing'
+import type { MediumGetListOutput } from '@/api/http/medium'
 import type UScrollbar from '@/components/nuxt-ui-extensions/UScrollbar.vue'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import {

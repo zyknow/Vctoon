@@ -5,12 +5,16 @@ interface Props {
   cancelText?: string
   confirmText?: string
   danger?: boolean
-  title?: string
+  title?: string | undefined
   message?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   danger: false,
+  cancelText: undefined,
+  confirmText: undefined,
+  title: undefined,
+  message: undefined,
 })
 
 const emit = defineEmits<{

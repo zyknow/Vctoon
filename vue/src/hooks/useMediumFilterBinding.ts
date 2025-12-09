@@ -1,14 +1,14 @@
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 
-import type { MediumGetListInputBase } from '@/api/http/base/medium-base'
+import { MediumGetListInput } from '@/api/http/medium'
 
 import type { MediumProvider } from './useMediumProvider'
 import { useInjectedMediumProvider } from './useMediumProvider'
 
 export type MediumFilterValue = Partial<
   Pick<
-    MediumGetListInputBase,
+    MediumGetListInput,
     | 'artists'
     | 'createdInDays'
     | 'hasReadCount'
