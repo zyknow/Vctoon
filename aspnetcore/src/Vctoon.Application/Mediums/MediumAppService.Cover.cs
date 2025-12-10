@@ -24,7 +24,7 @@ public partial class MediumAppService
 
         if (cover == null)
         {
-            throw new UserFriendlyException("cover is null");
+            throw new UserFriendlyException(L["CoverIsNull"]);
         }
 
         var entity = await GetEntityByIdAsync(id);
@@ -32,7 +32,7 @@ public partial class MediumAppService
         await using var stream = cover.GetStream();
         if (stream == null || stream.Length == 0)
         {
-            throw new UserFriendlyException("cover stream is empty");
+            throw new UserFriendlyException(L["CoverStreamIsEmpty"]);
         }
 
         var newCover = await coverSaver.SaveAsync(stream);

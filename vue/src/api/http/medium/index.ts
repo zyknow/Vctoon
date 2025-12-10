@@ -12,6 +12,7 @@ import type {
   MediumGetListInput,
   MediumGetListOutput,
   MediumMultiUpdate,
+  MediumSeriesListUpdate,
   MediumSeriesSortUpdate,
   ReadingProcessUpdate,
   Subtitle,
@@ -23,9 +24,11 @@ const { apiURL } = useEnvConfig()
 const url = {
   ...createBaseCurdUrl(baseUrl),
   addArtistList: `${baseUrl}/add-artist-list`,
+  addSeriesMediumList: `${baseUrl}/series-medium-list`,
   addTagList: `${baseUrl}/add-tag-list`,
   deleteArtistList: `${baseUrl}/delete-artist-list`,
   deleteComicImage: `${baseUrl}/comic-image/{comicImageId}`,
+  deleteSeriesMediumList: `${baseUrl}/delete-series-medium-list`,
   deleteTagList: `${baseUrl}/delete-tag-list`,
   getComicImage: `${baseUrl}/comic-image/{comicImageId}`,
   getComicImageList: `${baseUrl}/comic-image-list/{mediumId}`,
@@ -58,6 +61,10 @@ export const mediumApi = {
     return requestClient.post(url.addArtistList, input)
   },
 
+  async addSeriesMediumList(input: MediumSeriesListUpdate) {
+    return requestClient.post(url.addSeriesMediumList, input)
+  },
+
   async addTagList(input: MediumMultiUpdate) {
     return requestClient.post(url.addTagList, input)
   },
@@ -70,6 +77,10 @@ export const mediumApi = {
     return requestClient.delete(url.deleteComicImage.format({ comicImageId }), {
       params: { deleteFile },
     })
+  },
+
+  async deleteSeriesMediumList(input: MediumSeriesListUpdate) {
+    return requestClient.post(url.deleteSeriesMediumList, input)
   },
 
   async deleteTagList(input: MediumMultiUpdate) {

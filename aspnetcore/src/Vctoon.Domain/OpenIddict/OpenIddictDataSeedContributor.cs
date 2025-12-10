@@ -1,8 +1,9 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Localization;
 using OpenIddict.Abstractions;
+using Vctoon.Localization.Vctoon;
 using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
@@ -23,7 +24,7 @@ public class OpenIddictDataSeedContributor(
     IOpenIddictScopeRepository openIddictScopeRepository,
     IOpenIddictScopeManager scopeManager,
     IPermissionDataSeeder permissionDataSeeder,
-    IStringLocalizer<OpenIddictResponse> l)
+    IStringLocalizer<VctoonResource> l)
     : IDataSeedContributor, ITransientDependency
 {
     [UnitOfWork]

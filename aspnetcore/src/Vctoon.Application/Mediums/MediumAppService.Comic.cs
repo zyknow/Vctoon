@@ -1,4 +1,4 @@
-﻿using Vctoon.Helper;
+using Vctoon.Helper;
 using Vctoon.Libraries.Dtos;
 using Vctoon.Permissions;
 using Volo.Abp;
@@ -16,7 +16,7 @@ public partial class MediumAppService
     {
         if (comicImageId == Guid.Empty)
         {
-            throw new UserFriendlyException("Image file id is empty");
+            throw new UserFriendlyException(L["ImageFileIdIsEmpty"]);
         }
 
         var query = (await comicImageRepository.GetQueryableAsync())
@@ -34,7 +34,7 @@ public partial class MediumAppService
 
         if (imageFile == null)
         {
-            throw new UserFriendlyException("Image file not found");
+            throw new UserFriendlyException(L["ImageFileNotFound"]);
         }
         //TODO: 非部署情况下img标签不会携带cookie，无法鉴权
 #if !DEBUG
@@ -54,7 +54,7 @@ public partial class MediumAppService
 
         if (archiveInfo == null)
         {
-            throw new UserFriendlyException("Archive info not found");
+            throw new UserFriendlyException(L["ArchiveInfoNotFound"]);
         }
 
         {

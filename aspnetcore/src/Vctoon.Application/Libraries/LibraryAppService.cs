@@ -88,7 +88,7 @@ public class LibraryAppService(
 
         if (library is null)
         {
-            throw new BusinessException("library no found")
+            throw new BusinessException(L["LibraryNotFound"])
                 .WithData("libraryId", id);
         }
 
@@ -179,7 +179,7 @@ public class LibraryAppService(
 
         if (identityUser == null)
         {
-            throw new BusinessException("identityUser not found")
+            throw new BusinessException(L["IdentityUserNotFound"])
                 .WithData("userId", userId);
         }
 

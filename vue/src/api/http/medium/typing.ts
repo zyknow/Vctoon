@@ -85,6 +85,11 @@ export type MediumSeriesSortUpdate = {
   mediumIds: string[]
 }
 
+export type MediumSeriesListUpdate = {
+  seriesId: string
+  mediumIds: string[]
+}
+
 export type ReadingProcessUpdate = {
   mediumId: string
   progress: number

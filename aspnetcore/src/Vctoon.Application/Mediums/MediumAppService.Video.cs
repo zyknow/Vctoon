@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using System.Text.RegularExpressions;
 using Vctoon.Helper;
@@ -19,7 +19,7 @@ public partial class MediumAppService
     {
         if (id == Guid.Empty)
         {
-            throw new UserFriendlyException("Video id is empty");
+            throw new UserFriendlyException(L["VideoIdIsEmpty"]);
         }
 
         var query = (await Repository.GetQueryableAsync())
@@ -29,7 +29,7 @@ public partial class MediumAppService
         var video = await AsyncExecuter.FirstOrDefaultAsync(query);
         if (video == null)
         {
-            throw new UserFriendlyException("Video not found");
+            throw new UserFriendlyException(L["VideoNotFound"]);
         }
 
 #if !DEBUG
@@ -38,7 +38,7 @@ public partial class MediumAppService
 
         if (!File.Exists(video.Path))
         {
-            throw new UserFriendlyException("Video file not found");
+            throw new UserFriendlyException(L["VideoFileNotFound"]);
         }
 
         var contentType = ConverterHelper.MapToRemoteContentType(video.Path);
@@ -59,7 +59,7 @@ public partial class MediumAppService
     {
         if (id == Guid.Empty)
         {
-            throw new UserFriendlyException("Video id is empty");
+            throw new UserFriendlyException(L["VideoIdIsEmpty"]);
         }
 
         var query = (await Repository.GetQueryableAsync())
@@ -69,7 +69,7 @@ public partial class MediumAppService
         var video = await AsyncExecuter.FirstOrDefaultAsync(query);
         if (video == null)
         {
-            throw new UserFriendlyException("Video not found");
+            throw new UserFriendlyException(L["VideoNotFound"]);
         }
 
 #if !DEBUG
@@ -115,17 +115,17 @@ public partial class MediumAppService
     {
         if (id == Guid.Empty)
         {
-            throw new UserFriendlyException("Video id is empty");
+            throw new UserFriendlyException(L["VideoIdIsEmpty"]);
         }
 
         if (string.IsNullOrWhiteSpace(file))
         {
-            throw new UserFriendlyException("Subtitle file is empty");
+            throw new UserFriendlyException(L["SubtitleFileIsEmpty"]);
         }
 
         if (!IsSafeFileName(file))
         {
-            throw new UserFriendlyException("Invalid subtitle file name");
+            throw new UserFriendlyException(L["InvalidSubtitleFileName"]);
         }
 
         var query = (await Repository.GetQueryableAsync())
@@ -135,7 +135,7 @@ public partial class MediumAppService
         var video = await AsyncExecuter.FirstOrDefaultAsync(query);
         if (video == null)
         {
-            throw new UserFriendlyException("Video not found");
+            throw new UserFriendlyException(L["VideoNotFound"]);
         }
 
 #if !DEBUG
@@ -144,7 +144,7 @@ public partial class MediumAppService
 
         if (string.IsNullOrWhiteSpace(video.Path) || !File.Exists(video.Path))
         {
-            throw new UserFriendlyException("Video file not found");
+            throw new UserFriendlyException(L["VideoFileNotFound"]);
         }
 
         var dir = Path.GetDirectoryName(video.Path)!;
@@ -156,12 +156,12 @@ public partial class MediumAppService
             !Path.GetFileNameWithoutExtension(fullPath).StartsWith(baseName, StringComparison.OrdinalIgnoreCase) ||
             !IsSubtitleExtension(Path.GetExtension(fullPath)))
         {
-            throw new UserFriendlyException("Invalid subtitle request");
+            throw new UserFriendlyException(L["InvalidSubtitleRequest"]);
         }
 
         if (!File.Exists(fullPath))
         {
-            throw new UserFriendlyException("Subtitle not found");
+            throw new UserFriendlyException(L["SubtitleNotFound"]);
         }
 
         var ext = Path.GetExtension(fullPath).ToLowerInvariant();
@@ -182,7 +182,7 @@ public partial class MediumAppService
             return new RemoteStreamContent(ms, contentType: "text/vtt");
         }
 
-        throw new UserFriendlyException("Unsupported subtitle format");
+        throw new UserFriendlyException(L["UnsupportedSubtitleFormat"]);
     }
 
     private static bool IsSubtitleExtension(string ext)

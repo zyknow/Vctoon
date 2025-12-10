@@ -1,13 +1,16 @@
-﻿using System.Globalization;
+using System.Globalization;
+using Microsoft.Extensions.Localization;
 using SharpCompress.Archives;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
+using Vctoon.Localization.Vctoon;
 using Volo.Abp;
 using Size = SixLabors.ImageSharp.Size;
 
 namespace Vctoon.ImageProviders;
 
-public class ImageRealFileProvider(IDocumentContentService documentContentService) : IImageProvider, ITransientDependency
+public class ImageRealFileProvider(IDocumentContentService documentContentService, IStringLocalizer<VctoonResource> l)
+    : IImageProvider, ITransientDependency
 {
     private static readonly HashSet<string> ArchiveExtensions =
         new([".zip", ".rar", ".cbr", ".cbz", ".7z", ".cb7"], StringComparer.OrdinalIgnoreCase);
@@ -22,7 +25,7 @@ public class ImageRealFileProvider(IDocumentContentService documentContentServic
     {
         if (path.IsNullOrWhiteSpace())
         {
-            throw new BusinessException("path is empty");
+            throw new BusinessException(l["PathIsEmpty"]);
         }
 
         var stream = File.OpenRead(path);
@@ -35,12 +38,12 @@ public class ImageRealFileProvider(IDocumentContentService documentContentServic
     {
         if (archivePath.IsNullOrWhiteSpace())
         {
-            throw new BusinessException("archivePath is empty");
+            throw new BusinessException(l["ArchivePathIsEmpty"]);
         }
 
         if (imagePath.IsNullOrWhiteSpace())
         {
-            throw new BusinessException("imagePath is empty");
+            throw new BusinessException(l["ImagePathIsEmpty"]);
         }
 
         var extension = Path.GetExtension(archivePath).ToLowerInvariant();
@@ -60,7 +63,7 @@ public class ImageRealFileProvider(IDocumentContentService documentContentServic
 
         if (!ArchiveExtensions.Contains(extension))
         {
-            throw new BusinessException($"Unsupported archive extension '{extension}'.");
+            throw new BusinessException(l["UnsupportedArchiveExtension", extension]);
         }
 
         await using var archiveSteam = File.OpenRead(archivePath);
@@ -79,7 +82,7 @@ public class ImageRealFileProvider(IDocumentContentService documentContentServic
             }
         }
 
-        throw new BusinessException("Image path not found in archive.");
+        throw new BusinessException(l["ImagePathNotFoundInArchive"]);
     }
 
     private async Task<Stream> ResizeImageAsync(Stream stream, int? maxImageWidth = null)
@@ -111,19 +114,19 @@ public class ImageRealFileProvider(IDocumentContentService documentContentServic
         return resizedStream;
     }
 
-    private static int ParsePdfPageKey(string key)
+    private int ParsePdfPageKey(string key)
     {
         const string prefix = "pdf-page-";
 
         if (!key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         {
-            throw new BusinessException($"Invalid PDF page token '{key}'.");
+            throw new BusinessException(l["InvalidPdfPageToken", key]);
         }
 
         var numeric = key.AsSpan(prefix.Length);
         if (!int.TryParse(numeric, NumberStyles.Integer, CultureInfo.InvariantCulture, out var index))
         {
-            throw new BusinessException($"Invalid PDF page token '{key}'.");
+            throw new BusinessException(l["InvalidPdfPageToken", key]);
         }
 
         return index;

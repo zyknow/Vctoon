@@ -12,22 +12,22 @@ public partial class MediumAppService
     {
         if (items.IsNullOrEmpty())
         {
-            throw new UserFriendlyException("Input list is empty");
+            throw new UserFriendlyException(L["InputListIsEmpty"]);
         }
 
         if (items.Any(x => x.MediumId == Guid.Empty))
         {
-            throw new UserFriendlyException("One or more items have empty MediumId");
+            throw new UserFriendlyException(L["OneOrMoreItemsHaveEmptyMediumId"]);
         }
 
         if (items.Any(x => x.Progress < 0 || x.Progress > 1))
         {
-            throw new UserFriendlyException("One or more items have invalid Progress (must be between 0 and 1)");
+            throw new UserFriendlyException(L["InvalidProgressValue"]);
         }
 
         if (!CurrentUser.Id.HasValue)
         {
-            throw new AbpAuthorizationException("Current user is not authenticated");
+            throw new AbpAuthorizationException(L["UserNotAuthenticated"]);
         }
 
         var userId = CurrentUser.Id;

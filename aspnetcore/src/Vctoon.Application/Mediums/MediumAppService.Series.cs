@@ -35,7 +35,7 @@ public partial class MediumAppService
         var series = await GetEntityByIdAsync(mediumId);
         if (!series.IsSeries)
         {
-            throw new UserFriendlyException("目标 Medium 不是 Series");
+            throw new UserFriendlyException(L["TargetMediumIsNotSeries"]);
         }
 
         var linkQuery = await mediumSeriesLinkRepository.GetQueryableAsync();
@@ -60,13 +60,13 @@ public partial class MediumAppService
 
         if (input.SeriesId == Guid.Empty)
         {
-            throw new UserFriendlyException("SeriesId 不能为空");
+            throw new UserFriendlyException(L["SeriesIdCannotBeEmpty"]);
         }
 
         var series = await GetEntityByIdAsync(input.SeriesId);
         if (!series.IsSeries)
         {
-            throw new UserFriendlyException("目标 Medium 不是 Series");
+            throw new UserFriendlyException(L["TargetMediumIsNotSeries"]);
         }
 
         var mediumIds = (input.MediumIds ?? new List<Guid>())
@@ -76,7 +76,7 @@ public partial class MediumAppService
 
         if (mediumIds.Count == 0)
         {
-            throw new UserFriendlyException("MediumIds 不能为空");
+            throw new UserFriendlyException(L["MediumIdsCannotBeEmpty"]);
         }
 
         var linkQuery = await mediumSeriesLinkRepository.GetQueryableAsync();
@@ -85,7 +85,7 @@ public partial class MediumAppService
         var totalCount = await AsyncExecuter.CountAsync(linkQuery.Where(l => l.SeriesId == input.SeriesId));
         if (totalCount != mediumIds.Count)
         {
-            throw new UserFriendlyException("必须提交该系列的完整条目列表");
+            throw new UserFriendlyException(L["MustSubmitCompleteSeriesItemList"]);
         }
 
         var links = await AsyncExecuter.ToListAsync(
@@ -94,7 +94,7 @@ public partial class MediumAppService
 
         if (links.Count != mediumIds.Count)
         {
-            throw new UserFriendlyException("MediumIds 包含不属于该系列的条目");
+            throw new UserFriendlyException(L["MediumIdsContainsItemsNotBelongingToSeries"]);
         }
 
         var sortMap = mediumIds
@@ -107,6 +107,106 @@ public partial class MediumAppService
         }
 
         await mediumSeriesLinkRepository.UpdateManyAsync(links, true);
+    }
+
+    public virtual async Task AddSeriesMediumListAsync(MediumSeriesListUpdateDto input)
+    {
+        await CheckUpdatePolicyAsync();
+
+        if (input.SeriesId == Guid.Empty)
+        {
+            throw new UserFriendlyException(L["SeriesIdCannotBeEmpty"]);
+        }
+
+        var series = await GetEntityByIdAsync(input.SeriesId);
+        if (!series.IsSeries)
+        {
+            throw new UserFriendlyException(L["TargetMediumIsNotSeries"]);
+        }
+
+        var mediumIds = (input.MediumIds ?? new List<Guid>())
+            .Where(x => x != Guid.Empty)
+            .Distinct()
+            .ToList();
+
+        if (mediumIds.Count == 0)
+        {
+            return;
+        }
+
+        var linkQuery = await mediumSeriesLinkRepository.GetQueryableAsync();
+
+        // 过滤掉已存在的
+        var existingMediumIds = await AsyncExecuter.ToListAsync(
+            linkQuery
+                .Where(l => l.SeriesId == input.SeriesId && mediumIds.Contains(l.MediumId))
+                .Select(l => l.MediumId)
+        );
+
+        var newMediumIds = mediumIds.Except(existingMediumIds).ToList();
+        if (newMediumIds.Count == 0)
+        {
+            return;
+        }
+
+        // 检查这些 Medium 是否存在
+        var mediumsToAdd = await mediumRepository.GetListAsync(x => newMediumIds.Contains(x.Id));
+
+        // 获取当前最大的 Sort
+        var maxSort = 0;
+        var hasAny = await AsyncExecuter.AnyAsync(linkQuery.Where(l => l.SeriesId == input.SeriesId));
+        if (hasAny)
+        {
+            maxSort = await AsyncExecuter.MaxAsync(
+               linkQuery.Where(l => l.SeriesId == input.SeriesId),
+               l => l.Sort
+           );
+        }
+
+        var linksToInsert = new List<MediumSeriesLink>();
+        foreach (var medium in mediumsToAdd)
+        {
+            // 防止自引用
+            if (medium.Id == input.SeriesId) continue;
+
+            maxSort++;
+            linksToInsert.Add(new MediumSeriesLink(GuidGenerator.Create(), input.SeriesId, medium.Id, maxSort));
+        }
+
+        if (linksToInsert.Count > 0)
+        {
+            await mediumSeriesLinkRepository.InsertManyAsync(linksToInsert, true);
+        }
+    }
+
+    public virtual async Task DeleteSeriesMediumListAsync(MediumSeriesListUpdateDto input)
+    {
+        await CheckUpdatePolicyAsync();
+
+        if (input.SeriesId == Guid.Empty)
+        {
+            throw new UserFriendlyException(L["SeriesIdCannotBeEmpty"]);
+        }
+
+        var mediumIds = (input.MediumIds ?? new List<Guid>())
+            .Where(x => x != Guid.Empty)
+            .Distinct()
+            .ToList();
+
+        if (mediumIds.Count == 0)
+        {
+            return;
+        }
+
+        var linkQuery = await mediumSeriesLinkRepository.GetQueryableAsync();
+        var links = await AsyncExecuter.ToListAsync(
+            linkQuery.Where(l => l.SeriesId == input.SeriesId && mediumIds.Contains(l.MediumId))
+        );
+
+        if (links.Count > 0)
+        {
+            await mediumSeriesLinkRepository.DeleteManyAsync(links, true);
+        }
     }
 
     protected virtual async Task FillSeriesCountAsync(IReadOnlyList<MediumDto> items)

@@ -1,22 +1,41 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Vctoon.Handlers;
 using Vctoon.Mediums;
+using Vctoon.Localization.Vctoon;
 using Volo.Abp;
 using Volo.Abp.Uow;
 
 namespace Vctoon.Services;
 
-public class LibraryScanner(
-    ILibraryRepository libraryRepository,
-    ILogger<LibraryScanner> logger,
-    IUnitOfWorkManager unitOfWorkManager,
-    LibraryStore libraryStore,
-    IEnumerable<IMediumScanHandler> mediumScanHandlers,
-    MediumManager mediumManager)
-    : VctoonService, IScopedDependency
+public class LibraryScanner : VctoonService, IScopedDependency
 {
+    public LibraryScanner(
+        ILibraryRepository libraryRepository,
+        ILogger<LibraryScanner> logger,
+        IUnitOfWorkManager unitOfWorkManager,
+        LibraryStore libraryStore,
+        IEnumerable<IMediumScanHandler> mediumScanHandlers,
+        MediumManager mediumManager)
+        : base()
+    {
+        this.libraryRepository = libraryRepository;
+        this.logger = logger;
+        this.unitOfWorkManager = unitOfWorkManager;
+        this.libraryStore = libraryStore;
+        this.mediumScanHandlers = mediumScanHandlers;
+        this.mediumManager = mediumManager;
+        LocalizationResource = typeof(VctoonResource);
+    }
+
+    private readonly ILibraryRepository libraryRepository;
+    private readonly ILogger<LibraryScanner> logger;
+    private readonly IUnitOfWorkManager unitOfWorkManager;
+    private readonly LibraryStore libraryStore;
+    private readonly IEnumerable<IMediumScanHandler> mediumScanHandlers;
+    private readonly MediumManager mediumManager;
+
     private static readonly object LockObject = new();
 
     private readonly int _maxDegreeOfParallelism = 8;
@@ -54,7 +73,7 @@ public class LibraryScanner(
                 await AsyncExecuter.FirstOrDefaultAsync(query);
             if (library is null)
             {
-                throw new BusinessException("Library is not found");
+                throw new BusinessException(L["LibraryNotFound"]);
             }
 
             logger.LogInformation("Start scanning library: {LibraryName}", library.Name);

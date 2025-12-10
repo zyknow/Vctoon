@@ -115,17 +115,17 @@ public partial class MediumAppService
     {
         if (input == null)
         {
-            throw new UserFriendlyException("Input is null");
+            throw new UserFriendlyException(L["InputIsNull"]);
         }
 
         if (input.MediumIds.IsNullOrEmpty())
         {
-            throw new UserFriendlyException("Items is empty");
+            throw new UserFriendlyException(L["ItemsIsEmpty"]);
         }
 
         if (op != RelationOp.Delete && input.ResourceIds.IsNullOrEmpty())
         {
-            throw new UserFriendlyException("Ids is empty");
+            throw new UserFriendlyException(L["IdsIsEmpty"]);
         }
 
         var distinctMediumItems = input.MediumIds
