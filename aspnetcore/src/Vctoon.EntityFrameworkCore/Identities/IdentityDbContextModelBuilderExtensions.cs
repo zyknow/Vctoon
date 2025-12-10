@@ -19,6 +19,9 @@ public static class IdentityDbContextModelBuilderExtensions
         {
             b.ToTable(VctoonConsts.DbTablePrefix + "IdentityUserReadingProcesses", VctoonConsts.DbSchema);
             b.ConfigureByConvention();
+
+            // Ensure a single reading process per (UserId, MediumId)
+            b.HasIndex(x => new { x.UserId, x.MediumId }).IsUnique();
         });
     }
 }

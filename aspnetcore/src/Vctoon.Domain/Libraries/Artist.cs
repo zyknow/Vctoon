@@ -1,3 +1,5 @@
+using Vctoon.Mediums;
+
 namespace Vctoon.Libraries;
 
 public class Artist : Entity<Guid>
@@ -15,4 +17,6 @@ public class Artist : Entity<Guid>
     }
 
     public string Name { get; set; }
+
+    public virtual List<Medium> Mediums { get; set; } = new();
 }

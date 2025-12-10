@@ -6,6 +6,9 @@ public class CreateUpdateMediumDto
     public MediumType MediumType { get; set; }
     public string Description { get; set; }
     public string Cover { get; set; }
+
+    public bool IsSeries { get; set; }
+
     public Guid LibraryId { get; set; }
     public Guid? LibraryPathId { get; set; }
     public VideoDetail? VideoDetail { get; set; }

@@ -12,6 +12,7 @@ import type {
   MediumGetListInput,
   MediumGetListOutput,
   MediumMultiUpdate,
+  MediumSeriesSortUpdate,
   ReadingProcessUpdate,
   Subtitle,
 } from './typing'
@@ -29,8 +30,10 @@ const url = {
   getComicImage: `${baseUrl}/comic-image/{comicImageId}`,
   getComicImageList: `${baseUrl}/comic-image-list/{mediumId}`,
   getCover: `${baseUrl}/cover`,
+  getSeriesList: `${baseUrl}/series-list/{mediumId}`,
   getSubtitle: `${baseUrl}/{id}/subtitle`,
   getSubtitles: `${baseUrl}/{id}/subtitles`,
+  seriesSort: `${baseUrl}/series-sort`,
   updateArtistList: `${baseUrl}/update-artist-list`,
   updateArtists: `${baseUrl}/{id}/artists`,
   updateCover: `${baseUrl}/{id}/cover`,
@@ -101,6 +104,14 @@ export const mediumApi = {
 
   async getSubtitles(id: string) {
     return requestClient.get<Subtitle[]>(url.getSubtitles.format({ id }))
+  },
+
+  async getSeriesList(mediumId: string) {
+    return requestClient.get<Medium[]>(url.getSeriesList.format({ mediumId }))
+  },
+
+  async seriesSort(input: MediumSeriesSortUpdate) {
+    return requestClient.put(url.seriesSort, input)
   },
 
   async updateArtistList(input: MediumMultiUpdate) {

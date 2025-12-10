@@ -1,3 +1,5 @@
+using Vctoon.Mediums;
+
 namespace Vctoon.Libraries;
 
 public class Tag : AuditedEntity<Guid>
@@ -15,6 +17,8 @@ public class Tag : AuditedEntity<Guid>
     }
 
     public string Name { get; protected set; }
+
+    public virtual List<Medium> Mediums { get; set; } = new();
 
     public void SetName(string name)
     {

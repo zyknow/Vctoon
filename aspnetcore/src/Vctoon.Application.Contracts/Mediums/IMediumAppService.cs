@@ -8,9 +8,11 @@ public interface IMediumAppService : ICrudAppService<
     MediumGetListInput,
     CreateUpdateMediumDto>
 {
+    Task<List<MediumDto>> GetSeriesListAsync(Guid mediumId);
+    Task UpdateSeriesSortAsync(MediumSeriesSortUpdateDto input);
+
     Task AddArtistListAsync(MediumMultiUpdateDto input);
     Task AddTagListAsync(MediumMultiUpdateDto input);
-    Task<MediumDto> CreateAsync(CreateUpdateMediumDto input);
     Task DeleteArtistListAsync(MediumMultiUpdateDto input);
     Task DeleteComicImageAsync(Guid comicImageId, bool deleteFile);
     Task DeleteTagListAsync(MediumMultiUpdateDto input);

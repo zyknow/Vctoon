@@ -1,4 +1,5 @@
-﻿using Vctoon.Mediums;
+﻿using System.Collections.Generic;
+using Vctoon.Mediums;
 using Volo.Abp;
 using Volo.Abp.EntityFrameworkCore.Modeling;
 using Volo.Abp.Identity;
@@ -46,6 +47,20 @@ public static class LibraryDbContextModelBuilderExtensions
         {
             b.ToTable(VctoonConsts.DbTablePrefix + "Tags", VctoonConsts.DbSchema);
             b.HasIndex(x => x.Name).IsUnique();
+
+            b.HasMany(x => x.Mediums)
+                .WithMany(m => m.Tags)
+                .UsingEntity<Dictionary<string, object>>(
+                    VctoonConsts.DbTablePrefix + "MediumTags",
+                    right => right.HasOne<Medium>().WithMany().HasForeignKey("MediumId").OnDelete(DeleteBehavior.Cascade),
+                    left => left.HasOne<Tag>().WithMany().HasForeignKey("TagId").OnDelete(DeleteBehavior.Cascade),
+                    join =>
+                    {
+                        join.ToTable(VctoonConsts.DbTablePrefix + "MediumTags", VctoonConsts.DbSchema);
+                        join.HasKey("MediumId", "TagId");
+                        join.HasIndex("TagId");
+                    });
+
             b.ConfigureByConvention();
         });
 
@@ -93,6 +108,20 @@ public static class LibraryDbContextModelBuilderExtensions
         {
             b.ToTable(VctoonConsts.DbTablePrefix + "Artists", VctoonConsts.DbSchema);
             b.HasIndex(x => x.Name).IsUnique();
+
+            b.HasMany(x => x.Mediums)
+                .WithMany(m => m.Artists)
+                .UsingEntity<Dictionary<string, object>>(
+                    VctoonConsts.DbTablePrefix + "MediumArtists",
+                    right => right.HasOne<Medium>().WithMany().HasForeignKey("MediumId").OnDelete(DeleteBehavior.Cascade),
+                    left => left.HasOne<Artist>().WithMany().HasForeignKey("ArtistId").OnDelete(DeleteBehavior.Cascade),
+                    join =>
+                    {
+                        join.ToTable(VctoonConsts.DbTablePrefix + "MediumArtists", VctoonConsts.DbSchema);
+                        join.HasKey("MediumId", "ArtistId");
+                        join.HasIndex("ArtistId");
+                    });
+
             b.ConfigureByConvention();
             /* Configure more properties here */
         });

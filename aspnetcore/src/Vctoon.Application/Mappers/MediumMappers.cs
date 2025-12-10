@@ -64,7 +64,8 @@ public partial class CreateUpdateMediumDtoToMediumMapper : MapperBase<CreateUpda
         )
         {
             MediumType = source.MediumType,
-            VideoDetail = source.VideoDetail
+            VideoDetail = source.VideoDetail,
+            IsSeries = source.IsSeries
         };
 
         return medium;

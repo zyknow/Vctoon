@@ -27,5 +27,24 @@ public static class MediumDbContextModelBuilderExtensions
                 navigationBuilder.ToJson();
             });
         });
+
+        builder.Entity<MediumSeriesLink>(b =>
+        {
+            b.ToTable(VctoonConsts.DbTablePrefix + "MediumSeriesLinks", VctoonConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.HasIndex(x => new { x.SeriesId, x.MediumId }).IsUnique();
+            b.HasIndex(x => new { x.SeriesId, x.Sort });
+
+            b.HasOne(x => x.Series)
+                .WithMany(x => x.ItemLinks)
+                .HasForeignKey(x => x.SeriesId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasOne(x => x.Medium)
+                .WithMany(x => x.SeriesLinks)
+                .HasForeignKey(x => x.MediumId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
     }
 }

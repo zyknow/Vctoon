@@ -6,6 +6,16 @@ public class MediumGetListInput : PagedAndSortedResultRequestDto
     public Guid? LibraryId { get; set; }
     public MediumType? MediumType { get; set; }
 
+    /// <summary>
+    /// 是否包含 Series（系列容器）。默认 true。
+    /// </summary>
+    public bool IncludeSeries { get; set; } = true;
+
+    /// <summary>
+    /// 是否包含普通 Medium（非系列）。默认 true。
+    /// </summary>
+    public bool IncludeMediums { get; set; } = true;
+
     public bool? HasReadCount { get; set; }
 
     public int? CreatedInDays { get; set; }

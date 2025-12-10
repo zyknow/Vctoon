@@ -17,6 +17,8 @@ export type Medium = AuditedEntityDto<string> & {
   title: string
   mediumType: MediumType
   videoDetail?: VideoDetail
+  isSeries: boolean
+  seriesCount?: number
 }
 
 export type MediumGetListOutput = AuditedEntityDto<string> & {
@@ -28,6 +30,8 @@ export type MediumGetListOutput = AuditedEntityDto<string> & {
   readingProgress?: number
   mediumType: MediumType
   title: string
+  isSeries: boolean
+  seriesCount?: number
 }
 
 export type VideoDetail = {
@@ -50,6 +54,8 @@ export type MediumGetListInput = BasePageRequest & {
   mediumType?: MediumType
   readingProgressType?: ReadingProgressType
   tags?: string[]
+  includeSeries?: boolean
+  includeMediums?: boolean
 }
 
 export enum ReadingProgressType {
@@ -66,10 +72,16 @@ export type CreateUpdateMedium = {
   mediumType: MediumType
   title: string
   videoDetail?: VideoDetail
+  isSeries?: boolean
 }
 
 export type MediumMultiUpdate = {
   resourceIds: string[]
+  mediumIds: string[]
+}
+
+export type MediumSeriesSortUpdate = {
+  seriesId: string
   mediumIds: string[]
 }
 

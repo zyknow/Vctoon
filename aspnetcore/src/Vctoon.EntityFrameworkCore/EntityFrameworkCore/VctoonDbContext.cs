@@ -82,6 +82,7 @@ public class VctoonDbContext(DbContextOptions<VctoonDbContext> options) :
     public DbSet<ArchiveInfoPath> ArchiveInfoPaths { get; set; }
     public DbSet<LibraryPath> LibraryPaths { get; set; }
     public DbSet<Medium> Mediums { get; set; }
+    public DbSet<MediumSeriesLink> MediumSeriesLinks { get; set; }
     public DbSet<Artist> Artists { get; set; }
 
     public DbSet<LibraryPermission> LibraryPermissions { get; set; }

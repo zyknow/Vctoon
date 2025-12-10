@@ -88,7 +88,7 @@ public partial class MediumAppService
     {
         var file = deleteFile ? await comicImageRepository.GetAsync(comicImageId) : null;
 
-        await repository.DeleteAsync(comicImageId, deleteFile);
+        await comicImageRepository.DeleteAsync(comicImageId, true);
 
         if (deleteFile)
         {
