@@ -24,7 +24,7 @@ export type MediumAllItemProvider = {
 
 /** 公共的分页查询类型，避免 union 导致的类型缩小问题 */
 export type PageRequest = MediumGetListInput
-export type MediumViewTab = 'collection' | 'library' | 'recommend'
+export type MediumViewTab = 'series' | 'library' | 'recommend'
 /** 对外暴露的 Provider 接口（显式使用 Ref 类型） */
 export type MediumProvider = {
   currentTab: Ref<MediumViewTab>

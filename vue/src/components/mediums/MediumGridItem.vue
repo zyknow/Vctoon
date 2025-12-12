@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { MediumType } from '@/api/http/library'
-import type { MediumGetListOutput } from '@/api/http/typing'
+import type { MediumGetListOutput } from '@/api/http/medium'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { useMediumItem } from '@/hooks/useMediumItem'
 import { useMediumStore } from '@/stores'
@@ -85,6 +85,17 @@ const dropdownOpen = ref(false)
         'border-primary border-4': isSelected,
       }"
     >
+      <!-- Series Indicator -->
+      <div
+        v-if="mediumRef.isSeries"
+        class="bg-primary/90 absolute top-0 left-0 z-10 flex h-6 items-center justify-center rounded-br-md px-1.5 text-white shadow-sm"
+      >
+        <UIcon name="i-lucide-layers" class="text-xs" />
+        <span v-if="mediumRef.seriesCount" class="ml-1 text-[10px] font-bold">{{
+          mediumRef.seriesCount
+        }}</span>
+      </div>
+
       <div
         ref="anchorRef"
         class="pointer-events-auto absolute right-2 bottom-2 h-5 w-5"

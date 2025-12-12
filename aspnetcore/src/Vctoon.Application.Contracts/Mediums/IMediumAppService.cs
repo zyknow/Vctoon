@@ -8,7 +8,7 @@ public interface IMediumAppService : ICrudAppService<
     MediumGetListInput,
     CreateUpdateMediumDto>
 {
-    Task<List<MediumDto>> GetSeriesListAsync(Guid mediumId);
+    Task<List<MediumGetListOutputDto>> GetSeriesListAsync(Guid mediumId);
     Task UpdateSeriesSortAsync(MediumSeriesSortUpdateDto input);
 
     Task AddArtistListAsync(MediumMultiUpdateDto input);

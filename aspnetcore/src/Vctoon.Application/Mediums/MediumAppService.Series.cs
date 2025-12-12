@@ -28,7 +28,7 @@ public partial class MediumAppService
         return result;
     }
 
-    public virtual async Task<List<MediumDto>> GetSeriesListAsync(Guid mediumId)
+    public virtual async Task<List<MediumGetListOutputDto>> GetSeriesListAsync(Guid mediumId)
     {
         await CheckGetListPolicyAsync();
 
@@ -49,8 +49,7 @@ public partial class MediumAppService
             select m;
 
         var list = await AsyncExecuter.ToListAsync(query);
-        var dtos = ObjectMapper.Map<List<Medium>, List<MediumDto>>(list);
-        await FillSeriesCountAsync(dtos);
+        var dtos = ObjectMapper.Map<List<Medium>, List<MediumGetListOutputDto>>(list);
         return dtos;
     }
 
@@ -122,6 +121,18 @@ public partial class MediumAppService
         if (!series.IsSeries)
         {
             throw new UserFriendlyException(L["TargetMediumIsNotSeries"]);
+        }
+
+        if (series.Cover.IsNullOrWhiteSpace())
+        {
+            // if series has no cover, set the first medium's cover as series cover
+            var firstMediumId = input.MediumIds?.FirstOrDefault(x => x != Guid.Empty);
+            if (firstMediumId.HasValue && firstMediumId != Guid.Empty)
+            {
+                var firstMedium = await mediumRepository.GetAsync(firstMediumId.Value);
+                series.Cover = firstMedium.Cover;
+                await mediumRepository.UpdateAsync(series);
+            }
         }
 
         var mediumIds = (input.MediumIds ?? new List<Guid>())

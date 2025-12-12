@@ -15,7 +15,6 @@ const { library } = useInjectedMediumProvider() as LibraryMediumProvider
 const { itemsMap } = useInjectedMediumAllItemProvider()!
 
 const commonOptions: UseRecommendMediumProviderOptions = {
-  mediumTypes: [library.mediumType],
   pageRequest: {
     libraryId: library.id,
   },

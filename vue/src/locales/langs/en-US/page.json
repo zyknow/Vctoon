@@ -15,7 +15,7 @@
     "tabs": {
       "recommend": "Recommended",
       "library": "Library",
-      "collection": "Collections"
+      "series": "Series"
     },
     "recommend": {
       "continueWatching": "Continue Watching {mediumType}",
@@ -196,6 +196,7 @@
       "mediumType": "Type",
       "comic": "Comic",
       "video": "Video",
+      "series": "Series",
       "duration": "Duration",
       "resolution": "Resolution",
       "framerate": "Framerate",
@@ -245,6 +246,11 @@
         "update": "Set Tags",
         "remove": "Remove Tags"
       },
+      "seriesActions": {
+        "label": "Series Links",
+        "add": "Add to Series",
+        "remove": "Remove from Series"
+      },
       "actions": {
         "info": "View Info",
         "markAsWatched": "Mark as Watched",
@@ -265,6 +271,10 @@
             "add": "Add Tags to Selected Media",
             "remove": "Remove Tags from Selected Media",
             "update": "Set Tags for Selected Media"
+          },
+          "series": {
+            "add": "Add Series to Selected Media",
+            "remove": "Remove Series from Selected Media"
           }
         },
         "description": {
@@ -277,15 +287,21 @@
             "add": "Choose the tags to append to every selected medium.",
             "remove": "Choose the tags to remove from the selected media.",
             "update": "Choose the tag list to apply to all selected media; leave empty to clear all tags."
+          },
+          "series": {
+            "add": "Choose the series to add the selected media to.",
+            "remove": "Choose the series to remove the selected media from."
           }
         },
         "placeholder": {
           "artist": "Select artists",
-          "tag": "Select tags"
+          "tag": "Select tags",
+          "series": "Select series"
         },
         "hint": {
           "artist": "Type a new artist name and press Enter to create it",
-          "tag": "Type a new tag name and press Enter to create it"
+          "tag": "Type a new tag name and press Enter to create it",
+          "series": "Select existing series"
         },
         "confirm": {
           "add": "Add",
@@ -317,7 +333,8 @@
       "deleteImagesConfirm": "Delete the selected {count} images? This action cannot be undone.",
       "videoNoSelection": "Video media only shows details and does not support multi-selection.",
       "noComicImages": "No comic images available",
-      "videoComingSoon": "Video playback is coming soon. Stay tuned."
+      "videoComingSoon": "Video playback is coming soon. Stay tuned.",
+      "seriesContent": "Series Content"
     },
     "actions": {
       "info": "View Info",

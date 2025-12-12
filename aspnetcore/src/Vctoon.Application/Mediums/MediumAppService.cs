@@ -24,4 +24,5 @@ public partial class MediumAppService(
     MediumGetListInput,
     CreateUpdateMediumDto, CreateUpdateMediumDto>(mediumRepository), IMediumAppService
 {
+
 }

@@ -9,6 +9,7 @@ import Page from '@/components/Page.vue'
 import { $t } from '@/locales/i18n'
 
 import MediumComicDetail from './components/ComicDetail.vue'
+import MediumSeriesDetail from './components/SeriesDetail.vue'
 import MediumVideoDetail from './components/VideoDetail.vue'
 
 const route = useRoute()
@@ -68,7 +69,28 @@ watch(
   </MainLayoutProvider>
 
   <Page content-class="flex flex-col gap-8 pb-12">
-    <template v-if="mediumData?.mediumType === MediumType.Comic">
+    <template v-if="mediumData?.isSeries">
+      <MediumSeriesDetail
+        v-if="mediumData"
+        :loading="mediumLoading"
+        :medium="mediumData"
+        :medium-id="mediumId"
+      />
+      <div
+        v-else-if="mediumLoading"
+        class="text-muted-foreground py-20 text-center"
+      >
+        {{ $t('common.loading') }}
+      </div>
+      <div v-else-if="loadError" class="text-destructive py-20 text-center">
+        {{ loadError }}
+      </div>
+      <div v-else class="text-muted-foreground py-20 text-center">
+        {{ $t('common.noData') }}
+      </div>
+    </template>
+
+    <template v-else-if="mediumData?.mediumType === MediumType.Comic">
       <MediumComicDetail
         v-if="mediumData"
         :loading="mediumLoading"

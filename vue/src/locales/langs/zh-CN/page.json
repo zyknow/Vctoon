@@ -15,7 +15,7 @@
     "tabs": {
       "recommend": "推荐",
       "library": "库",
-      "collection": "合集"
+      "series": "系列"
     },
     "recommend": {
       "continueWatching": "继续观看的{mediumType}",
@@ -29,7 +29,23 @@
       "scanFailed": "扫描失败",
       "authorizeAccess": "授权访问",
       "delete": "删除资料库",
-      "create": "创建资料库"
+      "create": "创建资料库",
+      "addSeries": "添加系列"
+    },
+    "addSeries": {
+      "title": "添加系列",
+      "fields": {
+        "title": "标题",
+        "description": "描述"
+      },
+      "placeholders": {
+        "title": "请输入系列标题",
+        "description": "请输入系列描述"
+      },
+      "validation": {
+        "titleRequired": "请输入系列标题"
+      },
+      "success": "系列创建成功"
     },
     "delete": {
       "confirmTitle": "确认删除",
@@ -196,6 +212,7 @@
       "mediumType": "类型",
       "comic": "漫画",
       "video": "视频",
+      "series": "系列",
       "duration": "时长",
       "resolution": "分辨率",
       "framerate": "帧率",
@@ -245,6 +262,11 @@
         "update": "设置标签",
         "remove": "移除标签"
       },
+      "seriesActions": {
+        "label": "系列关联",
+        "add": "添加到系列",
+        "remove": "从系列移除"
+      },
       "dialog": {
         "title": {
           "artist": {
@@ -256,6 +278,10 @@
             "add": "为选中媒体添加标签",
             "remove": "从选中媒体移除标签",
             "update": "设置选中媒体的标签"
+          },
+          "series": {
+            "add": "为选中媒体添加系列",
+            "remove": "从选中媒体移除系列"
           }
         },
         "description": {
@@ -268,15 +294,21 @@
             "add": "选择要追加到所有选中媒体的标签。",
             "remove": "选择需要从选中媒体移除的标签。",
             "update": "选择将应用到所有选中媒体的标签列表，留空表示清除全部标签。"
+          },
+          "series": {
+            "add": "选择要将选中媒体添加到的系列。",
+            "remove": "选择要从选中媒体移除的系列。"
           }
         },
         "placeholder": {
           "artist": "请选择作者",
-          "tag": "请选择标签"
+          "tag": "请选择标签",
+          "series": "请选择系列"
         },
         "hint": {
           "artist": "可输入新作者名称并按回车快速创建",
-          "tag": "可输入新标签名称并按回车快速创建"
+          "tag": "可输入新标签名称并按回车快速创建",
+          "series": "请选择现有的系列"
         },
         "confirm": {
           "add": "添加",
@@ -308,7 +340,8 @@
       "deleteImagesConfirm": "确认删除选中的 {count} 张图片吗？此操作不可恢复。",
       "videoNoSelection": "视频仅展示详情信息，不支持多选操作。",
       "noComicImages": "暂无漫画图片",
-      "videoComingSoon": "视频播放功能即将上线，敬请期待。"
+      "videoComingSoon": "视频播放功能即将上线，敬请期待。",
+      "seriesContent": "系列内容"
     },
     "actions": {
       "info": "查看信息",

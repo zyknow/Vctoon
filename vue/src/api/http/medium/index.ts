@@ -118,7 +118,9 @@ export const mediumApi = {
   },
 
   async getSeriesList(mediumId: string) {
-    return requestClient.get<Medium[]>(url.getSeriesList.format({ mediumId }))
+    return requestClient.get<MediumGetListOutput[]>(
+      url.getSeriesList.format({ mediumId }),
+    )
   },
 
   async seriesSort(input: MediumSeriesSortUpdate) {

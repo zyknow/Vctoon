@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { MediumType } from '@/api/http/library/typing'
-import type { MediumGetListOutput } from '@/api/http/typing'
+import type { MediumGetListOutput } from '@/api/http/medium'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { useMediumItem } from '@/hooks/useMediumItem'
 import { $t } from '@/locales/i18n'
@@ -116,7 +116,16 @@ const mobileCoverStyle = computed(() => {
           {{ title }}
         </div>
         <div class="text-muted-foreground mt-0.5 text-xs opacity-80">
-          <span v-if="mediumType === MediumType.Comic">
+          <span v-if="mediumRef.isSeries">
+            <UIcon name="i-lucide-layers" class="inline-block text-xs" />
+            <span>
+              {{ $t('page.library.tabs.series') }}
+              <span v-if="mediumRef.seriesCount != null"
+                >({{ mediumRef.seriesCount }})</span
+              >
+            </span>
+          </span>
+          <span v-else-if="mediumType === MediumType.Comic">
             <UIcon name="i-lucide-book-open" class="inline-block text-xs" />
             <span>
               {{ $t('page.mediums.info.comic') }}

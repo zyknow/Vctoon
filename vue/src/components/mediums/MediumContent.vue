@@ -41,6 +41,7 @@ const endReachedDisabled = computed(
 const onEndReached = (direction: 'top' | 'bottom' | 'left' | 'right') => {
   if (direction !== 'bottom') return
   if (endReachedDisabled.value) return
+  console.log('MediumContent: 触发滚动加载更多')
   void loadNext().catch((error) => {
     console.error('滚动加载失败', error)
   })

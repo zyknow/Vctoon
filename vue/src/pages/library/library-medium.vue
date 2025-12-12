@@ -1,4 +1,7 @@
 <script lang="ts" setup>
+import type { Ref } from 'vue'
+
+import type { MediumGetListOutput } from '@/api/http/medium/typing'
 import { dataChangedHub } from '@/api/signalr/data-changed'
 import { libraryHub } from '@/api/signalr/library'
 import type { SortField } from '@/components/mediums/types'
@@ -7,7 +10,9 @@ import Page from '@/components/Page.vue'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { createLibraryMediumProvider } from '@/hooks/useLibraryMediumProvider'
 import { useMediumFilterBinding } from '@/hooks/useMediumFilterBinding'
+import type { MediumViewTab } from '@/hooks/useMediumProvider'
 import {
+  createMediumProvider,
   provideMediumAllItemProvider,
   provideMediumItemProvider,
   provideMediumProvider,
@@ -16,8 +21,11 @@ import { useRefresh } from '@/hooks/useRefresh'
 import { $t } from '@/locales/i18n'
 import { useUserStore } from '@/stores'
 
+import LibraryRecommend from './components/library-recommend.vue'
+import LibrarySeries from './components/library-series.vue'
+import LibraryMediumToolbar from './components/LibraryMediumToolbar.vue'
 import LibraryMobileHeaderLeft from './components/LibraryMobileHeaderLeft.vue'
-import LibraryRecommend from './library-recommend.vue'
+import LibraryUpdateNotice from './components/LibraryUpdateNotice.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -33,13 +41,32 @@ if (!library) {
 }
 const state = createLibraryMediumProvider(library)
 
+state.currentTab.value = (route.query.tab as MediumViewTab) || 'recommend'
+
+const seriesState = createMediumProvider({
+  loadType: library.mediumType,
+  title: library.name,
+  pageRequest: {
+    libraryId: library.id,
+    includeSeries: true,
+    includeMediums: false,
+    sorting: 'Title asc',
+  },
+  autoLoad: true,
+})
+
 const mediumContentRef = ref<{
+  onEndReached: (direction: 'top' | 'bottom' | 'left' | 'right') => void
+} | null>(null)
+const seriesRef = ref<{
   onEndReached: (direction: 'top' | 'bottom' | 'left' | 'right') => void
 } | null>(null)
 
 const onScrollEnd = (direction: 'top' | 'bottom' | 'left' | 'right') => {
   if (state.currentTab.value === 'library') {
     mediumContentRef.value?.onEndReached(direction)
+  } else if (state.currentTab.value === 'series') {
+    seriesRef.value?.onEndReached(direction)
   }
 }
 
@@ -64,23 +91,68 @@ watch(
 )
 
 provideMediumProvider(state)
-provideMediumItemProvider({
-  items: state.items,
-  selectedMediumIds: state.selectedMediumIds,
+
+const allItemsMap = reactive<Record<string, Ref<MediumGetListOutput[]>>>({
+  main: state.items,
+  series: seriesState.items,
 })
 
 provideMediumAllItemProvider({
-  itemsMap: {
-    main: state.items,
+  itemsMap: allItemsMap,
+})
+
+const activeSelectedMediumIds = computed<string[]>({
+  get: () => {
+    return state.currentTab.value === 'series'
+      ? seriesState.selectedMediumIds.value
+      : state.selectedMediumIds.value
+  },
+  set: (value) => {
+    if (state.currentTab.value === 'series') {
+      seriesState.selectedMediumIds.value = value
+      return
+    }
+    state.selectedMediumIds.value = value
   },
 })
-const tabs = computed(() => [
-  { label: $t('page.library.tabs.recommend'), value: 'recommend' },
-  { label: $t('page.library.tabs.library'), value: 'library' },
-  { label: $t('page.library.tabs.collection'), value: 'collection' },
-])
+
+const activeItems = computed<MediumGetListOutput[]>(() => {
+  if (state.currentTab.value === 'series') {
+    return seriesState.items.value
+  }
+  if (state.currentTab.value === 'recommend') {
+    const merged = [
+      ...(allItemsMap.recommend?.value ?? []),
+      ...(allItemsMap.newest?.value ?? []),
+      ...(allItemsMap.mostViewed?.value ?? []),
+    ]
+    const seen = new Set<string>()
+    return merged.filter((item) => {
+      if (!item?.id) return false
+      if (seen.has(item.id)) return false
+      seen.add(item.id)
+      return true
+    })
+  }
+  return state.items.value
+})
+
+provideMediumItemProvider({
+  items: activeItems as unknown as Ref<MediumGetListOutput[]>,
+  selectedMediumIds: activeSelectedMediumIds as unknown as Ref<string[]>,
+})
+
+const hasActiveSelection = computed(() => activeSelectedMediumIds.value.length)
+const tabs = computed(
+  (): Array<{ label: string; value: MediumViewTab }> => [
+    { label: $t('page.library.tabs.recommend'), value: 'recommend' },
+    { label: $t('page.library.tabs.library'), value: 'library' },
+    { label: $t('page.library.tabs.series'), value: 'series' },
+  ],
+)
 
 const { filterValue: mediumFilterValue } = useMediumFilterBinding(state)
+const { filterValue: seriesFilterValue } = useMediumFilterBinding(seriesState)
 
 const additionalSorts: SortField[] = [
   { label: $t('page.mediums.sort.title'), value: 'title', listSort: 1 },
@@ -150,86 +222,43 @@ onUnmounted(() => {
       remember
       @end-reached="onScrollEnd"
     >
-      <div class="medium-toolbar" :class="isMobile ? 'mb-2' : 'gap-4'">
-        <medium-toolbar-first :title="state.title.value">
-          <template #center>
-            <UTabs
-              v-model="state.currentTab.value"
-              size="xs"
-              class="min-w-80"
-              :class="isMobile ? 'w-full' : ''"
-              :items="tabs"
-            />
-          </template>
-        </medium-toolbar-first>
-        <div class="w-full">
-          <medium-toolbar-second
-            v-if="
-              state.currentTab.value === 'library' &&
-              state.selectedMediumIds.value.length === 0
-            "
-          >
-            <template #left>
-              <div class="flex flex-row items-center gap-4">
-                <medium-filter-dropdown
-                  v-model:model-value="mediumFilterValue"
-                  :disabled="state.loading.value"
-                />
-
-                <medium-sort-dropdown
-                  v-model:model-value="state.pageRequest.sorting"
-                  :additional-sort-field-list="additionalSorts"
-                  @change="state.updateSorting"
-                />
-                <UBadge variant="subtle">{{ state.totalCount || 0 }}</UBadge>
-              </div>
-            </template>
-          </medium-toolbar-second>
-          <medium-toolbar-second-select
-            v-else-if="state.selectedMediumIds.value.length > 0"
-            :show-selected-all-btn="true"
-          />
-        </div>
-      </div>
+      <LibraryMediumToolbar
+        :is-mobile="isMobile"
+        :title="state.title.value"
+        :tabs="tabs"
+        :model-value="state.currentTab.value"
+        :has-active-selection="hasActiveSelection"
+        :library-state="state"
+        :series-state="seriesState"
+        :medium-filter-value="mediumFilterValue"
+        :series-filter-value="seriesFilterValue"
+        :library-sorting="state.pageRequest.sorting || ''"
+        :series-sorting="seriesState.pageRequest.sorting || ''"
+        :additional-sorts="additionalSorts"
+        @update:model-value="state.currentTab.value = $event"
+        @update:medium-filter-value="mediumFilterValue = $event"
+        @update:series-filter-value="seriesFilterValue = $event"
+        @update:library-sorting="state.pageRequest.sorting = $event"
+        @update:series-sorting="seriesState.pageRequest.sorting = $event"
+        @library-sort-change="state.updateSorting"
+        @series-sort-change="seriesState.updateSorting"
+      />
       <MediumContent
         v-show="state.currentTab.value === 'library'"
         ref="mediumContentRef"
         :use-scrollbar="!isMobile"
       />
       <LibraryRecommend v-show="state.currentTab.value === 'recommend'" />
+      <LibrarySeries
+        v-show="state.currentTab.value === 'series'"
+        ref="seriesRef"
+        :state="seriesState"
+      />
     </component>
   </Page>
-  <div v-if="hasUpdate" class="fixed right-4 bottom-4 z-50">
-    <UCard>
-      <div class="flex items-start gap-3">
-        <UIcon name="i-lucide-refresh-cw" class="text-info text-lg" />
-        <div class="flex-1">
-          <div class="text-sm font-medium">
-            {{ $t('page.library.messages.updatedTitle') }}
-          </div>
-          <div class="text-muted-foreground text-sm">
-            {{ $t('page.library.messages.updatedDescription') }}
-          </div>
-        </div>
-        <div class="flex gap-2">
-          <UButton
-            variant="ghost"
-            size="sm"
-            @click="refresh.refreshCurrentRoute()"
-          >
-            <template #leading>
-              <UIcon name="i-lucide-refresh-cw" />
-            </template>
-            {{ $t('common.refresh') }}
-          </UButton>
-          <UButton variant="ghost" size="sm" @click="hasUpdate = false">
-            <template #leading>
-              <UIcon name="i-lucide-x" />
-            </template>
-            {{ $t('common.cancel') }}
-          </UButton>
-        </div>
-      </div>
-    </UCard>
-  </div>
+  <LibraryUpdateNotice
+    :visible="hasUpdate"
+    @refresh="refresh.refreshCurrentRoute()"
+    @dismiss="hasUpdate = false"
+  />
 </template>

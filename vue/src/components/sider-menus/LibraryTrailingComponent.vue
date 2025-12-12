@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 
 import { libraryApi } from '@/api/http/library'
+import AddSeriesModal from '@/components/overlays/AddSeriesModal.vue'
 import ConfirmModal from '@/components/overlays/ConfirmModal.vue'
 import CreateOrUpdateLibraryModal from '@/components/overlays/CreateOrUpdateLibraryModal.vue'
 import LibraryPermissionDialog from '@/components/overlays/LibraryPermissionModal.vue'
@@ -17,6 +18,19 @@ const overlay = useOverlay()
 const path = menu.value.to as string
 
 const libraryId = path.trim().replace('/library/', '')
+
+// 添加系列
+const addSeriesModal = overlay.create(AddSeriesModal)
+
+async function onAddSeries() {
+  const library = userStore.libraries.find((lib) => lib.id === libraryId)
+  if (!library) return
+
+  await addSeriesModal.open({
+    libraryId: library.id,
+    mediumType: library.mediumType,
+  })
+}
 
 // 编辑资料库
 const editLibraryModal = overlay.create(CreateOrUpdateLibraryModal)
@@ -87,6 +101,13 @@ async function handleDelete() {
 
 // DropdownMenu items
 const menuItems = computed(() => [
+  [
+    {
+      label: $t('page.library.actions.addSeries'),
+      icon: 'i-lucide-plus-square',
+      onSelect: onAddSeries,
+    },
+  ],
   [
     {
       label: $t('page.library.actions.edit'),

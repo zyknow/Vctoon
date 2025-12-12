@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { mediumApi } from '@/api/http/medium'
-import type { MediumGetListOutput, MediumMultiUpdate } from '@/api/http/medium/typing'
+import type {
+  MediumGetListOutput,
+  MediumMultiUpdate,
+  MediumSeriesListUpdate,
+} from '@/api/http/medium/typing'
 import MediumBatchRelationModal from '@/components/overlays/MediumBatchRelationModal.vue'
 import { useInjectedMediumItemProvider } from '@/hooks/useMediumProvider'
+import { $t } from '@/locales/i18n'
 
 defineProps<{ showSelectedAllBtn?: boolean }>()
 
@@ -11,8 +16,9 @@ const overlay = useOverlay()
 
 // 创建 modal 实例
 const relationModal = overlay.create(MediumBatchRelationModal)
+const toast = useToast()
 
-type MediumRelationEntity = 'artist' | 'tag'
+type MediumRelationEntity = 'artist' | 'tag' | 'series'
 type MediumRelationAction = 'add' | 'remove' | 'update'
 type RelationActionKey = `${MediumRelationEntity}:${MediumRelationAction}`
 
@@ -38,13 +44,13 @@ const artistLoading = computed(() => {
 const tagLoading = computed(() => {
   return pendingAction.value?.startsWith('tag:') ?? false
 })
+const seriesLoading = computed(() => {
+  return pendingAction.value?.startsWith('series:') ?? false
+})
 
 const relationApiMap: Record<
   MediumRelationEntity,
-  Record<
-    MediumRelationAction,
-    (input: MediumMultiUpdate) => Promise<unknown>
-  >
+  Record<MediumRelationAction, (input: MediumMultiUpdate) => Promise<unknown>>
 > = {
   artist: {
     add: (input) => mediumApi.addArtistList(input),
@@ -56,11 +62,23 @@ const relationApiMap: Record<
     remove: (input) => mediumApi.deleteTagList(input),
     update: (input) => mediumApi.updateTagList(input),
   },
+  series: {
+    add: () => Promise.resolve(),
+    remove: () => Promise.resolve(),
+    update: () => Promise.resolve(),
+  },
 }
 
 const createPayload = (ids: string[]): MediumMultiUpdate => {
   return {
     resourceIds: ids,
+    mediumIds: selectedMediums.value.map((medium) => medium.id),
+  }
+}
+
+const createSeriesPayload = (seriesId: string): MediumSeriesListUpdate => {
+  return {
+    seriesId,
     mediumIds: selectedMediums.value.map((medium) => medium.id),
   }
 }
@@ -72,10 +90,15 @@ const executeRelationAction = async (
   if (selectedMediums.value.length === 0) return
   if (pendingAction.value) return
 
+  const libraryId = selectedMediums.value[0]?.libraryId
+  const mediumType = selectedMediums.value[0]?.mediumType
+
   const selectedIds = await relationModal.open({
     mode: action,
     entity,
     targetCount: selectedMediums.value.length,
+    libraryId,
+    mediumType,
   })
 
   if (selectedIds === undefined) return
@@ -83,15 +106,30 @@ const executeRelationAction = async (
     return
   }
 
-  const payload = createPayload(selectedIds)
-  if (payload.mediumIds.length === 0) return
-
   const actionKey = `${entity}:${action}` as RelationActionKey
   pendingAction.value = actionKey
   try {
+    if (entity === 'series') {
+      const seriesId = selectedIds[0]
+      if (!seriesId) return
+      const payload = createSeriesPayload(seriesId)
+      if (payload.mediumIds.length === 0) return
+      if (action === 'add') {
+        await mediumApi.addSeriesMediumList(payload)
+      } else if (action === 'remove') {
+        await mediumApi.deleteSeriesMediumList(payload)
+      }
+      return
+    }
+
+    const payload = createPayload(selectedIds)
+    if (payload.mediumIds.length === 0) return
     await relationApiMap[entity][action](payload)
-  } catch (error) {
-    console.error('批量更新媒体关联失败', error)
+  } catch {
+    toast.add({
+      title: $t('common.updateFailed'),
+      color: 'error',
+    })
   } finally {
     pendingAction.value = null
   }
@@ -109,6 +147,12 @@ const handleTagCommand = async (
 ) => {
   if (typeof command !== 'string') return
   await executeRelationAction('tag', command as MediumRelationAction)
+}
+
+const handleSeriesCommand = async (command: number | string) => {
+  if (typeof command !== 'string') return
+  if (command !== 'add' && command !== 'remove') return
+  await executeRelationAction('series', command)
 }
 
 // 全选/取消全选
@@ -205,6 +249,28 @@ const clearSelection = () => {
         >
           <UButton size="sm" :loading="tagLoading" variant="ghost">
             {{ $t('page.mediums.selection.tagActions.label') }}
+            <UIcon name="i-heroicons-chevron-down" class="ml-1" />
+          </UButton>
+        </UDropdownMenu>
+
+        <UDropdownMenu
+          :items="[
+            {
+              label: $t('page.mediums.selection.seriesActions.add'),
+              icon: 'i-heroicons-plus',
+              onSelect: () => handleSeriesCommand('add'),
+            },
+            {
+              label: $t('page.mediums.selection.seriesActions.remove'),
+              icon: 'i-heroicons-trash',
+              color: 'error',
+              onSelect: () => handleSeriesCommand('remove'),
+            },
+          ]"
+          :disabled="isBusy"
+        >
+          <UButton size="sm" :loading="seriesLoading" variant="ghost">
+            {{ $t('page.mediums.selection.seriesActions.label') }}
             <UIcon name="i-heroicons-chevron-down" class="ml-1" />
           </UButton>
         </UDropdownMenu>
